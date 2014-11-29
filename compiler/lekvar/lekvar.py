@@ -6,14 +6,6 @@ def err(message:str):
 # Base Structures
 #
 
-class Value:
-    def resolveType(self, scope:Scope):
-        err("Internal Error (Value)")
-
-class Instruction:
-    def verify(self, scope:Scope):
-        err("Internal Error (Instruction)")
-
 class Variable:
     def __init__(self, name:str, mutable:bool,
                  type = None):
@@ -59,12 +51,20 @@ class Scope:
             return [self.variables[name]]
         return []
 
+class Value:
+    def resolveType(self, scope:Scope):
+        err("Internal Error (Value)")
+
+class Instruction:
+    def verify(self, scope:Scope):
+        err("Internal Error (Instruction)")
+
 #
 # Scope Structures
 #
 
 class Function(Scope):
-    def __init__(self, name:str, parameters:[Variable], instructions:[Instruvtion], variables:{str:Variable},
+    def __init__(self, name:str, parameters:[Variable], instructions:[Instruction], variables:{str:Variable},
                  return_types:[] = None, pure:bool = None, inline:bool = None):
         self.name = name
         self.parameters = parameters
@@ -84,7 +84,7 @@ class Function(Scope):
         return occurrences
 
 class Module(Scope):
-    def __init__(self, name:str, instructions:[Instruvtion], variables:{str:Variable}, children:{str:[Scope]}):
+    def __init__(self, name:str, instructions:[Instruction], variables:{str:Variable}, children:{str:[Scope]}):
         self.name = name
         self.instructions = instructions
         self.variables = variables
@@ -135,7 +135,7 @@ class Assignment(Instruction):
 
     def verify(self, scope:Scope):
         # Get assigned types
-        types = sum(value.resolveType(scope) for value in self.values, [])
+        types = sum((value.resolveType(scope) for value in self.values), [])
 
         for index, variables in enumerate(self.variables):
             # Sanity Check
@@ -162,7 +162,8 @@ class Return(Instruction):
             err("Internal Error (Invalid Generation)")
 
         # Get types
-        types = [value.resolveType(scope) for index, value in enumerate(self.values)]
+        types = [value.resolveType(scope)
+                 for index, value in enumerate(self.values)]
 
         # Infer Return Types
         if scope.return_types is None:
