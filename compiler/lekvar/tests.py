@@ -27,7 +27,6 @@ class LekvarTests(unittest.TestCase):
         ] )
         test.verify()
 
-        # Test incorrect function call
         with self.assertRaises(TypeError):
             test.main = [
                 Call("helloWorld", [Literal( LLVMType("String"), "" )])

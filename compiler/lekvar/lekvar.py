@@ -188,6 +188,10 @@ class Method(Scope):
         self.overloads = overloads
         super().__init__({})
 
+    def resolveReferenceDown(self, reference:str):
+        #TODO (signature stuff)
+        super().resolveReferenceDown(reference)
+
     def resolveType(self):
         signatures = self.overloads.keys()
         return MethodType(signatures)
