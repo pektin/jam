@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import unittest
 from .lekvar import *
 from .errors import *
@@ -44,6 +42,7 @@ class LekvarTests(unittest.TestCase):
                 Call("herroWorld", [])
             ]
             test.verify()
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
