@@ -14,16 +14,21 @@ class LekvarTests(unittest.TestCase):
 
         # Standard Compilation test
         test = Module( {
-            "helloWorld": Method( { MethodSignature([]): [
+            "helloWorld": Function([], [
                 Call("print", [
                     Literal( LLVMType("String"), "Hello World!" )
                 ] )
-            ] } ),
-            "print" : Method( { MethodSignature( [ LLVMType("String") ] ): [] } )
+            ], None),
+            "print" : ExternalFunction("puts", [LLVMType("String")], [LLVMType("Int")])
         }, [
             Call("helloWorld", [])
         ] )
         test.verify()
+
+        #DEBUG
+        #from ..llvm.emitter import Emitter
+        #import sys
+        #test.emit(Emitter(sys.stdout))
 
         with self.assertRaises(TypeError):
             test.main = [

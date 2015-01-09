@@ -76,6 +76,8 @@ class Instruction(ABC):
 
 class Call(Instruction):
     reference = None
+    function = None # resolved through reference
+
     values = None
 
     def __init__(self, reference:str, values:[Object]):
@@ -83,21 +85,10 @@ class Call(Instruction):
         self.values = values
 
     def verify(self, scope:Scope):
-        signature = MethodSignature([value.resolveType() for value in self.values])
-        method = scope.resolveReferenceDown(self.reference).resolveType()
+        signature = [value.resolveType() for value in self.values]
+        object = scope.resolveReferenceDown(self.reference).resolveType()
 
-        if not isinstance(method, MethodType):
-            raise TypeError("{} is not callable".format(method.__class__))
-
-        # Check for a matching signature
-        for index, methodsig in enumerate(method.signatures):
-            if signature.checkCompatibility(methodsig):
-                # Lock signature
-                method.locks[index] = True
-                return
-        raise TypeError("No matching signature")
-
-
+        object.resolveCompatibility(FunctionType(signature,[])) # TODO: return types
 
 class Module(Scope):
     main = None
@@ -126,75 +117,77 @@ class Literal(Object):
     def resolveType(self):
         return self.type
 
-class MethodSignature:
-    types = None
+class FunctionType(Type):
+    signature = None
+    return_types = None
 
-    def __init__(self, types:[Type]):
-        self.types = types
-
-    def checkCompatibility(self, other:MethodSignature):
-        if len(self.types) != len(other.types):
-            return False
-        for type1, type2 in zip(self.types, other.types):
-            if not type1.checkCompatibility(type2):
-                return False
-        return True
-
-class MethodType(Type):
-    signatures = None
-    locks = None
-
-    def __init__(self, signatures: [MethodSignature]):
-        self.signatures = signatures
-        self.locks = [False for sig in self.signatures]
+    def __init__(self, signature: [Type], return_types: [Type]):
+        self.signature = signature
+        self.return_types = return_types
 
     def checkCompatibility(self, other:Type):
-        return False #TODO
+        if isinstance(other, FunctionType):
+            # check if signature is compatible
+            if len(self.signature) != len(other.signature):
+                return False
+            for self_t, other_t in zip(self.signature, other.signature):
+                if not self_t.checkCompatibility(other_t):
+                    return False
 
-    def resolveCompatibility(self, other:Type):
-        if not isinstance(other, MethodType):
-            raise TypeError("Method types are not compatible with {} types".format(other.__class__))
-        # check for matching signatures
-        index = 0
-        while index < len(self.signatures):
-            sig = self.signatures[index]
-
-            contains = False
-            # find a signature that matches
-            for othersig in other.signatures:
-                if sig.checkCompatibility(othersig):
-                    contains = True
-                    break
-            # remove signature from type if other type does not contain it
-            if not contains:
-                if self.locks[index]:
-                    raise TypeError("Method does not supply required overloads")
-                self.locks.pop(index)
-                self.signatures.pop(index)
-            else:
-                index += 1
-
-        # Sanity check
-        if len(self.signatures) == 0:
-            raise TypeError("Method type resolves to null")
+            #TODO: Return types
+            # same check with return types
+            #for self_t, other_t in zip(self.return_types, other.return_types):
+            #    if not other_t.checkCompatibility(self_t):
+            #        return False
+        else:
+            return False
+        return True
 
     def resolveType(self):
         raise InternalError("Not implemented")
 
-class Method(Scope):
-    overloads = None
+class Function(Scope):
+    arguments = None
+    instructions = None
+    return_types = None
 
-    def __init__(self, overloads: { MethodSignature: [Instruction] }):
-        self.overloads = overloads
+    def __init__(self, arguments: [(str, Type)], instructions: [Instruction], return_types: [Type]):
         super().__init__({})
+
+        self.arguments = arguments
+        self.instructions = instructions
+        self.return_types = return_types
+
+        #TODO: Replace unknown types with temps
+        for argument in self.arguments:
+            if argument[1] is None:
+                raise InternalError("Function argument type inference is not yet supported")
+
+    def verify(self):
+        if self.verified: return
+        self.verified = True
+
+        for instruction in self.instructions:
+            instruction.verify(self)
+
+    def resolveType(self):
+        return FunctionType([arg[1] for arg in self.arguments], self.return_types)
 
     def resolveReferenceDown(self, reference:str):
         #TODO (signature stuff)
-        super().resolveReferenceDown(reference)
+        return super().resolveReferenceDown(reference)
+
+class ExternalFunction(Function):
+    verified = True
+    external_name = None
+
+    def __init__(self, external_name:str, arguments: [Type], return_types: [Type]):
+        self.external_name = external_name
+        self.arguments = arguments
+        self.return_types = return_types
 
     def resolveType(self):
-        signatures = self.overloads.keys()
-        return MethodType(signatures)
+        return FunctionType(self.arguments, self.return_types)
 
 #
 # Temporary Structures
@@ -207,6 +200,9 @@ class LLVMType(Type): # Temporary until stdlib is implemented
     def __init__(self, llvm_type:str):
         self.llvm_type = llvm_type
 
+    def __repr__(self):
+        return "LLVM:{}".format(self.llvm_type)
+
     def checkCompatibility(self, other:Type) -> bool:
         if not isinstance(other, LLVMType):
             return False
@@ -216,6 +212,3 @@ class LLVMType(Type): # Temporary until stdlib is implemented
 
     def resolveType(self):
         raise InternalError("Not implemented yet")
-
-class ExternalMethod(Method):
-    verified = True
