@@ -16,6 +16,7 @@ class Object(ABC):
 
 class Scope(Object):
     verified = False # cache for circular program flows
+
     parent = None
     children = None
 
@@ -76,7 +77,7 @@ class Instruction(ABC):
 
 class Call(Instruction):
     reference = None
-    function = None # resolved through reference
+    called = None # resolved through reference
 
     values = None
 
@@ -86,25 +87,9 @@ class Call(Instruction):
 
     def verify(self, scope:Scope):
         signature = [value.resolveType() for value in self.values]
-        object = scope.resolveReferenceDown(self.reference).resolveType()
+        self.called = scope.resolveReferenceDown(self.reference)
 
-        object.resolveCompatibility(FunctionType(signature,[])) # TODO: return types
-
-class Module(Scope):
-    main = None
-
-    def __init__(self, children:{str: Object}, main:[Instruction]):
-        super().__init__(children)
-        self.main = main
-
-    def verify(self):
-        super().verify()
-        for instruction in self.main:
-            instruction.verify(self)
-
-    def resolveType(self):
-        #TODO
-        raise InternalError("Not yet implemented")
+        self.called.resolveType().resolveCompatibility(FunctionType(signature, [])) # TODO: return types
 
 class Literal(Object):
     type = None
@@ -188,6 +173,22 @@ class ExternalFunction(Function):
 
     def resolveType(self):
         return FunctionType(self.arguments, self.return_types)
+
+class Module(Scope):
+    main = None
+
+    def __init__(self, children:{str: Object}, main:Function):
+        super().__init__(children)
+        self.main = main
+        self.main.parent = self
+
+    def verify(self):
+        super().verify()
+        self.main.verify()
+
+    def resolveType(self):
+        #TODO
+        raise InternalError("Not yet implemented")
 
 #
 # Temporary Structures
