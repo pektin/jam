@@ -76,20 +76,11 @@ class Type(Scope):
         if not self.checkCompatibility(other):
             raise TypeError("{} is not compatible with {}".format(self.__class__, other.__class__))
 
-class Instruction(ABC):
-    @abstract
-    def verify(self, scope:Scope):
-        pass
-
-    @abstract
-    def emit(self, emitter):
-        pass
-
 #
 # Jam Structures
 #
 
-class Call(Instruction):
+class Call(Object):
     reference = None
     called = None # resolved through reference
 
@@ -103,7 +94,10 @@ class Call(Instruction):
         signature = [value.resolveType() for value in self.values]
         self.called = scope.resolveReferenceDown(self.reference)
 
-        self.called.resolveType().resolveCompatibility(FunctionType(signature, [])) # TODO: return types
+        self.called.resolveType().resolveCompatibility(FunctionType(signature, []))
+
+    def resolveType(self):
+        return None
 
     def emit(self, emitter):
         emitter.emitCall() #TODO: Proper Emission
@@ -124,11 +118,11 @@ class Literal(Object):
 
 class FunctionType(Type):
     signature = None
-    return_types = None
+    return_type = None
 
-    def __init__(self, signature: [Type], return_types: [Type]):
+    def __init__(self, signature: [Type], return_type:Type):
         self.signature = signature
-        self.return_types = return_types
+        self.return_type = return_type
 
     def checkCompatibility(self, other:Type):
         if isinstance(other, FunctionType):
@@ -141,9 +135,8 @@ class FunctionType(Type):
 
             #TODO: Return types
             # same check with return types
-            #for self_t, other_t in zip(self.return_types, other.return_types):
-            #    if not other_t.checkCompatibility(self_t):
-            #        return False
+            # if not other_t.checkCompatibility(self_t):
+            #     return False
         else:
             return False
         return True
@@ -160,14 +153,14 @@ class FunctionType(Type):
 class Function(Scope):
     arguments = None
     instructions = None
-    return_types = None
+    return_type = None
 
-    def __init__(self, arguments: [(str, Type)], instructions: [Instruction], return_types: [Type]):
+    def __init__(self, arguments: [(str, Type)], instructions: [Object], return_type: Type):
         super().__init__({})
 
         self.arguments = arguments
         self.instructions = instructions
-        self.return_types = return_types
+        self.return_type = return_type
 
         #TODO: Replace unknown types with temps
         for argument in self.arguments:
@@ -182,7 +175,7 @@ class Function(Scope):
             instruction.verify(self)
 
     def resolveType(self):
-        return FunctionType([arg[1] for arg in self.arguments], self.return_types)
+        return FunctionType([arg[1] for arg in self.arguments], self.return_type)
 
     def resolveReferenceDown(self, reference:str):
         #TODO (signature stuff)
@@ -200,13 +193,13 @@ class ExternalFunction(Function):
     verified = True
     external_name = None
 
-    def __init__(self, external_name:str, arguments: [Type], return_types: [Type]):
+    def __init__(self, external_name:str, arguments: [Type], return_type: Type):
         self.external_name = external_name
         self.arguments = arguments
-        self.return_types = return_types
+        self.return_type = return_type
 
     def resolveType(self):
-        return FunctionType(self.arguments, self.return_types)
+        return FunctionType(self.arguments, self.return_type)
 
     def emit(self, emitter):
         emitter.emitExternalFunction() #TODO: Proper Emission
