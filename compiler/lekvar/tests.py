@@ -1,13 +1,13 @@
 import unittest
+
 from .lekvar import *
 from .errors import *
 
-#
-# Test Programs
-#
-
 class LekvarTests(unittest.TestCase):
     def helloWorld(self):
+        # def helloWorld()
+        #     print("Hello World!")
+        # helloWorld()
         return Module( {
             "helloWorld": Function([], [
                 Call("print", [
@@ -20,10 +20,6 @@ class LekvarTests(unittest.TestCase):
         ], []))
 
     def test_helloWorld(self):
-        # def helloWorld()
-        #     print("Hello World!")
-        # helloWorld()
-
         # Standard Compilation test
         test = self.helloWorld()
         test.verify()

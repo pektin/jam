@@ -14,11 +14,17 @@ class Object(ABC):
     def resolveType(self) -> Type:
         pass
 
+    @abstract
+    def emit(self, emitter):
+        pass
+
 class Scope(Object):
     verified = False # cache for circular program flows
 
     parent = None
     children = None
+
+    emit_data = None
 
     def __init__(self, children:{str: Object}):
         # set child parents
@@ -57,6 +63,10 @@ class Scope(Object):
             else:
                 return obj
 
+    @abstract
+    def emitValue(self, emitter):
+        pass
+
 class Type(Scope):
     @abstract
     def checkCompatibility(self, other:Type) -> bool:
@@ -69,6 +79,10 @@ class Type(Scope):
 class Instruction(ABC):
     @abstract
     def verify(self, scope:Scope):
+        pass
+
+    @abstract
+    def emit(self, emitter):
         pass
 
 #
@@ -91,6 +105,9 @@ class Call(Instruction):
 
         self.called.resolveType().resolveCompatibility(FunctionType(signature, [])) # TODO: return types
 
+    def emit(self, emitter):
+        emitter.emitCall() #TODO: Proper Emission
+
 class Literal(Object):
     type = None
     data = None
@@ -101,6 +118,9 @@ class Literal(Object):
 
     def resolveType(self):
         return self.type
+
+    def emit(self, emitter):
+        emitter.emitLiteral() #TODO: Proper Emission
 
 class FunctionType(Type):
     signature = None
@@ -129,6 +149,12 @@ class FunctionType(Type):
         return True
 
     def resolveType(self):
+        raise InternalError("Not implemented")
+
+    def emit(self, emitter):
+        raise InternalError("Not implemented")
+
+    def emitValue(self, emitter):
         raise InternalError("Not implemented")
 
 class Function(Scope):
@@ -162,6 +188,14 @@ class Function(Scope):
         #TODO (signature stuff)
         return super().resolveReferenceDown(reference)
 
+    def emit(self, emitter):
+        with emitter.emitFunction(): #TODO: Proper Emission
+            for instruction in self.instructions:
+                instruction.emit(emitter)
+
+    def emitValue(self, emitter):
+        emitter.emitFunctionValue() #TODO: Proper Emission
+
 class ExternalFunction(Function):
     verified = True
     external_name = None
@@ -173,6 +207,9 @@ class ExternalFunction(Function):
 
     def resolveType(self):
         return FunctionType(self.arguments, self.return_types)
+
+    def emit(self, emitter):
+        emitter.emitExternalFunction() #TODO: Proper Emission
 
 class Module(Scope):
     main = None
@@ -189,6 +226,12 @@ class Module(Scope):
     def resolveType(self):
         #TODO
         raise InternalError("Not yet implemented")
+
+    def emit(self, emitter):
+        pass #TODO: Proper Emission
+
+    def emitValue(self, emitter):
+        pass #TODO: Proper Emission
 
 #
 # Temporary Structures
@@ -213,3 +256,9 @@ class LLVMType(Type): # Temporary until stdlib is implemented
 
     def resolveType(self):
         raise InternalError("Not implemented yet")
+
+    def emit(self, emitter):
+        pass
+
+    def emitValue(self, emitter):
+        pass
