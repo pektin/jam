@@ -21,6 +21,7 @@ class Object(ABC):
 class Scope(Object):
     verified = False # cache for circular program flows
 
+    name = None
     parent = None
     children = None
 
@@ -28,8 +29,9 @@ class Scope(Object):
 
     def __init__(self, children:{str: Object}):
         # set child parents
-        for child in children.values():
+        for name, child in children.items():
             if isinstance(child, Scope):
+                child.name = name
                 child.parent = self
         self.children = children
 
@@ -64,7 +66,7 @@ class Scope(Object):
                 return obj
 
     @abstract
-    def emitValue(self, emitter):
+    def emitDefinition(self, emitter):
         pass
 
 class Type(Scope):
@@ -100,11 +102,12 @@ class Call(Object):
         return None
 
     def emit(self, emitter):
-        emitter.emitCall() #TODO: Proper Emission
+        emitter.emitCall(self) #TODO: Proper Emission
 
 class Literal(Object):
     type = None
     data = None
+    emit_data = None
 
     def __init__(self, type:Type, data:bytes):
         self.type = type
@@ -114,7 +117,7 @@ class Literal(Object):
         return self.type
 
     def emit(self, emitter):
-        emitter.emitLiteral() #TODO: Proper Emission
+        emitter.emitLiteral(self) #TODO: Proper Emission
 
 class FunctionType(Type):
     signature = None
@@ -147,7 +150,7 @@ class FunctionType(Type):
     def emit(self, emitter):
         raise InternalError("Not implemented")
 
-    def emitValue(self, emitter):
+    def emitDefinition(self):
         raise InternalError("Not implemented")
 
 class Function(Scope):
@@ -182,12 +185,17 @@ class Function(Scope):
         return super().resolveReferenceDown(reference)
 
     def emit(self, emitter):
-        with emitter.emitFunction(): #TODO: Proper Emission
+        if self.emit_data is None:
+            self.emitDefinition(emitter)
+        emitter.emitFunctionValue(self)
+
+    def emitDefinition(self, emitter):
+        if self.emit_data is not None: return
+
+        with emitter.emitFunction(self) as self.emit_data:
             for instruction in self.instructions:
                 instruction.emit(emitter)
-
-    def emitValue(self, emitter):
-        emitter.emitFunctionValue() #TODO: Proper Emission
+        print(self.emit_data)
 
 class ExternalFunction(Function):
     verified = True
@@ -202,7 +210,13 @@ class ExternalFunction(Function):
         return FunctionType(self.arguments, self.return_type)
 
     def emit(self, emitter):
-        emitter.emitExternalFunction() #TODO: Proper Emission
+        if self.emit_data is None:
+            self.emitDefinition(emitter)
+        emitter.emitFunctionValue(self)
+
+    def emitDefinition(self, emitter):
+        if self.emit_data is None:
+            self.emit_data = emitter.emitExternalFunction(self)
 
 class Module(Scope):
     main = None
@@ -221,10 +235,15 @@ class Module(Scope):
         raise InternalError("Not yet implemented")
 
     def emit(self, emitter):
-        pass #TODO: Proper Emission
+        raise InternalError("Not yet implemented")
 
-    def emitValue(self, emitter):
-        pass #TODO: Proper Emission
+    def emitDefinition(self, emitter):
+        self.emit_data = '\0'
+        self.main.emitDefinition(emitter)
+        emitter.addMain(self.main)
+
+        for child in self.children.values():
+            child.emitDefinition(emitter)
 
 #
 # Temporary Structures
@@ -251,7 +270,7 @@ class LLVMType(Type): # Temporary until stdlib is implemented
         raise InternalError("Not implemented yet")
 
     def emit(self, emitter):
-        pass
+        emitter.emitLLVMType(self)
 
-    def emitValue(self, emitter):
+    def emitDefinition(self, emitter):
         pass

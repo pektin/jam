@@ -11,8 +11,8 @@ class LLVMEmitterTest(unittest.TestCase):
                 Call("print", [
                     Literal( LLVMType("String"), "Hello World!" )
                 ] )
-            ], None),
-            "print" : ExternalFunction("puts", [LLVMType("String")], [LLVMType("Int")])
+            ], LLVMType("Void")),
+            "print" : ExternalFunction("puts", [LLVMType("String")], LLVMType("Int"))
         }, Function([], [
             Call("helloWorld", [])
         ], []))
@@ -21,5 +21,7 @@ class LLVMEmitterTest(unittest.TestCase):
         test = self.helloWorld()
         test.verify()
         output = StringIO()
-        test.emit(Emitter(output))
+        emitter = Emitter(output)
+        test.emitDefinition(emitter)
+        emitter.finalize()
         print(output.getvalue())
