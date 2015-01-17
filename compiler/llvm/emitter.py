@@ -4,7 +4,7 @@ from io import IOBase
 from ..lekvar.lekvar import *
 from ..lekvar.errors import *
 
-# Temporary
+# Temporary until LLVMType is replaced
 LLVMMAP = {
     "String": "i8*",
     "Int": "i32",
@@ -22,22 +22,45 @@ class Emitter:
         if not library:
             self.main = ""
 
-    def addMain(self, main:Function):
-        if self.main is None:
-            return
-
-        # main is assumed to be void(void) and already emitted
-        self.main += "  call void @{}()\n".format(main.emit_data)
-
     def finalize(self):
+        # Finalize the emitter
+
+        # Sanity Check
         if len(self.stack) != 0:
-            raise None #TODO: Proper Error Message
+            raise InternalError("Emission stack item left at finalization")
 
         if self.main is not None:
             # Add main function
-            self.output.write("define i32 @main() {{\n{}  ret i32 0\n}}".format(self.main))
+            self.writeGlobal("define i32 @main() {{\n{}ret i32 0\n}}".format(self.main))
+
+    #
+    # Output Writing
+    #
+
+    def writeGlobal(self, string):
+        # Write directly to the global output
+        self.output.write(string)
+
+    def write(self, string):
+        # Write to the stacked
+        self.stack[-1] += string
+
+    def writeMain(self, string):
+        # Write directly to the main function
+        main += string
+
+    @contextmanager
+    def stackWrite(self, entry=""):
+        self.stack.append(entry)
+        yield
+        self.output.write(self.stack.pop())
+
+    #
+    # Name Generation
+    #
 
     def resolveName(self, scope:Scope):
+        # Resolves the name of a scope, starting with a extraneous .
         name = ""
         while scope.name is not None:
             name += "." + scope.name
@@ -46,61 +69,84 @@ class Emitter:
 
     temp_name_index = 0
     def getTempName(self):
-        # Return a temporary, but unique name
+        # Return a temporary, but unique name. Temporary names always start with temp
         name = "temp.{}".format(self.temp_name_index)
         self.temp_name_index += 1
         return name
 
+    #
+    # LLVM IR Emission
+    #
+
+    def addMain(self, main:Function):
+        if self.main is None:
+            return
+
+        # main is assumed to be void(void) and already emitted
+        self.main += "call void @{}()\n".format(main.emit_data)
+
     def emitExternalFunction(self, function:ExternalFunction):
-        self.stack.append("declare ")
-        function.return_type.emit(self)
-        self.stack[-1] += " @{}(".format(function.external_name)
-        for index, argument in enumerate(function.arguments):
-            if index > 0:
-                self.stack[-1] += ","
-            argument.emit(self)
-        self.stack[-1] += ")\n"
-        self.output.write(self.stack.pop())
+        # declare <return> @<name>(<arguments>)\n
+        with self.stackWrite("declare "):
+
+            function.return_type.emit(self) # return
+            self.write(" @{}(".format(function.external_name)) # name
+
+            for index, argument in enumerate(function.arguments): # arguments
+                if index > 0:
+                    self.write(",")
+                argument.emit(self)
+            self.write(")\n")
+
         return function.external_name
 
     @contextmanager
     def emitFunction(self, function:Function):
-        self.stack.append("")
-        name = "lekvar" + self.resolveName(function)
-        yield name
-        out = "define void @{}() {{\n{}  ret void\n}}\n".format(name, self.stack.pop())
-        self.output.write(out)
+        # Temporarily functions only return void and have no arguments
+
+        # define void @<name>(<arguments>) {
+        # yield <name>
+        # ret void
+        # }
+        name = "lekvar" + self.resolveName(function) # name
+        with self.stackWrite("define void @{}() {{\n".format(name)):
+            yield name
+            self.write("ret void\n}\n")
 
     def emitFunctionValue(self, function:Function):
-        function.return_type.emit(self)
-        print(function.emit_data)
-        self.stack[-1] += " @{}".format(function.emit_data)
+        # <return> @<name>
+        function.return_type.emit(self) # return
+        self.write(" @{}".format(function.emit_data)) # name
 
     def emitLiteral(self, literal:Literal):
+        # Emit a non-specific literal
         type = literal.resolveType()
 
-        if not isinstance(type, LLVMType):
+        if not isinstance(type, LLVMType): #TODO: Get rid of LLVMType
             raise NotImplemented()
 
         if type.llvm_type == "String":
             if literal.emit_data is None:
                 # Create a global constant for it
                 literal.emit_data = self.getTempName()
-                self.output.write("@{} = internal constant [{} x i8] c\"{}\\00\"\n".format(literal.emit_data, len(literal.data) + 1, literal.data))
-            self.stack[-1] += "i8* getelementptr inbounds ([{} x i8]* @{}, i32 0, i32 0)".format(len(literal.data) + 1, literal.emit_data)
+                # @<tempname> = internal constant [<size> x i8] c"<string>\00"
+                self.writeGlobal("@{} = internal constant [{} x i8] c\"{}\\00\"\n".format(literal.emit_data, len(literal.data) + 1, literal.data))
+            # i8* getelementptr inbounds ([<size> x i8]* @<tempname>, i32 0, i32 0)
+            self.write("i8* getelementptr inbounds ([{} x i8]* @{}, i32 0, i32 0)".format(len(literal.data) + 1, literal.emit_data))
         else:
             raise NotImplemented()
 
     def emitCall(self, call:Call):
-        self.stack[-1] += "  call "
-        call.called.emit(self)
-        print(self.stack)
-        self.stack[-1] += "("
-        for index, value in enumerate(call.values):
+        # call <return> @<name>(<arguments>)
+        self.write("call ")
+        call.called.emit(self) # return, name
+        self.write("(")
+        for index, value in enumerate(call.values): # arguments
             if index > 0:
-                self.stack[-1] += ","
+                self.write(",")
             value.emit(self)
-        self.stack[-1] += ")\n"
+        self.write(")\n")
 
     def emitLLVMType(self, type:LLVMType):
-        self.stack[-1] += LLVMMAP[type.llvm_type]
+        # just map the mentioned type to a llvm type
+        self.write(LLVMMAP[type.llvm_type])
