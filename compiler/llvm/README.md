@@ -2,6 +2,12 @@
 
 LLVM is used as a target for the jam compiler. This contains the emitter used to convert lekvar to llvm bytecode.
 
+## Approach
+
+The current approach for emitting llvm ir using lekvar uses a file-like object as a target output. The final output target is used as a global write target for llvm ir. Since emitting can jump from one function to the next without finishing, writing has to be buffered using a stack of strings, where the top of the stack is always the writing target and when removed is written to the global output.
+
+This approach is sub-optimal because of the mass-use of string addition, especially with the python implementation but it is good enough for now.
+
 ## Example
 
 Input (Python, to make it understandable)
