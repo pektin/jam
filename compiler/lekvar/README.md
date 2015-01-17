@@ -58,11 +58,11 @@ A literal is a pre-defined piece of data with an associated pre-defined type, ju
 
 #### External Function
 
-A external function is a function whose instructions are not contained within *this* source. Currently this is only used to link to functions in the c-stdlib, but is planned to be used to link to other lekvar and non-lekvar libraries.
+A external function is a function whose instructions are not contained within *this* source. Currently this is only used to link to functions in the c-stdlib, but is planned to be used to link to other Lekvar and non-lekvar libraries.
 
 ### Temporary Classes
 
-These classes are only temporary until more of lekvar is built to replace these.
+These classes are only temporary until more of Lekvar is built to replace these.
 
 #### LLVMType
 
