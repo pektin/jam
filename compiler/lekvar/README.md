@@ -12,11 +12,11 @@ The design follows similar principles as dynamic programming languages. Every va
 
 ### Abstract Base Classes
 
-These are used as the base for all other structures in lekvar.
+These are used as the base for all other structures in Lekvar.
 
 #### Objects
 
-In terms of lekvar, every object has a type. An object is seen as a single value to be used in any context where a value is appropriate. An object functions as an abstract base for other language elements.
+In terms of Lekvar, every object has a type. An object is seen as a single value to be used in any context where a value is appropriate. An object functions as an abstract base for other language elements.
 
 #### Scopes
 
@@ -58,7 +58,7 @@ A literal is a pre-defined piece of data with an associated pre-defined type, ju
 
 #### External Function
 
-A external function is a function whose instructions are not contained within *this* source. Currently this is only used to link to functions in the c-stdlib, but is planned to be used to link to other Lekvar and non-lekvar libraries.
+A external function is a function whose instructions are not contained within *this* source. Currently this is only used to link to functions in the c-stdlib, but is planned to be used to link to other Lekvar and non-Lekvar libraries.
 
 ### Temporary Classes
 
