@@ -43,27 +43,27 @@ class Scope(Object):
             child.verify()
 
     def resolveReferenceDown(self, reference:str) -> Object:
+        objects = self.collectReferencesDown(reference)
+        if len(objects) < 1:
+            raise ReferenceError("Missing reference to {}".format(reference))
+        elif len(objects) > 1:
+            raise ReferenceError("Ambiguous reference to {}".format(reference))
+        return objects[0]
+
+    def resolveReferenceUp(self, reference:str) -> Object: #TODO: Make this work
         return self._resolveReference(reference)
 
-    def resolveReferenceUp(self, reference:str) -> Object:
-        return self._resolveReference(reference)
-
-    def _resolveReference(self, reference:str) -> Object:
+    def collectReferencesDown(self, reference:str) -> Object:
+        out = []
         # check local
         obj = self.children.get(reference, None)
+        if obj is not None:
+            out.append(obj)
         # check parent
-        parent_obj = self.parent.resolveReferenceDown(reference) if self.parent else None
-
-        if obj is None:
-            if parent_obj is None:
-                raise ReferenceError("Missing reference to {}".format(reference))
-            else:
-                return parent_obj
-        else:
-            if parent_obj is not None:
-                raise ReferenceError("Ambiguous reference to {}".format(reference))
-            else:
-                return obj
+        more = self.parent.collectReferencesDown(reference) if self.parent else None
+        if more is not None:
+            out += more
+        return out
 
     @abstract
     def emitDefinition(self, emitter):
@@ -82,6 +82,66 @@ class Type(Scope):
 # Jam Structures
 #
 
+class Assignment(Object):
+    reference = None
+    variable = None # resolved through reference
+
+    value = None
+
+    def __init__(self, reference:str, value:Object):
+        self.reference = reference
+        self.value = value
+
+    def verify(self, scope:Scope):
+        self.variable = scope.resolveReferenceDown(self.reference)
+
+        if not isinstance(self.variable, Variable):
+            raise TypeError("Cannot assign to {}".format(self.variable.__class__))
+
+        # Resolve type compatibility
+        value_type = self.value.resolveType()
+        if self.variable.type is None:
+            self.variable.type = value_type
+        else:
+            self.variable.type.resolveCompatibility(value_type)
+
+    def emit(self, emitter):
+        raise NotImplemented()
+
+class Variable(Object):
+    name = None
+    type = None
+
+    def __init__(self, name:str, type:Type=None):
+        self.name = name
+        self.type = type
+
+    def verify(self, scope:Scope):
+        pass
+
+    def resolveType(self):
+        return self.type
+
+    def emit(self, emitter):
+        raise NotImplemented()
+
+class Reference(Object):
+    reference = None
+    value = None # resolved through reference
+
+    def __init__(self, reference:str):
+        self.reference = reference
+
+    def verify(self, scope:Scope):
+        self.value = scope.resolveReferenceDown(self.reference)
+        self.value.verify(scope)
+
+    def resolveType(self):
+        return self.value.resolveType()
+
+    def emit(self, emitter):
+        self.value.emit(emitter)
+
 class Call(Object):
     reference = None
     called = None # resolved through reference
@@ -93,25 +153,56 @@ class Call(Object):
         self.values = values
 
     def verify(self, scope:Scope):
+        # Pass on verification to contained values
+        for value in self.values: value.verify(scope)
+        # Verify signature
         signature = [value.resolveType() for value in self.values]
         self.called = scope.resolveReferenceDown(self.reference)
 
         self.called.resolveType().resolveCompatibility(FunctionType(signature, []))
 
     def resolveType(self):
-        return None
+        return self.called.return_type
 
     def emit(self, emitter):
         emitter.emitCall(self) #TODO: Proper Emission
+
+class Return(Object):
+    value = None
+
+    def __init__(self, value:Object):
+        self.value = value
+
+    def verify(self, scope:Scope):
+        # Pass on verification
+        self.value.verify(scope)
+
+        # Verify signature
+        if not isinstance(scope, Function):
+            raise SyntaxError("Cannot return outside of a function")
+
+        if scope.return_type is None:
+            scope.return_type = self.value.resolveType()
+        else:
+            scope.return_type.resolveCompatibility(self.value.resolveType())
+
+    def resolveType(self):
+        return None
+
+    def emit(self, emitter):
+        raise NotImplemented()
 
 class Literal(Object):
     type = None
     data = None
     emit_data = None
 
-    def __init__(self, type:Type, data:bytes):
+    def __init__(self, data:bytes, type:Type):
         self.type = type
         self.data = data
+
+    def verify(self, scope):
+        pass # Literals are always verified
 
     def resolveType(self):
         return self.type
@@ -158,7 +249,7 @@ class Function(Scope):
     instructions = None
     return_type = None
 
-    def __init__(self, arguments: [(str, Type)], instructions: [Object], return_type: Type):
+    def __init__(self, arguments: [Variable], instructions: [Object], return_type: Type = None):
         super().__init__({})
 
         self.arguments = arguments
@@ -167,7 +258,7 @@ class Function(Scope):
 
         #TODO: Replace unknown types with temps
         for argument in self.arguments:
-            if argument[1] is None:
+            if argument.type is None:
                 raise InternalError("Function argument type inference is not yet supported")
 
     def verify(self):
@@ -178,11 +269,15 @@ class Function(Scope):
             instruction.verify(self)
 
     def resolveType(self):
-        return FunctionType([arg[1] for arg in self.arguments], self.return_type)
+        return FunctionType([arg.type for arg in self.arguments], self.return_type)
 
-    def resolveReferenceDown(self, reference:str):
-        #TODO (signature stuff)
-        return super().resolveReferenceDown(reference)
+    def collectReferencesDown(self, reference:str):
+        objects = super().collectReferencesDown(reference)
+        # Find any references in the function arguments
+        for argument in self.arguments:
+            if argument.name == reference:
+                objects.append(argument)
+        return objects
 
     def emit(self, emitter):
         if self.emit_data is None:
@@ -195,7 +290,6 @@ class Function(Scope):
         with emitter.emitFunction(self) as self.emit_data:
             for instruction in self.instructions:
                 instruction.emit(emitter)
-        print(self.emit_data)
 
 class ExternalFunction(Function):
     verified = True

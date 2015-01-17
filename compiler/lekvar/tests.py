@@ -30,3 +30,7 @@ class LekvarTests(unittest.TestCase):
                 Call("herroWorld", [])
             ]
             test.verify()
+
+    def test_functionCalls(self):
+        test = tests.functionCalls()
+        test.verify()

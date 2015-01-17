@@ -13,7 +13,7 @@ def helloWorld():
         "print" : ExternalFunction("puts", [LLVMType("String")], LLVMType("Int")), # external puts as print
         "helloWorld": Function([], [ # def helloWorld() {
             Call("print", [ # print(
-                Literal( LLVMType("String"), "Hello World!" ) # "Hello World!"
+                Literal( "Hello World!", LLVMType("String") ) # "Hello World!"
             ] ) # )
         ], None), # }
     }, Function([], [
@@ -33,7 +33,7 @@ def functionCalls():
 
     return Module( {
         "print" : ExternalFunction("puts", [LLVMType("String")], LLVMType("Int")), # external puts as print
-        "reprint": Function([Variable("one", LLVMType("String")), Variable("two", LLVMType("String"))],
+        "reprint": Function( [ Variable("one", LLVMType("String")), Variable("two", LLVMType("String")) ], [
             Call("print", [
                 Reference("one")
             ] ),
@@ -41,7 +41,7 @@ def functionCalls():
             Call("print", [
                 Reference("two")
             ] )
-        )
+        ] )
     }, Function([], [
         Call("print", [
             Call("reprint", [
