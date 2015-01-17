@@ -28,6 +28,14 @@ A type is simply a scope, and thereby a object, which holds information about wh
 
 ### Lekvar Classes
 
+### Variable
+
+A variable is a object container for another object in memory. A variable may only have one single type, but any number of values over its lifetime.
+
+### Reference
+
+A reference is a object that refers to another object only by name. The type and verification of a reference is simply taken from the referred object. If it is found that no object or multiple different object go by the same name, a ReferenceError is raised.
+
 #### Functions
 
 A function is a scope that contains an ordered collection of instructions, along with any number of named arguments a return type. A function is more akin to a method in a more traditional sense, but to distinguish between the overloaded and not overloaded kinds these are differentiated in Lekvar.
@@ -35,6 +43,10 @@ A function is a scope that contains an ordered collection of instructions, along
 #### FunctionType
 
 A function type is the type of a function. It only contains the signature of the function, ie. a set of arguments and a return type. A function type is only compatible with another function type that has a compatible signature.
+
+### Return
+
+A return is a break point for a function that takes a single object as a return value. This object may only appear inside of functions and can be used to infer the return type of a function.
 
 #### Call
 
