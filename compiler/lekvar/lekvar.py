@@ -123,7 +123,7 @@ class Variable(Object):
         return self.type
 
     def emit(self, emitter):
-        raise NotImplemented()
+        emitter.emitVariable(self)
 
 class Reference(Object):
     reference = None
@@ -169,6 +169,7 @@ class Call(Object):
 
 class Return(Object):
     value = None
+    parent = None
 
     def __init__(self, value:Object):
         self.value = value
@@ -180,6 +181,7 @@ class Return(Object):
         # Verify signature
         if not isinstance(scope, Function):
             raise SyntaxError("Cannot return outside of a function")
+        self.parent = scope
 
         if scope.return_type is None:
             scope.return_type = self.value.resolveType()
@@ -190,7 +192,7 @@ class Return(Object):
         return None
 
     def emit(self, emitter):
-        raise NotImplemented()
+        emitter.emitReturn(self)
 
 class Literal(Object):
     type = None

@@ -104,18 +104,51 @@ class Emitter:
     def emitFunction(self, function:Function):
         # Temporarily functions only return void and have no arguments
 
-        # define void @<name>(<arguments>) {
+        # define <return> @<name>(<arguments>) {
         # yield <name>
-        # ret void
+        # label.return:
+        # ret <return>
         # }
         name = "lekvar" + self.resolveName(function) # name
-        with self.stackWrite("define void @{}() {{\n".format(name)):
+        with self.stackWrite("define "):
+            not_void = function.return_type is not None
+
+            if not_void:
+                function.return_type.emit(self) # return
+            else:
+                self.write("void")
+
+            self.write(" @{}(".format(name))
+            for index, argument in enumerate(function.arguments): # arguments
+                if index > 0:
+                    self.write(",")
+                argument.emit(self)
+            self.write(") {\n")
+
+            if not_void:
+                self.write("%return = alloca ")
+                function.return_type.emit(self)
+                self.write("\n")
+
             yield name
-            self.write("ret void\n}\n")
+
+            self.write("br label %label.return\nlabel.return:\n")
+            if not_void:
+                self.write("%return.value = load ")
+                function.return_type.emit(self)
+                self.write("* %return\nret ")
+                function.return_type.emit(self)
+                self.write(" %return.value\n")
+            else:
+                self.write("ret void\n")
+            self.write("}\n")
 
     def emitFunctionValue(self, function:Function):
         # <return> @<name>
-        function.return_type.emit(self) # return
+        if function.return_type is not None:
+            function.return_type.emit(self) # return
+        else:
+            self.write("void")
         self.write(" @{}".format(function.emit_data)) # name
 
     def emitLiteral(self, literal:Literal):
@@ -147,6 +180,19 @@ class Emitter:
             value.emit(self)
         self.write(")\n")
 
+    def emitReturn(self, ret:Return):
+        if ret.parent.return_type is None:
+            self.write("store ")
+            ret.value.emit(self)
+            self.write(", ")
+            ret.parent.return_type.emit(self)
+            self.write("* %return\n")
+        self.write("br label %label.return\n")
+
     def emitLLVMType(self, type:LLVMType):
         # just map the mentioned type to a llvm type
         self.write(LLVMMAP[type.llvm_type])
+
+    def emitVariable(self, var:Variable):
+        var.type.emit(self)
+        self.write(" %lekvar.{}".format(var.name))
