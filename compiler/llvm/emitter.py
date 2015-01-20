@@ -41,19 +41,29 @@ class Emitter:
         # Write directly to the global output
         self.output.write(string)
 
-    def write(self, string):
+    def write(self, string, up=1):
         # Write to the stacked
-        self.stack[-1] += string
+        self.stack[-up] += string
 
     def writeMain(self, string):
         # Write directly to the main function
         main += string
 
+    @property
+    def in_line(self):
+        return bool(self.stack[-1][-1] != "\n")
+
+    @contextmanager
+    def lineWrite(self, entry="", up=1):
+        self.stack.append(entry)
+        yield
+        self.write(self.stack.pop(), up)
+
     @contextmanager
     def stackWrite(self, entry=""):
         self.stack.append(entry)
         yield
-        self.output.write(self.stack.pop())
+        self.writeGlobal(self.stack.pop())
 
     #
     # Name Generation
@@ -79,10 +89,11 @@ class Emitter:
     #
 
     def addMain(self, main:Function):
+        # adds a function to the "main" function. Added function must be void(void) and emitted
+        # Ignore for libraries
         if self.main is None:
             return
 
-        # main is assumed to be void(void) and already emitted
         self.main += "call void @{}()\n".format(main.emit_data)
 
     def emitExternalFunction(self, function:ExternalFunction):
@@ -170,15 +181,31 @@ class Emitter:
             raise NotImplemented()
 
     def emitCall(self, call:Call):
-        # call <return> @<name>(<arguments>)
-        self.write("call ")
-        call.called.emit(self) # return, name
-        self.write("(")
-        for index, value in enumerate(call.values): # arguments
-            if index > 0:
-                self.write(",")
-            value.emit(self)
-        self.write(")\n")
+        # Since you can't nest calls in llvm, use a temporary variable to store the returned value
+
+        def emit():
+            # <function>(<arguments>)\n
+            call.called.emit(self) # function
+            self.write("(")
+            for index, value in enumerate(call.values): # arguments
+                if index > 0:
+                    self.write(",")
+                value.emit(self)
+            self.write(")\n")
+
+        if self.in_line:
+            print(self.stack)
+            #.. %<temp> = call <emit>
+            call.emit_data = self.getTempName() # temp
+            with self.lineWrite("%{} = call ".format(call.emit_data), 2):
+                emit()
+            call.called.return_type.emit(self)
+            self.write(" %{}".format(call.emit_data))
+
+        else:
+            # call <emit>
+            with self.lineWrite("call "):
+                emit()
 
     def emitReturn(self, ret:Return):
         if ret.parent.return_type is None:

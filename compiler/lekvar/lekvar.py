@@ -10,6 +10,8 @@ MethodSignature = None
 #
 
 class Object(ABC):
+    emit_data = None
+
     @abstract
     def resolveType(self) -> Type:
         pass
@@ -24,8 +26,6 @@ class Scope(Object):
     name = None
     parent = None
     children = None
-
-    emit_data = None
 
     def __init__(self, children:{str: Object}):
         # set child parents
