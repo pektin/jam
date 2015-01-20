@@ -16,19 +16,15 @@ class LLVMEmitterTest(unittest.TestCase):
             test.emitDefinition(emitter)
             emitter.finalize()
 
-        # Compile with clang, asserting no errors are found
-        self.assertEqual(subprocess.call(
-            ["clang -o builds/{} builds/{}.ll".format(name, name)
-        ], shell=True), 0)
-        # test output
-        return subprocess.check_output(["builds/{}".format(name)]).decode("utf-8")
+        # Run the bytecode with lli
+        return subprocess.check_output("lli builds/{}.ll".format(name), shell=True)
 
     def test_helloWorld(self):
         test = tests.helloWorld()
         test.verify()
-        self.assertEqual(self.compileRun(test, "helloWorld"), "Hello World!\n")
+        self.assertEqual(self.compileRun(test, "helloWorld"), b"Hello World!\n")
 
     def test_functionCalls(self):
         test = tests.functionCalls()
         test.verify()
-        self.assertEqual(self.compileRun(test, "functionCalls"), "1\n2\n")
+        self.assertEqual(self.compileRun(test, "functionCalls"), b"1\n2\n")

@@ -208,7 +208,7 @@ class Emitter:
                 emit()
 
     def emitReturn(self, ret:Return):
-        if ret.parent.return_type is None:
+        if ret.parent.return_type is not None:
             self.write("store ")
             ret.value.emit(self)
             self.write(", ")
