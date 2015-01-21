@@ -194,7 +194,6 @@ class Emitter:
             self.write(")\n")
 
         if self.in_line:
-            print(self.stack)
             #.. %<temp> = call <emit>
             call.emit_data = self.getTempName() # temp
             with self.lineWrite("%{} = call ".format(call.emit_data), 2):
