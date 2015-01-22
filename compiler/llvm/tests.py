@@ -10,14 +10,14 @@ from .. import tests
 class LLVMEmitterTest(unittest.TestCase):
     def compileRun(self, test, name):
         # Compile and run the generate llvm ir
-        os.makedirs("builds", exist_ok=True)
-        with open("builds/{}.ll".format(name), "w") as f:
+        os.makedirs("build/tests", exist_ok=True)
+        with open("build/tests/{}.ll".format(name), "w") as f:
             emitter = Emitter(f)
             test.emitDefinition(emitter)
             emitter.finalize()
 
         # Run the bytecode with lli
-        return subprocess.check_output("lli builds/{}.ll".format(name), shell=True)
+        return subprocess.check_output("lli build/tests/{}.ll".format(name), shell=True)
 
     def test_helloWorld(self):
         test = tests.helloWorld()
