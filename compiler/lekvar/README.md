@@ -32,6 +32,10 @@ A type is simply a scope, and thereby a object, which holds information about wh
 
 A variable is a object container for another object in memory. A variable may only have one single type, but any number of values over its lifetime.
 
+### Assignment
+
+An assignment is an object which causes another object to be assigned as a value to a variable.
+
 ### Reference
 
 A reference is a object that refers to another object only by name. The type and verification of a reference is simply taken from the referred object. If it is found that no object or multiple different object go by the same name, a ReferenceError is raised.
