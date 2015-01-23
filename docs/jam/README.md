@@ -23,9 +23,9 @@ Because of the lekvar implementation and C based nature of Jam, this imposes cer
 
 Variable assignments have optional type declarations. It's type can either be specified or implied. Since the use of keywords such as `auto` to signify an implied type is fluff there are only two options:
 C like:
-`<Type> <name>`
+`[<Type>] <name>`
 or (like some other languages):
-`<name> <Type>`
+`<name>[<sep><Type>]`
 
 With implied types and without the `auto` keyword, this creates context dependant grammar when keywords are used:
 
@@ -33,3 +33,11 @@ With implied types and without the `auto` keyword, this creates context dependan
 `const foo = 1`
 
 The use of `const` is indistinguishable from the use of `int` in this example. Therefore the only option is having the type declared after the variable's name.
+
+To match the use in other languages, `<sep>` should be `:`.
+
+### Function signatures
+
+Leading from variable declarations, the same conversion to `:<Type>` also needs to take place for function signatures:
+
+`(<argument>:<Type>, ...):<Type>`
