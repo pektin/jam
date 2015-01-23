@@ -50,3 +50,30 @@ def functionCalls():
             ] )
         ] )
     ] ))
+
+def assignments():
+    # external puts as print
+    # def assign() {
+    #     foo = "1"
+    #     bar = "2"
+    #     foo = bar
+    #     bar = "1"
+    #     return foo
+    # }
+    # print(assign())
+    #=> 2\n
+
+    return Module( {
+        "print" : ExternalFunction("puts", [LLVMType("String")], LLVMType("Int")),
+        "assign": Function( [], [
+            Assignment("foo", Literal("1", LLVMType("String"))),
+            Assignment("bar", Literal("2", LLVMType("String"))),
+            Assignment("foo", Reference("bar")),
+            Assignment("foo", Literal("1", LLVMType("String"))),
+            Return(Reference("foo")),
+        ] )
+    }, Function([], [
+        Call("print", [
+            Call("assign", []),
+        ])
+    ] ))
