@@ -24,7 +24,7 @@ class LekvarTests(unittest.TestCase):
             ]
             test.verify()
 
-        with self.assertRaises(ReferenceError):
+        with self.assertRaises(MissingReferenceError):
             test = tests.helloWorld()
             test.main.instructions = [
                 Call("herroWorld", [])
@@ -33,4 +33,8 @@ class LekvarTests(unittest.TestCase):
 
     def test_functionCalls(self):
         test = tests.functionCalls()
+        test.verify()
+
+    def test_assignments(self):
+        test = tests.assignments()
         test.verify()

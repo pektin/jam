@@ -45,9 +45,9 @@ class Scope(Object):
     def resolveReferenceDown(self, reference:str) -> Object:
         objects = self.collectReferencesDown(reference)
         if len(objects) < 1:
-            raise ReferenceError("Missing reference to {}".format(reference))
+            raise MissingReferenceError("Missing reference to {}".format(reference))
         elif len(objects) > 1:
-            raise ReferenceError("Ambiguous reference to {}".format(reference))
+            raise AmbiguetyError("Ambiguous reference to {}".format(reference))
         return objects[0]
 
     def resolveReferenceUp(self, reference:str) -> Object: #TODO: Make this work
@@ -93,17 +93,25 @@ class Assignment(Object):
         self.value = value
 
     def verify(self, scope:Scope):
-        self.variable = scope.resolveReferenceDown(self.reference)
+        try:
+            self.variable = scope.resolveReferenceDown(self.reference)
+        except MissingReferenceError:
+            self.variable = Variable(self.reference)
+            scope.children[self.reference] = self.variable
 
         if not isinstance(self.variable, Variable):
             raise TypeError("Cannot assign to {}".format(self.variable.__class__))
 
         # Resolve type compatibility
+        self.value.verify(scope)
         value_type = self.value.resolveType()
         if self.variable.type is None:
             self.variable.type = value_type
         else:
             self.variable.type.resolveCompatibility(value_type)
+
+    def resolveType(self):
+        return None
 
     def emit(self, emitter):
         raise NotImplemented()
