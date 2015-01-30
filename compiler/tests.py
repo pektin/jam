@@ -69,7 +69,7 @@ def assignments():
             Assignment("foo", Literal("1", LLVMType("String"))),
             Assignment("bar", Literal("2", LLVMType("String"))),
             Assignment("foo", Reference("bar")),
-            Assignment("foo", Literal("1", LLVMType("String"))),
+            Assignment("bar", Literal("1", LLVMType("String"))),
             Return(Reference("foo")),
         ] )
     }, Function([], [
