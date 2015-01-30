@@ -28,3 +28,8 @@ class LLVMEmitterTest(unittest.TestCase):
         test = tests.functionCalls()
         test.verify()
         self.assertEqual(self.compileRun(test, "functionCalls"), b"1\n2\n")
+
+    def test_assignments(self):
+        test = tests.assignments()
+        test.verify()
+        self.assertEqual(self.compileRun(test, "assignments"), b"2\n")
