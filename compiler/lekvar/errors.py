@@ -15,3 +15,6 @@ class ValueError(Exception):
 
 class InternalError(Exception):
     pass
+
+class NotImplemented(Exception):
+    pass

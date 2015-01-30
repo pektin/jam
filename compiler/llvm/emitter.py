@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from io import IOBase
+from functools import partial
 
 from ..lekvar.lekvar import *
 from ..lekvar.errors import *
@@ -160,7 +161,10 @@ class Emitter:
             for argument in function.arguments: # magic
                 name = argument.emit_data
                 self._emitVariableAlloc(argument)
-                self._emitVariableStore(argument, name)
+                def emit():
+                    argument.type.emit(self)
+                    self.write(" {}".format(name))
+                self._emitVariableStore(argument, emit)
 
             if not_void: # only allocate return variable if function is not void
                 self.write("%return = alloca ")
@@ -268,9 +272,15 @@ class Emitter:
         with self.lineWrite("{} = alloca ".format(var.emit_data)):
             var.type.emit(self)
 
-    def _emitVariableStore(self, var:Variable, value:str):
+    def emitAssignment(self, assignment):
+        self._emitVariableStore(assignment.variable, partial(assignment.value.emit, self))
+
+    def _emitVariableStore(self, var:Variable, store):
+        if var.emit_data is None:
+            self._emitVariableAlloc(var)
+
         with self.lineWrite("store "):
-            var.type.emit(self)
-            self.write(" {}, ".format(value))
+            store()
+            self.write(",")
             var.type.emit(self)
             self.write("* {}".format(var.emit_data))

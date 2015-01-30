@@ -132,7 +132,7 @@ class Assignment(Object):
         return None
 
     def emit(self, emitter):
-        raise NotImplemented()
+        emitter.emitAssignment(self)
 
 class Variable(Object):
     name = None
