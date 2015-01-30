@@ -8,3 +8,4 @@ The Jam Language Reference
     :titlesonly:
 
     lekvar/index
+    informal
