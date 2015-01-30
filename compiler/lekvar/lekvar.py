@@ -14,11 +14,17 @@ class Object(ABC):
 
     @abstract
     def resolveType(self) -> Type:
-        pass
+        """ Returns the type of this object.
+        Must return an instance of Type or None.
+        If the type is None, this object is considered void (side-effects only)
+        Otherwise the object can be used as a value.
+        """
 
     @abstract
     def emit(self, emitter):
-        pass
+        """ Redirects a call to an emitter object to emit an object of this kind.
+        The emit_data hook may be used by the emitter to store data necessary for emission.
+        """
 
 class Scope(Object):
     verified = False # cache for circular program flows
@@ -64,6 +70,18 @@ class Scope(Object):
         if more is not None:
             out += more
         return out
+
+    def emit(self, emitter):
+        """ For scopes there is a distinction between emitting a definition and a value.
+        Use the emitValue and emitDefinition functions instead.
+        """
+        if self.emit_data is None:
+            self.emitDefinition(emitter)
+        self.emitValue(emitter)
+
+    @abstract
+    def emitValue(self, emitter):
+        pass
 
     @abstract
     def emitDefinition(self, emitter):
@@ -173,7 +191,7 @@ class Call(Object):
         return self.called.return_type
 
     def emit(self, emitter):
-        emitter.emitCall(self) #TODO: Proper Emission
+        emitter.emitCall(self)
 
 class Return(Object):
     value = None
@@ -218,7 +236,7 @@ class Literal(Object):
         return self.type
 
     def emit(self, emitter):
-        emitter.emitLiteral(self) #TODO: Proper Emission
+        emitter.emitLiteral(self)
 
 class FunctionType(Type):
     signature = None
@@ -248,7 +266,7 @@ class FunctionType(Type):
     def resolveType(self):
         raise InternalError("Not implemented")
 
-    def emit(self, emitter):
+    def emitValue(self, emitter):
         raise InternalError("Not implemented")
 
     def emitDefinition(self):
@@ -289,38 +307,33 @@ class Function(Scope):
                 objects.append(argument)
         return objects
 
-    def emit(self, emitter):
-        if self.emit_data is None:
-            self.emitDefinition(emitter)
+    def emitValue(self, emitter):
         emitter.emitFunctionValue(self)
 
     def emitDefinition(self, emitter):
-        if self.emit_data is not None: return
-
-        with emitter.emitFunction(self) as self.emit_data:
+        with emitter.emitFunction(self):
             for instruction in self.instructions:
                 instruction.emit(emitter)
 
-class ExternalFunction(Function):
+class ExternalFunction(Scope):
     verified = True
     external_name = None
+    argument_types = None
+    return_type = None
 
-    def __init__(self, external_name:str, arguments: [Type], return_type: Type):
+    def __init__(self, external_name:str, argument_types: [Type], return_type: Type):
         self.external_name = external_name
-        self.arguments = arguments
+        self.argument_types = argument_types
         self.return_type = return_type
 
     def resolveType(self):
-        return FunctionType(self.arguments, self.return_type)
+        return FunctionType(self.argument_types, self.return_type)
 
-    def emit(self, emitter):
-        if self.emit_data is None:
-            self.emitDefinition(emitter)
+    def emitValue(self, emitter):
         emitter.emitFunctionValue(self)
 
     def emitDefinition(self, emitter):
-        if self.emit_data is None:
-            self.emit_data = emitter.emitExternalFunction(self)
+        emitter.emitExternalFunction(self)
 
 class Module(Scope):
     main = None
@@ -338,16 +351,16 @@ class Module(Scope):
         #TODO
         raise InternalError("Not yet implemented")
 
-    def emit(self, emitter):
+    def emitValue(self, emitter):
         raise InternalError("Not yet implemented")
 
     def emitDefinition(self, emitter):
-        self.emit_data = '\0'
         self.main.emitDefinition(emitter)
         emitter.addMain(self.main)
 
         for child in self.children.values():
-            child.emitDefinition(emitter)
+            if child.emit_data is None:
+                child.emitDefinition(emitter)
 
 #
 # Temporary Structures
@@ -373,8 +386,8 @@ class LLVMType(Type): # Temporary until stdlib is implemented
     def resolveType(self):
         raise InternalError("Not implemented yet")
 
-    def emit(self, emitter):
-        emitter.emitLLVMType(self)
+    def emitValue(self, emitter):
+        emitter.emitType(self)
 
     def emitDefinition(self, emitter):
         pass

@@ -14,6 +14,7 @@ LLVMMAP = {
 class Emitter:
     output = None
     stack = None
+    current_stack = 0
     main = None
 
     def __init__(self, out:IOBase, library=False):
@@ -37,33 +38,49 @@ class Emitter:
     # Output Writing
     #
 
+    def write(self, string):
+        # General write function
+        if len(self.stack) > 0:
+            self.writeLine(string)
+        else:
+            self.writeGlobal(string)
+
     def writeGlobal(self, string):
         # Write directly to the global output
         self.output.write(string)
 
-    def write(self, string, up=1):
-        # Write to the stacked
-        self.stack[-up] += string
+    def writeLine(self, string):
+        self.stack[-1] += string
+
+    def writeStack(self, string):
+        self.stack[self.current_stack] += string
 
     def writeMain(self, string):
         # Write directly to the main function
-        main += string
+        self.main += string
 
     @property
     def in_line(self):
-        return bool(self.stack[-1][-1] != "\n")
+        # Return whether the current stack item is a line
+        return self.current_stack < len(self.stack) - 1
 
     @contextmanager
-    def lineWrite(self, entry="", up=1):
+    def lineWrite(self, entry=""):
         self.stack.append(entry)
         yield
-        self.write(self.stack.pop(), up)
+        self.writeStack(self.stack.pop() + "\n")
 
     @contextmanager
     def stackWrite(self, entry=""):
+        # Keep track of the current stack item
+        previous_stack = self.current_stack
+        self.current_stack = len(self.stack)
+
         self.stack.append(entry)
         yield
-        self.writeGlobal(self.stack.pop())
+        self.writeGlobal(self.stack.pop() + "\n")
+        # Revert to previous stack
+        self.current_stack = previous_stack
 
     #
     # Name Generation
@@ -78,9 +95,9 @@ class Emitter:
         return name
 
     temp_name_index = 0
-    def getTempName(self):
+    def getTempName(self, prefix):
         # Return a temporary, but unique name. Temporary names always start with temp
-        name = "temp.{}".format(self.temp_name_index)
+        name = "{}temp.{}".format(prefix, self.temp_name_index)
         self.temp_name_index += 1
         return name
 
@@ -94,33 +111,35 @@ class Emitter:
         if self.main is None:
             return
 
-        self.main += "call void @{}()\n".format(main.emit_data)
+        self.writeMain("call void {}()\n".format(main.emit_data))
 
     def emitExternalFunction(self, function:ExternalFunction):
-        # declare <return> @<name>(<arguments>)\n
+        function.emit_data = "@{}".format(function.external_name)
+
+        # declare <return> @<name>(<arguments>)
         with self.stackWrite("declare "):
 
-            function.return_type.emit(self) # return
-            self.write(" @{}(".format(function.external_name)) # name
+            self.emitType(function.return_type) # return
 
-            for index, argument in enumerate(function.arguments): # arguments
+            self.write(" {}(".format(function.emit_data)) # name
+
+            for index, type in enumerate(function.argument_types): # arguments
                 if index > 0:
                     self.write(",")
-                argument.emit(self)
-            self.write(")\n")
-
-        return function.external_name
+                type.emit(self)
+            self.write(")")
 
     @contextmanager
     def emitFunction(self, function:Function):
-        # Temporarily functions only return void and have no arguments
+        function.emit_data = "@lekvar" + self.resolveName(function)
 
         # define <return> @<name>(<arguments>) {
-        # yield <name>
+        # <magic>
+        # yield
         # label.return:
         # ret <return>
         # }
-        name = "lekvar" + self.resolveName(function) # name
+
         with self.stackWrite("define "):
             not_void = function.return_type is not None
 
@@ -129,20 +148,31 @@ class Emitter:
             else:
                 self.write("void")
 
-            self.write(" @{}(".format(name))
+            self.write(" {}(".format(function.emit_data)) # name
             for index, argument in enumerate(function.arguments): # arguments
                 if index > 0:
                     self.write(",")
-                argument.emit(self)
+                argument.emit_data = self.getTempName("%")
+                argument.type.emit(self)
+                self.write(" {}".format(argument.emit_data))
             self.write(") {\n")
 
-            if not_void:
+            for argument in function.arguments: # magic
+                name = argument.emit_data
+                self._emitVariableAlloc(argument)
+                self._emitVariableStore(argument, name)
+
+            if not_void: # only allocate return variable if function is not void
                 self.write("%return = alloca ")
                 function.return_type.emit(self)
                 self.write("\n")
+            self.write("\n")
 
-            yield name
+            # Do other stuff
+            yield
+            # now finish off
 
+            # fallthrough
             self.write("br label %label.return\nlabel.return:\n")
             if not_void:
                 self.write("%return.value = load ")
@@ -154,13 +184,13 @@ class Emitter:
                 self.write("ret void\n")
             self.write("}\n")
 
-    def emitFunctionValue(self, function:Function):
+    def emitFunctionValue(self, function:(Function, ExternalFunction)):
         # <return> @<name>
         if function.return_type is not None:
             function.return_type.emit(self) # return
         else:
             self.write("void")
-        self.write(" @{}".format(function.emit_data)) # name
+        self.write(" {}".format(function.emit_data)) # @name
 
     def emitLiteral(self, literal:Literal):
         # Emit a non-specific literal
@@ -170,13 +200,12 @@ class Emitter:
             raise NotImplemented()
 
         if type.llvm_type == "String":
-            if literal.emit_data is None:
-                # Create a global constant for it
-                literal.emit_data = self.getTempName()
-                # @<tempname> = internal constant [<size> x i8] c"<string>\00"
-                self.writeGlobal("@{} = internal constant [{} x i8] c\"{}\\00\"\n".format(literal.emit_data, len(literal.data) + 1, literal.data))
+            # Create a global constant for it
+            literal.emit_data = self.getTempName("@")
+            # @<tempname> = internal constant [<size> x i8] c"<string>\00"
+            self.writeGlobal("{} = internal constant [{} x i8] c\"{}\\00\"\n".format(literal.emit_data, len(literal.data) + 1, literal.data))
             # i8* getelementptr inbounds ([<size> x i8]* @<tempname>, i32 0, i32 0)
-            self.write("i8* getelementptr inbounds ([{} x i8]* @{}, i32 0, i32 0)".format(len(literal.data) + 1, literal.emit_data))
+            self.write("i8* getelementptr inbounds ([{} x i8]* {}, i32 0, i32 0)".format(len(literal.data) + 1, literal.emit_data))
         else:
             raise NotImplemented()
 
@@ -195,11 +224,11 @@ class Emitter:
 
         if self.in_line:
             #.. %<temp> = call <emit>
-            call.emit_data = self.getTempName() # temp
-            with self.lineWrite("%{} = call ".format(call.emit_data), 2):
+            call.emit_data = self.getTempName("%") # temp
+            with self.lineWrite("{} = call ".format(call.emit_data)):
                 emit()
-            call.called.return_type.emit(self)
-            self.write(" %{}".format(call.emit_data))
+            self.emitType(call.called.return_type)
+            self.write(" {}".format(call.emit_data))
 
         else:
             # call <emit>
@@ -208,17 +237,40 @@ class Emitter:
 
     def emitReturn(self, ret:Return):
         if ret.parent.return_type is not None:
-            self.write("store ")
-            ret.value.emit(self)
-            self.write(", ")
-            ret.parent.return_type.emit(self)
-            self.write("* %return\n")
+            with self.lineWrite("store "):
+                ret.value.emit(self)
+                self.write(", ")
+                ret.parent.return_type.emit(self)
+                self.write("* %return")
         self.write("br label %label.return\n")
 
-    def emitLLVMType(self, type:LLVMType):
+    def emitType(self, type:Type):
         # just map the mentioned type to a llvm type
-        self.write(LLVMMAP[type.llvm_type])
+        if type is None:
+            self.write("void")
+        else:
+            self.write(LLVMMAP[type.llvm_type])
 
     def emitVariable(self, var:Variable):
+        if var.emit_data is None:
+            self._emitVariableAlloc(var)
+
+        temp = self.getTempName("%")
+        with self.lineWrite("{} = load ".format(temp)):
+            var.type.emit(self)
+            self.write("* {}".format(var.emit_data))
         var.type.emit(self)
-        self.write(" %lekvar.{}".format(var.name))
+        self.write(temp)
+
+    def _emitVariableAlloc(self, var):
+        var.emit_data = "%lekvar.{}".format(var.name)
+
+        with self.lineWrite("{} = alloca ".format(var.emit_data)):
+            var.type.emit(self)
+
+    def _emitVariableStore(self, var:Variable, value:str):
+        with self.lineWrite("store "):
+            var.type.emit(self)
+            self.write(" {}, ".format(value))
+            var.type.emit(self)
+            self.write("* {}".format(var.emit_data))
