@@ -30,5 +30,38 @@ Values
 Types
 =====
 
+`type Byte`
+    A generic 8 bit value
+
+Character Types
+---------------
+
+`type Char`
+    A single character
+
 `type String`
     An array of characters
+
+Floating point Types
+--------------------
+
+`type Half`
+    A 16bit Floating point value
+
+`type Float`
+    A 32bit Floating point value
+
+`type Double`
+    A 64bit Floating point value
+
+Integer Types
+-------------
+
+`type Short`
+    A 16bit signed Integer value
+
+`type Int`
+    A 32bit signed Integer value
+
+`type Long`
+    A 64bit signed Integer value
