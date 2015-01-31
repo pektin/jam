@@ -4,5 +4,8 @@
 Library Reference
 #################
 
-.. todo::
-    Everything
+.. toctree::
+    :numbered:
+    :titlesonly:
+
+    built-ins
