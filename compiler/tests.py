@@ -3,6 +3,7 @@ from .lekvar.lekvar import *
 def helloWorld():
     # external puts as print
     # def helloWorld() {
+    #     # Output: Hello World!
     #     print("Hello World!")
     # }
     # helloWorld()
@@ -12,6 +13,7 @@ def helloWorld():
     return Module( {
         "print" : ExternalFunction("puts", [LLVMType("String")], LLVMType("Int")), # external puts as print
         "helloWorld": Function([], [ # def helloWorld() {
+            Comment(" Output: Hello World!"),
             Call("print", [ # print(
                 Literal( "Hello World!", LLVMType("String") ) # "Hello World!"
             ] ) # )

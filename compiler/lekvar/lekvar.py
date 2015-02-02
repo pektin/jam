@@ -100,6 +100,21 @@ class Type(Scope):
 # Jam Structures
 #
 
+class Comment(Object):
+    contents = None
+
+    def __init__(self, contents):
+        self.contents = contents
+
+    def verify(self, scope:Scope):
+        pass
+
+    def resolveType(self):
+        return None
+
+    def emit(self, emitter):
+        emitter.emitComment(self)
+
 class Assignment(Object):
     reference = None
     variable = None # resolved through reference

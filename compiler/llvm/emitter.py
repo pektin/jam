@@ -196,6 +196,9 @@ class Emitter:
             self.write("void")
         self.write(" {}".format(function.emit_data)) # @name
 
+    def emitComment(self, comment:Comment):
+        self.write(";{}\n".format(comment.contents))
+
     def emitLiteral(self, literal:Literal):
         # Emit a non-specific literal
         type = literal.resolveType()
