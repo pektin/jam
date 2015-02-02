@@ -402,7 +402,7 @@ class LLVMType(Type): # Temporary until stdlib is implemented
         raise InternalError("Not implemented yet")
 
     def emitValue(self, emitter):
-        emitter.emitType(self)
+        emitter.emitLLVMType(self)
 
     def emitDefinition(self, emitter):
         pass

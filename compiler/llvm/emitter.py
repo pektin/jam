@@ -120,7 +120,7 @@ class Emitter:
         # declare <return> @<name>(<arguments>)
         with self.stackWrite("declare "):
 
-            self.emitType(function.return_type) # return
+            self._emitType(function.return_type) # return
 
             self.write(" {}(".format(function.emit_data)) # name
 
@@ -234,7 +234,7 @@ class Emitter:
             call.emit_data = self.getTempName("%") # temp
             with self.lineWrite("{} = call ".format(call.emit_data)):
                 emit()
-            self.emitType(call.called.return_type)
+            self._emitType(call.called.return_type)
             self.write(" {}".format(call.emit_data))
 
         else:
@@ -251,12 +251,15 @@ class Emitter:
                 self.write("* %return")
         self.write("br label %label.return\n")
 
-    def emitType(self, type:Type):
+    def _emitType(self, type:Type):
         # just map the mentioned type to a llvm type
         if type is None:
             self.write("void")
         else:
-            self.write(LLVMMAP[type.llvm_type])
+            type.emit(self)
+
+    def emitLLVMType(self, type):
+        self.write(LLVMMAP[type.llvm_type])
 
     def emitVariable(self, var:Variable):
         if var.emit_data is None:
@@ -267,7 +270,7 @@ class Emitter:
             var.type.emit(self)
             self.write("* {}".format(var.emit_data))
         var.type.emit(self)
-        self.write(temp)
+        self.write(" {}".format(temp))
 
     def _emitVariableAlloc(self, var):
         var.emit_data = "%lekvar.{}".format(var.name)
