@@ -46,6 +46,11 @@ Identifiers
         [_A-Za-z][_A-Za-z0-9]*
         <identifier>.<identifier>
 
+Identifiers are used to refer to other objects. Most objects are created using
+an identifier, which can then later be used to refer back to the same object.
+Since identifiers can refer to objects that contain other objects with
+identifiers, identifiers can be strung together with ``parent.child`` syntax.
+
 Variable Definitions
 ====================
 
@@ -70,8 +75,9 @@ Method Definitions
 
     method(value):
         def <identifier>[(<variable>[ = <value>][, ...])][:<return type-identifier>]
+            [<value>[
+            ...]]
         end
-
 
 Operations
 ==========
