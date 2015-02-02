@@ -20,6 +20,16 @@ Comments
     lineComment(comment):
         #.*\n
 
+Comments are pieces of text used to provide context, documentation or other
+descriptions or explanations along side the rest of the code. Comments are only
+compiled when debugging is enabled and are otherwise ignored.
+
+A ``lineComment`` uses a ``#`` to mark the rest of the current time (until a
+line break) as a comment.
+
+Block comments currently do not exist and are probably unnecessary because
+most editors allow for automatic commenting of multiple lines.
+
 Values
 ======
 
