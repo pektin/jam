@@ -65,8 +65,8 @@ Assignment
 ::
 
     assignment(value):
-        <identifier>[, ...] [<b-op>]= <value>[, <value>[, ...]]
-        <identifier>[, ...] = [<identifier>[, ...] = [...]] <value>
+        <variable>[, ...] [<b-op>]= <value>[, <value>[, ...]]
+        <variable>[, ...] = [<variable>[, ...] = [...]] <value>
 
 Method Definitions
 ==================
