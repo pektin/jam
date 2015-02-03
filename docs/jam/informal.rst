@@ -100,11 +100,14 @@ Identifiers
     identifier:
         [_A-Za-z][_A-Za-z0-9]*
         <identifier>.<identifier>
+        <identifier>;<identifier>
 
 Identifiers are used to refer to other values. Most values can be created using
 an identifier, which can then later be used to refer back to the same object.
 Since identifiers can refer to objects that contain other objects with
 identifiers, identifiers can be strung together with ``parent.child`` syntax.
+Multiple identifiers may also be strung together using a semicolon for
+separation.
 
 Variable Definitions
 ====================
@@ -113,6 +116,13 @@ Variable Definitions
 
     variable:
         <identifier>[:<identifier>]
+
+Variables are containers for values. A single variable can hold one or more
+values. Variables can be used together with assignments and methods. When a
+variable is referenced using it's identifier, the currently stored value is
+used instead of it's container. A variable's type can either be defined, or
+inferred through it's usage. A variable's type may not be changed after
+creation.
 
 Assignment
 ==========
