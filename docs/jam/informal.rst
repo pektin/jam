@@ -3,16 +3,13 @@
 Jam Informal Language Reference
 ###############################
 
-Foreword
-========
-
 The document describes the syntax and grammar of Jam. It is designed to be ahead
 of the current implementation, acting rather as a goal than documentation.
 Because of the early nature of the project, this document is highly subject to
 change.
 
 Syntax
-------
+======
 
 The syntax used to describe syntax in this document is a mix of a couple
 styles, and is in no way meant to be a formal definition. A set of syntactical
@@ -59,78 +56,6 @@ piece of jam syntax. Values each have a type, which is either inferred or
 specified. Some values also have a void type (``null``), which means that they
 cannot be used as an input for other values, only as an instruction.
 
-Identifiers
-===========
-
-::
-
-    identifier:
-        [_A-Za-z][_A-Za-z0-9]*
-        <identifier>.<identifier>
-
-Identifiers are used to refer to other values. Most values can be created using
-an identifier, which can then later be used to refer back to the same object.
-Since identifiers can refer to objects that contain other objects with
-identifiers, identifiers can be strung together with ``parent.child`` syntax.
-
-Variable Definitions
-====================
-
-::
-
-    variable:
-        <identifier>[:<identifier>]
-
-Assignment
-==========
-
-::
-
-    assignment:
-        <variable>[, ...] [<b-op>]= <value>[, <value>[, ...]]
-        <variable>[, ...] = [<variable>[, ...] = [...]] <value>
-
-Method Definitions
-==================
-
-::
-
-    method:
-        def <identifier>[(<variable>[ = <value>][, ...])][:<return type-identifier>]
-            [<value>[
-            ...]]
-        end
-
-Operations
-==========
-
-::
-
-    b-op:
-        %
-        ^
-        &
-        *
-        -
-        +
-        ==
-        |
-        and
-        or
-        <
-        <=
-        >=
-        /
-        //
-
-    u-op:
-        ~
-        !
-
-    operation:
-        <value> <b-op> <value>
-        <u-op> <value>
-
 Literals
 ========
 
@@ -166,3 +91,75 @@ Literals
 
     dictionary:
         \[ <value>-><value>[, <value>-><value>[...]] \]
+
+Identifiers
+===========
+
+::
+
+    identifier:
+        [_A-Za-z][_A-Za-z0-9]*
+        <identifier>.<identifier>
+
+Identifiers are used to refer to other values. Most values can be created using
+an identifier, which can then later be used to refer back to the same object.
+Since identifiers can refer to objects that contain other objects with
+identifiers, identifiers can be strung together with ``parent.child`` syntax.
+
+Variable Definitions
+====================
+
+::
+
+    variable:
+        <identifier>[:<identifier>]
+
+Assignment
+==========
+
+::
+
+    assignment:
+        <variable>[, ...] [<b-op>]= <value>[, <value>[, ...]]
+        <variable>[, ...] = [<variable>[, ...] = [...]] <value>
+
+Operations
+==========
+
+::
+
+    b-op:
+        %
+        ^
+        &
+        *
+        -
+        +
+        ==
+        |
+        and
+        or
+        <
+        <=
+        >=
+        /
+        //
+
+    u-op:
+        ~
+        !
+
+    operation:
+        <value> <b-op> <value>
+        <u-op> <value>
+
+Method Definitions
+==================
+
+::
+
+    method:
+        def <identifier>[(<variable>[ = <value>][, ...])][:<return type-identifier>]
+            [<value>[
+            ...]]
+        end
