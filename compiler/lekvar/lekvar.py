@@ -350,6 +350,64 @@ class ExternalFunction(Scope):
     def emitDefinition(self, emitter):
         emitter.emitExternalFunction(self)
 
+class MethodType(Type):
+    overloads = None
+
+    def __init__(self, overloads:[FunctionType]):
+        self.overloads = overloads
+
+    def checkCompatibility(self, other:Type):
+        if isinstance(other, MethodType):
+            # sanity check
+            if len(self.overloads) == len(other.overloads):
+                # Check that there is a match to any overload in the other, for all overloads in this one
+                return all(
+                    any(self_over.checkCompatibility(other_over) for other_over in other.overloads)
+                        for self_over in self.overloads)
+
+    def resolveCompatibility(self, other:Type):
+        if isinstance(other, FunctionType):
+            for overload in self.overloads:
+                if overload.checkCompatibility(other):
+                    return
+        raise TypeError("{} is not compatible with {}".format(self, other))
+
+    def resolveType(self):
+        raise InternalError("Not implemented")
+
+    def emitValue(self, emitter):
+        raise InternalError("Not implemented")
+
+    def emitDefinition(self):
+        raise InternalError("Not implemented")
+
+class Method(Scope):
+    overloads = None
+
+    def __init__(self, overloads:[Function]):
+        super().__init__({})
+
+        self.overloads = overloads
+        for index, overload in enumerate(self.overloads):
+            overload.name = str(index)
+            overload.parent = self
+
+    def verify(self):
+        if self.verified: return
+        self.verified = True
+
+        for overload in self.overloads:
+            overload.verify()
+
+    def resolveType(self):
+        return MethodType(function.resolveType() for function in self.overloads)
+
+    def emitValue(self, emitter):
+        emitter.emitMethodValue(self)
+
+    def emitDefinition(self, emitter):
+        emitter.emitMethod(self)
+
 class Module(Scope):
     main = None
 
