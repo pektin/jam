@@ -38,3 +38,7 @@ class LekvarTests(unittest.TestCase):
     def test_assignments(self):
         test = tests.assignments()
         test.verify()
+
+    def test_overloading(self):
+        test = tests.overloading()
+        test.verify()

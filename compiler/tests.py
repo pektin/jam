@@ -79,3 +79,41 @@ def assignments():
             Call("assign", []),
         ])
     ] ))
+
+def overloading():
+    # external puts as print
+    # def puts() {
+    #     print("Hello World")
+    # }
+    # def puts(string:String) {
+    #     print(string)
+    # }
+    # def puts(string:String, string2:String) {
+    #     print(string)
+    #     print(string2)
+    # }
+    # puts()
+    # puts("Testing")
+    # puts("Hello", "World!")
+    #=> Hello World\nTesting\nHello\nWorld!
+
+    return Module( {
+        "print" : ExternalFunction("puts", [LLVMType("String")], LLVMType("Int")),
+        "puts" : Method( [
+            Function([], [
+                Call("print", Literal("Hello World", LLVMType("String")))
+            ]),
+            Function( [ Variable("string", LLVMType("String")) ], [
+                Call("print", Reference("string"))
+            ] ),
+            Function( [ Variable("string", LLVMType("String")), Variable("string2", LLVMType("String")) ], [
+                Call("print", Reference("string")),
+                Call("print", Reference("string2"))
+            ] )
+
+        ] )
+    }, Function([], [
+        Call("puts", []),
+        Call("puts", [ Literal("Testing", LLVMType("String")) ]),
+        Call("puts", [ Literal("Hello", LLVMType("String")), Literal("World!", LLVMType("String")) ])
+    ] ))
