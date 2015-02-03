@@ -17,7 +17,8 @@ Comments
 ::
 
     comment
-    lineComment(comment):
+        <lineComment>
+    lineComment:
         #.*\n
 
 Comments are pieces of text used to provide context, documentation or other
@@ -35,14 +36,19 @@ Values
 
 ::
 
-    value
+    value:
+        <identifier>
+        <assignment>
+        <method>
+        <operation>
+        <literal>
 
 Identifiers
 ===========
 
 ::
 
-    identifier(value):
+    identifier:
         [_A-Za-z][_A-Za-z0-9]*
         <identifier>.<identifier>
 
@@ -64,7 +70,7 @@ Assignment
 
 ::
 
-    assignment(value):
+    assignment:
         <variable>[, ...] [<b-op>]= <value>[, <value>[, ...]]
         <variable>[, ...] = [<variable>[, ...] = [...]] <value>
 
@@ -73,7 +79,7 @@ Method Definitions
 
 ::
 
-    method(value):
+    method:
         def <identifier>[(<variable>[ = <value>][, ...])][:<return type-identifier>]
             [<value>[
             ...]]
@@ -84,7 +90,7 @@ Operations
 
 ::
 
-    b-op = [
+    b-op:
         %
         ^
         &
@@ -100,12 +106,12 @@ Operations
         >=
         /
         //
-    ]
-    u-op = [
+
+    u-op:
         ~
         !
-    ]
-    operation(value):
+
+    operation:
         <value> <b-op> <value>
         <u-op> <value>
 
@@ -114,19 +120,33 @@ Literals
 
 ::
 
-    literal(value)
-    integer(literal):
+    literal:
+        integer
+        float
+        string
+        array
+        dictionary
+
+    integer:
         [0-9]+
-    float(literal):
+
+    float:
         [([0-9]+\.[0-9]*)([0-9]*\.[0-9]+)]
-    string(literal)
-    real(string):
+
+    string:
+        real
+        format
+
+    real:
         `.*`
-    format(string):
+
+    format:
         ".*"
-    array(literal):
+
+    array:
         \[\]
         \[ <value>[, <value>[...]] \]
         \[ <value>[\n <value>[...]] \]
+
     dictionary(literal):
         \[ <value>-><value>[, <value>-><value>[...]] \]
