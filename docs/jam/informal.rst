@@ -54,6 +54,11 @@ Values
         <operation>
         <literal>
 
+Values are the most basic object. They are the base for almost every other
+piece of jam syntax. Values each have a type, which is either inferred or
+specified. Some values also have a void type (``null``), which means that they
+cannot be used as an input for other values, only as an instruction.
+
 Identifiers
 ===========
 
@@ -63,7 +68,7 @@ Identifiers
         [_A-Za-z][_A-Za-z0-9]*
         <identifier>.<identifier>
 
-Identifiers are used to refer to other objects. Most objects are created using
+Identifiers are used to refer to other values. Most values can be created using
 an identifier, which can then later be used to refer back to the same object.
 Since identifiers can refer to objects that contain other objects with
 identifiers, identifiers can be strung together with ``parent.child`` syntax.
