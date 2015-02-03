@@ -101,14 +101,14 @@ def overloading():
         "print" : ExternalFunction("puts", [LLVMType("String")], LLVMType("Int")),
         "puts" : Method( [
             Function([], [
-                Call("print", Literal("Hello World", LLVMType("String")))
+                Call("print", [Literal("Hello World", LLVMType("String"))])
             ]),
             Function( [ Variable("string", LLVMType("String")) ], [
-                Call("print", Reference("string"))
+                Call("print", [Reference("string")])
             ] ),
             Function( [ Variable("string", LLVMType("String")), Variable("string2", LLVMType("String")) ], [
-                Call("print", Reference("string")),
-                Call("print", Reference("string2"))
+                Call("print", [Reference("string")]),
+                Call("print", [Reference("string2")])
             ] )
 
         ] )
