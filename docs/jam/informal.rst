@@ -11,12 +11,23 @@ of the current implementation, acting rather as a goal than documentation.
 Because of the early nature of the project, this document is highly subject to
 change.
 
+Syntax
+------
+
+The syntax used to describe syntax in this document is a mix of a couple
+styles, and is in no way meant to be a formal definition. A set of syntactical
+elements is defined through a label (from the first indentation level). The
+elements themselves use a mixture of regex, other labels (through use of
+``<label>``) and braces (``[]``) used to show optional blocks. Regexes using
+braces should not conflict with elements described using optional indicating
+braces.
+
 Comments
 ========
 
 ::
 
-    comment
+    comment:
         <lineComment>
     lineComment:
         #.*\n
@@ -148,5 +159,5 @@ Literals
         \[ <value>[, <value>[...]] \]
         \[ <value>[\n <value>[...]] \]
 
-    dictionary(literal):
+    dictionary:
         \[ <value>-><value>[, <value>-><value>[...]] \]
