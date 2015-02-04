@@ -110,8 +110,8 @@ values_ with identifiers, identifiers can be strung together with
 ``parent.child`` syntax. Multiple identifiers may also be strung together using
 a semicolon for separation.
 
-Variable Definitions
-====================
+Variables
+=========
 
 ::
 
