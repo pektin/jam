@@ -132,7 +132,16 @@ Assignments
 
     assignment:
         <variable>[, ...] [<b-op>]= <value>[, <value>[, ...]]
-        <variable>[, ...] = [<variable>[, ...] = [...]] <value>
+        <variable>[, ...] = [<variable>[, ...] = [...]] <value>[, <value>[, ...]]
+
+An assignment is a ``void`` `value <values>`_ that causes the right hand side
+values_ to be stored in the left hand side variables_. When an assignment
+includes an `operation <operations>`_, the `operation <operations>`_ performed
+is consided in-place, such that the variable on the left side of the assignment
+is also on the left side of the `operation <operations>`_.
+
+A assignment that does not include an `operation <operations>`_ can assign the
+same `value <values>`_ to multiple sets of variables_.
 
 Operations
 ==========
