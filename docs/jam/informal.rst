@@ -26,6 +26,7 @@ Comments
 
     comment:
         <lineComment>
+
     lineComment:
         #.*\n
 
@@ -53,8 +54,8 @@ Values
 
 Values are the most basic syntactic item. They are the base for almost every
 other piece of jam syntax. Values each have a type, which is either inferred or
-specified. Some values also have a void type (``null``), which means that they
-cannot be used as an input for other values, only as an instruction.
+specified. Some values also have a ``void`` type (``null``), which means that
+they cannot be used as an input for other values, only as an instruction.
 
 Literals
 ========
@@ -124,8 +125,8 @@ stored `value <values>`_ is used instead of it's container. A variable's type
 can either be defined, or inferred through it's usage. A variable's type may not
 be changed after creation.
 
-Assignment
-==========
+Assignments
+===========
 
 ::
 
