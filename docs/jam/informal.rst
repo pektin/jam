@@ -173,6 +173,10 @@ Operations
         <value> <b-op> <value>
         <u-op> <value>
 
+An operation is a shortcut to a `method <methods>`_ that operates on one to two
+values_ to produce another. Operations are split between binary operations,
+which act on two values, and unary operations, which only act on one.
+
 Methods
 =======
 
@@ -183,3 +187,4 @@ Methods
             [<value>[
             ...]]
         end
+
