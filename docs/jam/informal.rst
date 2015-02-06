@@ -63,17 +63,20 @@ Literals
 ::
 
     literal:
+        number
+        string
+        collection
+
+    number:
         integer
         float
-        string
-        array
-        dictionary
 
     integer:
-        [0-9]+
+        [0-9 ]+
 
     float:
-        [([0-9]+\.[0-9]*)([0-9]*\.[0-9]+)]
+        [0-9 ]+\.[0-9 ]*
+        [0-9 ]*\.[0-9 ]+
 
     string:
         real
@@ -83,7 +86,12 @@ Literals
         `.*`
 
     format:
-        ".*"
+        ".*[{<value>}.*[...]]"
+
+    collection:
+        array
+        dictionary
+        set
 
     array:
         \[\]
@@ -91,7 +99,66 @@ Literals
         \[ <value>[\n <value>[...]] \]
 
     dictionary:
-        \[ <value>-><value>[, <value>-><value>[...]] \]
+        {}
+        { <value>-><value>[, <value>-><value>[...]] }
+        { <value>-><value>[\n <value>-><value>[...]] }
+
+    set:
+        {}
+        { <value>[, <value>[...]] }
+        { <value>[\n <value>[...]] }
+
+Literals allow direct insertion/manipulation of values_. Literals are designed
+to cover the most common pieces of data.
+
+Numbers
+-------
+
+Numbers come in two forms: Integers and Floating Points. Both literals may
+contain spaces to improve readability of large numbers.
+
+Floating point numbers may leave out either the left of right hand side of the
+dot.
+
+Strings
+-------
+
+Strings are a array of individual characters in either ascii, utf8, utf16 or
+utf32 format.
+
+Real strings simply contain the data from the source file (in the format of the
+source file) from between the ````` pair.
+
+Format strings are identical to real strings, except that their content can
+contain special characters and formatting. Using a ``{}`` pair allows for
+direct insertion of other values_. Inserted values_ are automatically type
+casted to a string on insertion.
+
+Special Characters:
+    ``\\`` backslash
+    ``\"`` double quote
+    ``\a`` bell
+    ``\b`` backspace
+    ``\f`` formfeed
+    ``\n`` linefeed (newline)
+    ``\r`` carriage return
+    ``\t`` horizontal tab
+    ``\v`` vertical tab
+    ``\xVAL..`` character with hex value ``VAL..``
+
+Collections
+-----------
+
+Collections are values that contain other values. These values may either be
+separated by commas or by newlines.
+
+Arrays are a dynamic ordered collection of values.
+
+Dictionaries are a mapping of one set of values to another. The mapped set of
+values is unique by hash.
+
+Sets are a unordered collection of values. The contained values are unique by
+hash.
 
 Identifiers
 ===========
@@ -183,8 +250,7 @@ Methods
 ::
 
     method:
-        def <identifier>[(<variable>[ = <value>][, ...])][:<return type-identifier>]
+        def <identifier>[(<variable>[ = <value>][, ...])][:<identifier>]
             [<value>[
             ...]]
         end
-
