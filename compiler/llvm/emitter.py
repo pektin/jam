@@ -3,7 +3,7 @@ from io import IOBase
 from functools import partial
 
 from ..lekvar.lekvar import *
-from ..lekvar.errors import *
+from ..errors import *
 
 # Temporary until LLVMType is replaced
 LLVMMAP = {

@@ -1,7 +1,7 @@
 import unittest
 
 from .lekvar import *
-from .errors import *
+from ..errors import *
 from .. import tests
 
 class LekvarTests(unittest.TestCase):

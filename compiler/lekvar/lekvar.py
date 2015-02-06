@@ -1,4 +1,4 @@
-from .errors import *
+from ..errors import *
 from abc import abstractmethod as abstract, ABC
 
 # Python predefines
