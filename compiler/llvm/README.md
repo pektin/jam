@@ -27,10 +27,12 @@ declare i32 @puts(i8*)
 
 define void @lekvar.main() {
     call void @lekvar.helloWorld()
+    ret void
 }
 
 define void @lekvar.main.helloWorld() {
     call i32 @puts(i8* getelementptr inbounds ([13 x i8]* @temp.1, i32 0, i32 0))
+    ret void
 }
 
 define i32 @main() {
