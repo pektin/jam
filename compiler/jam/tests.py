@@ -6,8 +6,8 @@ from . import lexer
 
 class JamTests(unittest.TestCase):
     def test_lekxer(self):
-        test = """# def end )=
-def def_end=  (=return()     #
+        test = """# def:end )=
+def :def_end=  (=return()     #
 defend end"""
         # Expected output token types
         expected = [
@@ -15,6 +15,7 @@ defend end"""
             lexer.Tokens.newline,
 
             lexer.Tokens.keyword,
+            lexer.Tokens.typeof,
             lexer.Tokens.identifier,
             lexer.Tokens.operator,
             lexer.Tokens.group_start,

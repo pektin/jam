@@ -13,6 +13,7 @@ Tokens = Enum("Tokens", [
     "newline",
     "group_start",
     "group_end",
+    "typeof"
 ])
 
 #
@@ -30,9 +31,10 @@ KEYWORDS = {
 OPERATORS = {
     "=",
 }
-GROUPINGS = {
+DIRECT_MAP = {
     "(": Tokens.group_start,
     ")": Tokens.group_end,
+    ":": Tokens.typeof,
 }
 
 class Token:
@@ -76,11 +78,11 @@ class Lexer:
             op = self.current
             self.next()
             return Token(Tokens.operator, pos - 1, pos, op)
-        elif self.current in GROUPINGS:
+        elif self.current in DIRECT_MAP:
             pos = self.pos
             cu = self.current
             self.next()
-            return Token(GROUPINGS[cu], pos - 1, pos)
+            return Token(DIRECT_MAP[cu], pos - 1, pos)
         elif self.current == "\n":
             pos = self.pos
             self.next()
