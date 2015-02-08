@@ -1,5 +1,5 @@
-from .jam import parser
-from .llvm.emitter import Emitter
+from . import parser
+from ..llvm.emitter import Emitter
 
 from subprocess import Popen, PIPE
 
@@ -13,12 +13,13 @@ def compileRun(path:str):
     p = Popen("lli", stdin=PIPE, stdout=PIPE, stderr=PIPE)
     with p.stdin as input:
         emitter = Emitter(input)
-        lekvar.emit(emitter)
+        lekvar.emitDefinition(emitter)
         emitter.finalize()
 
     # Wait and check the output
-    p.wait(10)
-    out, err = p.communicate()
+    p.wait(10) # Arbitrary 10 second execution limit
+
+    out, err = p.stdout.read(), p.stderr.read()
     if err:
         InternalError(err)
 
