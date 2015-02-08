@@ -1,0 +1,8 @@
+#1\n2\n
+
+def reprint(one:String, two:String)
+    print(one)
+    return two
+    print(two)
+end
+print(reprint("1", "2"))
