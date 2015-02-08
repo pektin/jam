@@ -48,7 +48,7 @@ class Emitter:
 
     def writeGlobal(self, string):
         # Write directly to the global output
-        self.output.write(string)
+        self.output.write(bytes(string, "UTF-8"))
 
     def writeLine(self, string):
         self.stack[-1] += string
