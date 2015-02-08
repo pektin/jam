@@ -6,20 +6,25 @@ from . import lexer
 
 class JamTests(unittest.TestCase):
     def test_lekxer(self):
-        test = """# Foo bar
-def def_end=  =return     #
+        test = """# def end )=
+def def_end=  (=return()     #
 defend end"""
         # Expected output token types
         expected = [
             lexer.Tokens.comment,
             lexer.Tokens.newline,
+
             lexer.Tokens.keyword,
             lexer.Tokens.identifier,
             lexer.Tokens.operator,
+            lexer.Tokens.group_start,
             lexer.Tokens.operator,
             lexer.Tokens.keyword,
+            lexer.Tokens.group_start,
+            lexer.Tokens.group_end,
             lexer.Tokens.comment,
             lexer.Tokens.newline,
+
             lexer.Tokens.identifier,
             lexer.Tokens.keyword,
         ]

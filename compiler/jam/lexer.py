@@ -11,6 +11,8 @@ Tokens = Enum("Tokens", [
     "operator",
     "string",
     "newline",
+    "group_start",
+    "group_end",
 ])
 
 #
@@ -27,6 +29,10 @@ KEYWORDS = {
 }
 OPERATORS = {
     "=",
+}
+GROUPINGS = {
+    "(": Tokens.group_start,
+    ")": Tokens.group_end,
 }
 
 class Token:
@@ -70,6 +76,11 @@ class Lexer:
             op = self.current
             self.next()
             return Token(Tokens.operator, pos - 1, pos, op)
+        elif self.current in GROUPINGS:
+            pos = self.pos
+            cu = self.current
+            self.next()
+            return Token(GROUPINGS[cu], pos - 1, pos)
         elif self.current == "\n":
             pos = self.pos
             self.next()
