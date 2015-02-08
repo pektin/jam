@@ -87,6 +87,8 @@ class Lexer:
             pos = self.pos
             self.next()
             return Token(Tokens.newline, pos - 1, pos)
+        elif self.current == "":
+            return None
         else:
             raise SyntaxError("Unexpected Character '{}'".format(self.current))
 
