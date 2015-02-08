@@ -1,5 +1,6 @@
 from enum import Enum
 import string
+from io import IOBase
 
 from ..errors import *
 
@@ -16,8 +17,8 @@ Tokens = Enum("Tokens", [
 #
 
 COMMENT_CHAR = "#"
-WHITESPACE = " \t"
-WORD_CHARACTERS = string.ascii_letters + "_"
+WHITESPACE = set(" \t")
+WORD_CHARACTERS = set(string.ascii_letters + "_")
 KEYWORDS = {
     "def",
     "end",
@@ -34,17 +35,18 @@ class Token:
 class Lexer:
     source = None
 
-    def __init__(self, source:file):
+    def __init__(self, source:IOBase):
         self.source = source
+        self.next()
 
     @property
     def pos(self):
-        return source.tell()
+        return self.source.tell()
 
     current = None
 
     def next(self):
-        self.current = source.read(1)
+        self.current = self.source.read(1)
 
     #
     # Lexing Methods
@@ -71,9 +73,10 @@ class Lexer:
 
         self.next()
         comment = self.current
-        while comment[-1] != "\n":
-            self.next()
+        while self.current != "\n":
             comment += self.current
+            self.next()
+
 
         return Token(Tokens.comment, start, self.pos, comment)
 
@@ -83,8 +86,8 @@ class Lexer:
 
         self.next()
         while self.current in WORD_CHARACTERS:
-            self.next()
             name += self.current
+            self.next()
 
         if name in KEYWORDS:
             return Token(Tokens.keyword, start, self.pos, name)
