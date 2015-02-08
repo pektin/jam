@@ -1,7 +1,6 @@
 import unittest
 from io import StringIO
 
-from .. import tests
 from . import lexer
 
 class JamTests(unittest.TestCase):
