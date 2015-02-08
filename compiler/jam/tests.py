@@ -7,7 +7,7 @@ from . import lexer
 class JamTests(unittest.TestCase):
     def test_lekxer(self):
         test = """# Foo bar
-def def_end   return     #
+def def_end=  =return     #
 defend end"""
         # Expected output token types
         expected = [
@@ -15,6 +15,8 @@ defend end"""
             lexer.Tokens.newline,
             lexer.Tokens.keyword,
             lexer.Tokens.identifier,
+            lexer.Tokens.operator,
+            lexer.Tokens.operator,
             lexer.Tokens.keyword,
             lexer.Tokens.comment,
             lexer.Tokens.newline,

@@ -8,6 +8,7 @@ Tokens = Enum("Tokens", [
     "comment",
     "identifier",
     "keyword",
+    "operator",
     "string",
     "newline",
 ])
@@ -23,6 +24,9 @@ KEYWORDS = {
     "def",
     "end",
     "return",
+}
+OPERATORS = {
+    "=",
 }
 
 class Token:
@@ -61,6 +65,11 @@ class Lexer:
             return self.comment()
         elif self.current in WORD_CHARACTERS:
             return self.identifier()
+        elif self.current in OPERATORS:
+            pos = self.pos
+            op = self.current
+            self.next()
+            return Token(Tokens.operator, pos - 1, pos, op)
         elif self.current == "\n":
             pos = self.pos
             self.next()
