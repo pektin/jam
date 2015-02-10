@@ -9,55 +9,89 @@ from .lexer import Lexer, Tokens
 #
 
 def parseFile(source:IOBase):
-    lexer = Lexer(source)
+    return Parser(Lexer(source)).parseModule()
 
-    children = {}
-    instructions = []
+class Parser:
+    lexer = None
+    tokens = None
 
-    while True:
-        token = lexer.lex()
-        # EOF escape
-        if token is None: break
+    def __init__(self, lexer):
+        self.lexer = lexer
+        self.tokens = []
 
-        value = parseLine(lexer, token)
-
-        # EOF escape
-        if value is None: break
-
-        if isinstance(value, lekvar.Scope):
-            # Scopes are automatically added as children
-            children[value.name] = value
+    def next(self):
+        if len(self.tokens) == 0:
+            return self.lexer.lex()
         else:
-            # Other values are added as instructions
-            instructions.append(value)
+            return self.tokens.pop(0)
 
-    return lekvar.Module( children, lekvar.Function([], instructions, None) )
+    def lookAhead(self, num = 1):
+        while len(self.tokens) < num:
+            self.tokens.append(self.lexer.lex())
+        return self.tokens[-1]
 
-def parseLine(lexer, token):
-    # Parse a line. The line may not exist
+    def parseModule(self):
+        children = {}
+        instructions = []
 
-    # Ignore newlines
-    while token.type == Tokens.newline:
-        token = lexer.lex()
+        while True:
+            value = self.parseLine()
 
-        # EOF handling
-        if token is None: return None
+            # EOF escape
+            if value is None: break
 
-    if token.type == Tokens.comment:
-        return lekvar.Comment(token.data)
-    else:
-        return parseValue(lexer, token)
+            if isinstance(value, lekvar.Scope):
+                # Scopes are automatically added as children
+                children[value.name] = value
+            else:
+                # Other values are added as instructions
+                instructions.append(value)
 
-def parseValue(lexer, token):
-    # Parse for a value. The value must exist
+        return lekvar.Module(children,
+               lekvar.Function([], instructions, None))
 
-    # Ignore comments and newlines until a value is reached
-    while token.type in [Tokens.comment, Tokens.newline]:
-        token = lexer.lex()
+    def parseLine(self):
+        # Parse a line. The line may not exist
 
-        # EOF handling
-        if token is None:
-            raise SyntaxError("Expected value before EOF")
+        token = self.lookAhead()
 
-    #TODO: Everything
-    raise NotImplemented()
+        # Ignore newlines
+        while token.type == Tokens.newline:
+            self.next()
+            token = self.lookAhead()
+
+            # EOF handling
+            if token is None: return None
+
+        if token.type == Tokens.comment:
+            return lekvar.Comment(self.next().data)
+        elif token.type == Tokens.keyword:
+            if token.data == "return":
+                return self.parseReturn()
+        return self.parseValue()
+
+    def parseValue(self):
+        # Parse for a value. The value is expected to exist
+
+        token = self.lookAhead()
+
+        # Ignore comments and newlines until a value is reached
+        while token.type in [Tokens.comment, Tokens.newline]:
+            self.next()
+            token = self.lookAhead()
+
+            # EOF handling
+            if token is None:
+                raise SyntaxError("Expected value before EOF")
+
+        # Identify the kind of value
+        if token.type == Tokens.keyword:
+            if token.data == "def":
+                return self.parseMethod()
+        elif token.type == Tokens.identifier:
+            if self.lookAhead(2).type == Tokens.group_start:
+                return self.parseCall()
+            else:
+                return lekvar.Reference(self.next().data)
+
+        raise SyntaxError("Unexpected {}: '{}'".format(token.type, token.data))
