@@ -16,6 +16,9 @@ class CompilerTests(unittest.TestCase):
 
 for file in getFiles():
     name, path = file
+    # Ignore non-jam files
+    if os.path.splitext(path)[1] != ".jm": continue
+
     def test(self, path=path):
         # Get output data
         with open(path, "r") as f:
