@@ -7,4 +7,5 @@ def assign()
     bar = "1"
     return foo
 end
+
 print(assign())

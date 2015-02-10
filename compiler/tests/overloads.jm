@@ -3,13 +3,16 @@
 def puts()
     print("Hello World")
 end
+
 def puts(string:String)
     print(string)
 end
+
 def puts(string:String, string2:String)
     print(string)
     print(string2)
 end
+
 puts()
 puts("Testing")
 puts("Hello", "World!")
