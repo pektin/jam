@@ -67,7 +67,7 @@ class Parser:
                 instructions.append(value)
 
         return lekvar.Module(children,
-               lekvar.Function([], instructions, None))
+               lekvar.Function("main", [], instructions, None))
 
     def parseLine(self):
         # Parse a line. The line may not exist
@@ -103,6 +103,9 @@ class Parser:
                 return self.parseCall()
             else:
                 return lekvar.Reference(self.next().data)
+        elif token.type == Tokens.string:
+            token = self.next()
+            return lekvar.Literal(token.data, lekvar.LLVMType("String"))
 
         self._unexpected(token)
 
@@ -153,7 +156,8 @@ class Parser:
 
             if token.type == Tokens.keyword:
                 if token.data == "end":
-                    return Function(name, arguments, return_type, instructions)
+                    self.next()
+                    return lekvar.Function(name, arguments, instructions, return_type)
             instructions.append(self.parseLine())
 
     def parseVariable(self):
