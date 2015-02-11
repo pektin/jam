@@ -26,11 +26,17 @@ class Object(ABC):
         The emit_data hook may be used by the emitter to store data necessary for emission.
         """
 
+    def __repr__(self):
+        return "{}<{}>".format(self.__class__.__name__, self.resolveType())
+
 class ScopeObject(Object):
     name = None
 
     def __init__(self, name):
         self.name = name
+
+    def __repr__(self):
+        return "{}<{}:{}>".format(self.__class__.__name__, self.name, self.resolveType())
 
 class Scope(ScopeObject):
     verified = False # cache for circular program flows
@@ -100,7 +106,10 @@ class Type(Scope):
 
     def resolveCompatibility(self, other:Type):
         if not self.checkCompatibility(other):
-            raise TypeError("{} is not compatible with {}".format(self.__class__, other.__class__))
+            raise TypeError("{} is not compatible with {}".format(self, other))
+
+    def __repr__(self):
+        return "{}".format(self.__class__.__name__)
 
 #
 # Jam Structures
@@ -139,7 +148,7 @@ class Assignment(Object):
             scope.children[self.reference] = self.variable
 
         if not isinstance(self.variable, Variable):
-            raise TypeError("Cannot assign to {}".format(self.variable.__class__))
+            raise TypeError("Cannot assign to {}".format(self.variable))
 
         # Resolve type compatibility
         self.value.verify(scope)
@@ -188,6 +197,9 @@ class Reference(Object):
     def emit(self, emitter):
         self.value.emit(emitter)
 
+    def __repr__(self):
+        return "Reference<{}>".format(self.reference)
+
 class Call(Object):
     reference = None
     called = None # resolved through reference
@@ -212,6 +224,9 @@ class Call(Object):
 
     def emit(self, emitter):
         emitter.emitCall(self)
+
+    def __repr__(self):
+        return "Call<{}: {}>".format(self.reference, ", ".join(repr(value) for value in self.values))
 
 class Return(Object):
     value = None
@@ -291,6 +306,9 @@ class FunctionType(Type):
 
     def emitDefinition(self):
         raise InternalError("Not implemented")
+
+    def __repr__(self):
+        return "(" + ", ".join(repr(type) for type in self.signature) + "):{}".format(self.return_type)
 
 class Function(Scope):
     arguments = None
@@ -471,6 +489,9 @@ class LLVMType(Type): # Temporary until stdlib is implemented
 
     def emitDefinition(self, emitter):
         pass
+
+    def __repr__(self):
+        return "{}<{}>".format(self.__class__.__name__, self.llvm_type)
 
 class Builtins(Module):
     def __init__(self, children):
