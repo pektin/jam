@@ -22,6 +22,8 @@ def compileRun(path:str):
     out, err = p.stdout.read(), p.stderr.read()
     if err:
         InternalError(err)
+    p.stdout.close()
+    p.stderr.close()
 
     return out
 
