@@ -9,7 +9,6 @@ def compileRun(path:str, target:str):
     return check_output(["lli", target])
 
 def compileFile(path:str, target:str):
-    print(target)
     with open(path, "r") as input, open(target, "w") as output:
         compile(input, output)
 
