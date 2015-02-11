@@ -47,6 +47,9 @@ class Token:
         self.end = end
         self.data = data
 
+    def __repr__(self):
+        return "<{}: {}>".format(self.type, self.data)
+
 class Lexer:
     source = None
 
