@@ -172,9 +172,15 @@ class Parser:
         # Parse an optional type signature
         if self.lookAhead().type != Tokens.typeof:
             return None
-
         self.next()
-        return self.expect()
+
+        return self.parseType()
+
+    def parseType(self):
+        # Parse an expected type
+
+        name = self.expect()
+        return lekvar.LLVMType(name)
 
     def parseCall(self):
         # Parse a function call
@@ -201,3 +207,15 @@ class Parser:
 
         return lekvar.Call(name, arguments)
 
+    def parseReturn(self):
+        # Parse a return statement
+
+        # return keyword is expected to be parsed
+        self.next()
+
+        if self.lookAhead().type != Tokens.newline:
+            value = self.parseValue()
+        else:
+            value = None
+
+        return lekvar.Return(value)
