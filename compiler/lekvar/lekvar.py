@@ -1,6 +1,15 @@
 from ..errors import *
 from abc import abstractmethod as abstract, ABC
 
+builtins = None
+def verify(module):
+    # Create the builtins
+    global builtins
+    builtins = Builtins([
+        ExternalFunction("print", "puts", [LLVMType("String")], LLVMType("Int"))
+    ])
+    module.verify()
+
 # Python predefines
 Type = None
 MethodSignature = None
@@ -503,6 +512,3 @@ class Builtins(Module):
             return [obj]
         return []
 
-builtins = Builtins([
-    ExternalFunction("print", "puts", [LLVMType("String")], LLVMType("Int"))
-])

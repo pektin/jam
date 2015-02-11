@@ -1,4 +1,5 @@
 from . import parser
+from ..lekvar import lekvar
 from ..llvm.emitter import Emitter
 
 from io import IOBase
@@ -14,10 +15,10 @@ def compileFile(path:str, target:str):
 
 def compile(input:IOBase, output:IOBase):
     # Produce lekvar
-    lekvar = parser.parseFile(input)
-    lekvar.verify()
+    ir = parser.parseFile(input)
+    lekvar.verify(ir)
     # Emit LLVM
     emitter = Emitter(output)
-    lekvar.emitDefinition(emitter)
+    ir.emitDefinition(emitter)
     emitter.finalize()
 
