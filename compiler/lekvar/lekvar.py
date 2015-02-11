@@ -72,7 +72,7 @@ class Scope(ScopeObject):
         if obj is not None:
             out.append(obj)
         # check parent
-        more = self.parent.collectReferencesDown(reference) if self.parent else None
+        more = self.parent.collectReferencesDown(reference) if self.parent else builtins.collectReferencesDown(reference)
         if more is not None:
             out += more
         return out
@@ -471,3 +471,17 @@ class LLVMType(Type): # Temporary until stdlib is implemented
 
     def emitDefinition(self, emitter):
         pass
+
+class Builtins(Module):
+    def __init__(self, children):
+        super().__init__("builtins", children, Function([], [], None))
+
+    def collectReferencesDown(self, reference:str):
+        obj = self.children.get(reference, None)
+        if obj is not None:
+            return [obj]
+        return []
+
+builtins = Builtins([
+    ExternalFunction("print", "puts", [LLVMType("String")], LLVMType("Int"))
+])
