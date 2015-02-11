@@ -3,7 +3,7 @@
 def reprint(one:String, two:String)
     print(one)
     return two
-    print(two)
+    print("3")
 end
 
 print(reprint("1", "2"))
