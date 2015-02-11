@@ -50,7 +50,7 @@ class Parser:
         return token.data
 
     def parseModule(self):
-        children = {}
+        children = []
         instructions = []
 
         while True:
@@ -61,12 +61,12 @@ class Parser:
 
             if isinstance(value, lekvar.Scope):
                 # Scopes are automatically added as children
-                children[value.name] = value
+                children.append(value)
             else:
                 # Other values are added as instructions
                 instructions.append(value)
 
-        return lekvar.Module(children,
+        return lekvar.Module("main", children,
                lekvar.Function("main", [], instructions, None))
 
     def parseLine(self):

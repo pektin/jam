@@ -26,20 +26,26 @@ class Object(ABC):
         The emit_data hook may be used by the emitter to store data necessary for emission.
         """
 
-class Scope(Object):
+class ScopeObject(Object):
+    name = None
+
+    def __init__(self, name):
+        self.name = name
+
+class Scope(ScopeObject):
     verified = False # cache for circular program flows
 
-    name = None
     parent = None
     children = None
 
-    def __init__(self, children:{str: Object}):
-        # set child parents
-        for name, child in children.items():
-            if isinstance(child, Scope):
-                child.name = name
-                child.parent = self
-        self.children = children
+    def __init__(self, name, children:[ScopeObject] = []):
+        super().__init__(name)
+
+        # set children
+        self.children = {}
+        for child in children:
+            self.children[child.name] = child
+            child.parent = self
 
     def verify(self) -> None:
         if self.verified: return
@@ -149,12 +155,11 @@ class Assignment(Object):
     def emit(self, emitter):
         emitter.emitAssignment(self)
 
-class Variable(Object):
-    name = None
+class Variable(ScopeObject):
     type = None
 
     def __init__(self, name:str, type:Type=None):
-        self.name = name
+        super().__init__(name)
         self.type = type
 
     def verify(self, scope:Scope):
@@ -292,8 +297,9 @@ class Function(Scope):
     instructions = None
     return_type = None
 
-    def __init__(self, arguments: [Variable], instructions: [Object], return_type: Type = None):
-        super().__init__({})
+    def __init__(self, name:str, arguments: [Variable], instructions: [Object], return_type: Type = None):
+        super().__init__(name)
+        self.name = name
 
         self.arguments = arguments
         self.instructions = instructions
@@ -336,7 +342,8 @@ class ExternalFunction(Scope):
     argument_types = None
     return_type = None
 
-    def __init__(self, external_name:str, argument_types: [Type], return_type: Type):
+    def __init__(self, name:str, external_name:str, argument_types: [Type], return_type: Type):
+        super().__init__(name)
         self.external_name = external_name
         self.argument_types = argument_types
         self.return_type = return_type
@@ -384,8 +391,8 @@ class MethodType(Type):
 class Method(Scope):
     overloads = None
 
-    def __init__(self, overloads:[Function]):
-        super().__init__({})
+    def __init__(self, name:str, overloads:[Function]):
+        super().__init__(name)
 
         self.overloads = overloads
         for index, overload in enumerate(self.overloads):
@@ -411,8 +418,8 @@ class Method(Scope):
 class Module(Scope):
     main = None
 
-    def __init__(self, children:{str: Object}, main:Function):
-        super().__init__(children)
+    def __init__(self, name:str, children:[ScopeObject], main:Function):
+        super().__init__(name, children)
         self.main = main
         self.main.parent = self
 
