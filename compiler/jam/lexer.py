@@ -22,6 +22,7 @@ Tokens = Enum("Tokens", [
 #
 
 COMMENT_CHAR = "#"
+STRING_CHAR = "\""
 WHITESPACE = set(" \t")
 WORD_CHARACTERS = set(string.ascii_letters + "_")
 KEYWORDS = {
@@ -75,6 +76,8 @@ class Lexer:
             return self.comment()
         elif self.current in WORD_CHARACTERS:
             return self.identifier()
+        elif self.current == STRING_CHAR:
+            return self.string()
         elif self.current in OPERATORS:
             pos = self.pos
             op = self.current
@@ -120,3 +123,17 @@ class Lexer:
         else:
             return Token(Tokens.identifier, start, self.pos, name)
 
+    def string(self):
+        start = self.pos - 1
+        self.next()
+
+        contents = ""
+        while self.current != STRING_CHAR:
+            contents += self.current
+            self.next()
+            if not self.current:
+                raise SyntaxError("Expected '"' before EOF')
+        self.next()
+
+        contents = contents.encode("UTF-8").decode("unicode-escape")
+        return Token(Tokens.string, start, self.pos, contents)
