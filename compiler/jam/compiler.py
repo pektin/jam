@@ -1,29 +1,24 @@
 from . import parser
 from ..llvm.emitter import Emitter
 
-from subprocess import Popen, PIPE
+from io import IOBase
+from subprocess import check_output
 
-def compileRun(path:str):
-    # Parse source and generate lekvar
-    with open(path, "r") as f:
-        lekvar = parser.parseFile(f)
+def compileRun(path:str, target:str):
+    compileFile(path, target)
+    return check_output(["lli", target])
+
+def compileFile(path:str, target:str):
+    print(target)
+    with open(path, "r") as input, open(target, "w") as output:
+        compile(input, output)
+
+def compile(input:IOBase, output:IOBase):
+    # Produce lekvar
+    lekvar = parser.parseFile(input)
     lekvar.verify()
-
-    # Emit and interpet LLVM bytecode
-    p = Popen("lli", stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    with p.stdin as input:
-        emitter = Emitter(input)
-        lekvar.emitDefinition(emitter)
-        emitter.finalize()
-
-    # Wait and check the output
-    p.wait(10) # Arbitrary 10 second execution limit
-
-    out, err = p.stdout.read(), p.stderr.read()
-    if err:
-        InternalError(err)
-    p.stdout.close()
-    p.stderr.close()
-
-    return out
+    # Emit LLVM
+    emitter = Emitter(output)
+    lekvar.emitDefinition(emitter)
+    emitter.finalize()
 
