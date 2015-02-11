@@ -171,3 +171,29 @@ class Parser:
 
         self.next()
         return self.expect()
+
+    def parseCall(self):
+        # Parse a function call
+
+        name = self.expect()
+        self.expect(Tokens.group_start)
+
+        arguments = []
+        if self.lookAhead().type != Tokens.group_end:
+
+            # Parse arguments
+            while True:
+                arguments.append(self.parseValue())
+
+                token = self.next()
+                if token.type == Tokens.comma:
+                    continue
+                elif token.type == Tokens.group_end:
+                    break
+                else:
+                    self._unexpected(token)
+        else:
+            self.next()
+
+        return lekvar.Call(name, arguments)
+
