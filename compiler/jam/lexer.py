@@ -8,13 +8,13 @@ Tokens = Enum("Tokens", [
     "comment",
     "identifier",
     "keyword",
-    "operator",
     "string",
     "newline",
     "group_start",
     "group_end",
     "typeof",
     "comma",
+    "equal"
 ])
 
 #
@@ -30,14 +30,12 @@ KEYWORDS = {
     "end",
     "return",
 }
-OPERATORS = {
-    "=",
-}
 DIRECT_MAP = {
     "(": Tokens.group_start,
     ")": Tokens.group_end,
     ":": Tokens.typeof,
     ",": Tokens.comma,
+    "=": Tokens.equal,
 }
 
 class Token:
@@ -81,11 +79,6 @@ class Lexer:
             return self.identifier()
         elif self.current == STRING_CHAR:
             return self.string()
-        elif self.current in OPERATORS:
-            pos = self.pos
-            op = self.current
-            self.next()
-            return Token(Tokens.operator, pos - 1, pos, op)
         elif self.current in DIRECT_MAP:
             pos = self.pos
             cu = self.current
