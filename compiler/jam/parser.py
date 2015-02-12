@@ -28,7 +28,7 @@ class Parser:
     def lookAhead(self, num = 1):
         while len(self.tokens) < num:
             self.tokens.append(self.lexer.lex())
-        return self.tokens[-1]
+        return self.tokens[num - 1]
 
     def _unexpected(self, token):
         raise SyntaxError("Unexpected {}: '{}'".format(token.type, token.data))
