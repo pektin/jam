@@ -81,6 +81,9 @@ class Parser:
         elif token.type == Tokens.keyword:
             if token.data == "return":
                 return self.parseReturn()
+        elif token.type == Tokens.identifier:
+            if self.lookAhead(2).type == Tokens.equal:
+                return self.parseAssignment()
         return self.parseValue()
 
     def parseValue(self):
@@ -219,3 +222,13 @@ class Parser:
             value = None
 
         return lekvar.Return(value)
+
+    def parseAssignment(self):
+        # Parse a assignment
+
+        name = self.next().data
+
+        assert self.next().type == Tokens.equal
+
+        value = self.parseValue()
+        return lekvar.Assignment(name, value)
