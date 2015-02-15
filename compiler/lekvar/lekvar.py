@@ -33,6 +33,7 @@ class Object(ABC):
     def emit(self, emitter):
         """ Redirects a call to an emitter object to emit an object of this kind.
         The emit_data hook may be used by the emitter to store data necessary for emission.
+        This function may return data used for emission.
         """
 
     def __repr__(self):
@@ -98,7 +99,7 @@ class Scope(ScopeObject):
         """
         if self.emit_data is None:
             self.emitDefinition(emitter)
-        self.emitValue(emitter)
+        return self.emitValue(emitter)
 
     @abstract
     def emitValue(self, emitter):
@@ -137,7 +138,7 @@ class Comment(Object):
         return None
 
     def emit(self, emitter):
-        emitter.emitComment(self)
+        return emitter.emitComment(self)
 
 class Assignment(Object):
     reference = None
@@ -171,7 +172,7 @@ class Assignment(Object):
         return None
 
     def emit(self, emitter):
-        emitter.emitAssignment(self)
+        return emitter.emitAssignment(self)
 
 class Variable(ScopeObject):
     type = None
@@ -187,7 +188,7 @@ class Variable(ScopeObject):
         return self.type
 
     def emit(self, emitter):
-        emitter.emitVariable(self)
+        return emitter.emitVariable(self)
 
 class Reference(Object):
     reference = None
@@ -204,7 +205,7 @@ class Reference(Object):
         return self.value.resolveType()
 
     def emit(self, emitter):
-        self.value.emit(emitter)
+        return self.value.emit(emitter)
 
     def __repr__(self):
         return "Reference<{}>".format(self.reference)
@@ -232,7 +233,7 @@ class Call(Object):
         return self.called.return_type
 
     def emit(self, emitter):
-        emitter.emitCall(self)
+        return emitter.emitCall(self)
 
     def __repr__(self):
         return "Call<{}: {}>".format(self.reference, ", ".join(repr(value) for value in self.values))
@@ -262,7 +263,7 @@ class Return(Object):
         return None
 
     def emit(self, emitter):
-        emitter.emitReturn(self)
+        return emitter.emitReturn(self)
 
 class Literal(Object):
     type = None
@@ -280,7 +281,7 @@ class Literal(Object):
         return self.type
 
     def emit(self, emitter):
-        emitter.emitLiteral(self)
+        return emitter.emitLiteral(self)
 
 class FunctionType(Type):
     signature = None
@@ -311,10 +312,10 @@ class FunctionType(Type):
         raise InternalError("Not implemented")
 
     def emitValue(self, emitter):
-        raise InternalError("Not implemented")
+        return emitter.emitFunctionTypeValue(self)
 
     def emitDefinition(self):
-        raise InternalError("Not implemented")
+        emitter.emitFunctionTypeDefinition(self)
 
     def __repr__(self):
         return "(" + ", ".join(repr(type) for type in self.signature) + "):{}".format(self.return_type)
@@ -356,12 +357,10 @@ class Function(Scope):
         return objects
 
     def emitValue(self, emitter):
-        emitter.emitFunctionValue(self)
+        return emitter.emitFunctionValue(self)
 
     def emitDefinition(self, emitter):
-        with emitter.emitFunction(self):
-            for instruction in self.instructions:
-                instruction.emit(emitter)
+        emitter.emitFunctionDefinition(self)
 
 class ExternalFunction(Scope):
     verified = True
@@ -379,10 +378,10 @@ class ExternalFunction(Scope):
         return FunctionType(self.argument_types, self.return_type)
 
     def emitValue(self, emitter):
-        emitter.emitFunctionValue(self)
+        return emitter.emitExternalFunctionValue(self)
 
     def emitDefinition(self, emitter):
-        emitter.emitExternalFunction(self)
+        emitter.emitExternalFunctionDefinition(self)
 
 class MethodType(Type):
     overloads = None
@@ -410,10 +409,10 @@ class MethodType(Type):
         raise InternalError("Not implemented")
 
     def emitValue(self, emitter):
-        raise InternalError("Not implemented")
+        return emitter.emitMethodTypeValue(self)
 
     def emitDefinition(self):
-        raise InternalError("Not implemented")
+        emitter.emitMethodTypeDefinition(self)
 
 class Method(Scope):
     overloads = None
@@ -437,10 +436,10 @@ class Method(Scope):
         return MethodType(function.resolveType() for function in self.overloads)
 
     def emitValue(self, emitter):
-        emitter.emitMethodValue(self)
+        return emitter.emitMethodValue(self)
 
     def emitDefinition(self, emitter):
-        emitter.emitMethod(self)
+        emitter.emitMethodDefinition(self)
 
 class Module(Scope):
     main = None
@@ -459,15 +458,10 @@ class Module(Scope):
         raise InternalError("Not yet implemented")
 
     def emitValue(self, emitter):
-        raise InternalError("Not yet implemented")
+        return emitter.emitModuleValue(self)
 
     def emitDefinition(self, emitter):
-        self.main.emitDefinition(emitter)
-        emitter.addMain(self.main)
-
-        for child in self.children.values():
-            if child.emit_data is None:
-                child.emitDefinition(emitter)
+        emitter.emitModuleDefinition(self)
 
 #
 # Temporary Structures
@@ -494,10 +488,10 @@ class LLVMType(Type): # Temporary until stdlib is implemented
         raise InternalError("Not implemented yet")
 
     def emitValue(self, emitter):
-        emitter.emitLLVMType(self)
+        return emitter.emitLLVMType(self)
 
     def emitDefinition(self, emitter):
-        pass
+        pass # LLVMTypes are built into LLVM
 
     def __repr__(self):
         return "{}<{}>".format(self.__class__.__name__, self.llvm_type)
