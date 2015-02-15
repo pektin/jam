@@ -90,7 +90,7 @@ class Emitter:
     def resolveName(self, scope:Scope):
         # Resolves the name of a scope, starting with a extraneous .
         name = ""
-        while scope.name is not None:
+        while scope.parent is not None:
             name += "." + scope.name
             scope = scope.parent
         return name

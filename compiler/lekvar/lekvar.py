@@ -1,6 +1,15 @@
 from ..errors import *
 from abc import abstractmethod as abstract, ABC
 
+builtins = None
+def verify(module):
+    # Create the builtins
+    global builtins
+    builtins = Builtins([
+        ExternalFunction("print", "puts", [LLVMType("String")], LLVMType("Int"))
+    ])
+    module.verify()
+
 # Python predefines
 Type = None
 MethodSignature = None
@@ -26,20 +35,32 @@ class Object(ABC):
         The emit_data hook may be used by the emitter to store data necessary for emission.
         """
 
-class Scope(Object):
+    def __repr__(self):
+        return "{}<{}>".format(self.__class__.__name__, self.resolveType())
+
+class ScopeObject(Object):
+    name = None
+
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return "{}<{}:{}>".format(self.__class__.__name__, self.name, self.resolveType())
+
+class Scope(ScopeObject):
     verified = False # cache for circular program flows
 
-    name = None
     parent = None
     children = None
 
-    def __init__(self, children:{str: Object}):
-        # set child parents
-        for name, child in children.items():
-            if isinstance(child, Scope):
-                child.name = name
-                child.parent = self
-        self.children = children
+    def __init__(self, name, children:[ScopeObject] = []):
+        super().__init__(name)
+
+        # set children
+        self.children = {}
+        for child in children:
+            self.children[child.name] = child
+            child.parent = self
 
     def verify(self) -> None:
         if self.verified: return
@@ -66,7 +87,7 @@ class Scope(Object):
         if obj is not None:
             out.append(obj)
         # check parent
-        more = self.parent.collectReferencesDown(reference) if self.parent else None
+        more = self.parent.collectReferencesDown(reference) if self.parent else builtins.collectReferencesDown(reference)
         if more is not None:
             out += more
         return out
@@ -94,7 +115,10 @@ class Type(Scope):
 
     def resolveCompatibility(self, other:Type):
         if not self.checkCompatibility(other):
-            raise TypeError("{} is not compatible with {}".format(self.__class__, other.__class__))
+            raise TypeError("{} is not compatible with {}".format(self, other))
+
+    def __repr__(self):
+        return "{}".format(self.__class__.__name__)
 
 #
 # Jam Structures
@@ -133,7 +157,7 @@ class Assignment(Object):
             scope.children[self.reference] = self.variable
 
         if not isinstance(self.variable, Variable):
-            raise TypeError("Cannot assign to {}".format(self.variable.__class__))
+            raise TypeError("Cannot assign to {}".format(self.variable))
 
         # Resolve type compatibility
         self.value.verify(scope)
@@ -149,12 +173,11 @@ class Assignment(Object):
     def emit(self, emitter):
         emitter.emitAssignment(self)
 
-class Variable(Object):
-    name = None
+class Variable(ScopeObject):
     type = None
 
     def __init__(self, name:str, type:Type=None):
-        self.name = name
+        super().__init__(name)
         self.type = type
 
     def verify(self, scope:Scope):
@@ -183,6 +206,9 @@ class Reference(Object):
     def emit(self, emitter):
         self.value.emit(emitter)
 
+    def __repr__(self):
+        return "Reference<{}>".format(self.reference)
+
 class Call(Object):
     reference = None
     called = None # resolved through reference
@@ -207,6 +233,9 @@ class Call(Object):
 
     def emit(self, emitter):
         emitter.emitCall(self)
+
+    def __repr__(self):
+        return "Call<{}: {}>".format(self.reference, ", ".join(repr(value) for value in self.values))
 
 class Return(Object):
     value = None
@@ -287,13 +316,17 @@ class FunctionType(Type):
     def emitDefinition(self):
         raise InternalError("Not implemented")
 
+    def __repr__(self):
+        return "(" + ", ".join(repr(type) for type in self.signature) + "):{}".format(self.return_type)
+
 class Function(Scope):
     arguments = None
     instructions = None
     return_type = None
 
-    def __init__(self, arguments: [Variable], instructions: [Object], return_type: Type = None):
-        super().__init__({})
+    def __init__(self, name:str, arguments: [Variable], instructions: [Object], return_type: Type = None):
+        super().__init__(name)
+        self.name = name
 
         self.arguments = arguments
         self.instructions = instructions
@@ -336,7 +369,8 @@ class ExternalFunction(Scope):
     argument_types = None
     return_type = None
 
-    def __init__(self, external_name:str, argument_types: [Type], return_type: Type):
+    def __init__(self, name:str, external_name:str, argument_types: [Type], return_type: Type):
+        super().__init__(name)
         self.external_name = external_name
         self.argument_types = argument_types
         self.return_type = return_type
@@ -384,8 +418,8 @@ class MethodType(Type):
 class Method(Scope):
     overloads = None
 
-    def __init__(self, overloads:[Function]):
-        super().__init__({})
+    def __init__(self, name:str, overloads:[Function]):
+        super().__init__(name)
 
         self.overloads = overloads
         for index, overload in enumerate(self.overloads):
@@ -411,8 +445,8 @@ class Method(Scope):
 class Module(Scope):
     main = None
 
-    def __init__(self, children:{str: Object}, main:Function):
-        super().__init__(children)
+    def __init__(self, name:str, children:[ScopeObject], main:Function):
+        super().__init__(name, children)
         self.main = main
         self.main.parent = self
 
@@ -464,3 +498,17 @@ class LLVMType(Type): # Temporary until stdlib is implemented
 
     def emitDefinition(self, emitter):
         pass
+
+    def __repr__(self):
+        return "{}<{}>".format(self.__class__.__name__, self.llvm_type)
+
+class Builtins(Module):
+    def __init__(self, children):
+        super().__init__("builtins", children, Function([], [], None))
+
+    def collectReferencesDown(self, reference:str):
+        obj = self.children.get(reference, None)
+        if obj is not None:
+            return [obj]
+        return []
+

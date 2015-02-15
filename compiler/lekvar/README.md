@@ -18,6 +18,10 @@ These are used as the base for all other structures in Lekvar.
 
 In terms of Lekvar, every object has a type. An object is seen as a single value to be used in any context where a value is appropriate. An object functions as an abstract base for other language elements.
 
+#### ScopeObjects
+
+A scope object is a object which simply also has a name and can thereby be a child of a scope.
+
 #### Scopes
 
 A scope is a object that fits into a hierarchy of other scopes. Every scope has a collection of named sub-objects and a single parent scope.
