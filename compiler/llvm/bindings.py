@@ -38,7 +38,6 @@ def convertArgs(args):
             arguments.append(len(arg))
         else:
             arguments.append(arg)
-    print(arguments)
     return arguments
 
 class Wrappable:
@@ -95,6 +94,9 @@ class Builder(Wrappable, c_void_p):
 class Type(Wrappable, c_void_p):
     pass
 
+class Pointer(Type):
+    pass
+
 class Int(Type):
     pass
 
@@ -110,6 +112,11 @@ class Block(Wrappable, c_void_p):
 class Value(Wrappable, c_void_p):
     pass
 
+class FunctionValue(Value):
+    pass
+
+__all__ = "Context Module Builder Type Pointer Int Float Function Block Value FunctionValue".split()
+
 #
 # Context
 #
@@ -124,8 +131,8 @@ Context.wrapDestructor("LLVMContextDispose")
 #
 
 # Constructors
-Module.wrapConstructor("fromName", "LLVMModuleCreateWithName", [c_void_p])
-Module.wrapConstructor("fromNameWithContext", "LLVMModuleCreateWithNameInContext", [c_void_p, Context])
+Module.wrapConstructor("fromName", "LLVMModuleCreateWithName", [c_char_p])
+Module.wrapConstructor("fromNameWithContext", "LLVMModuleCreateWithNameInContext", [c_char_p, Context])
 Module.wrapDestructor("LLVMDisposeModule")
 #clone = Module.wrapInstanceFunc("LLVMCloneModule", [], Module) # Doesn't exist?
 
@@ -136,9 +143,9 @@ Module.wrapInstanceProp("context", "LLVMGetModuleContext", None, Context)
 
 # Methods
 Module.wrapInstanceFunc("dump", "LLVMDumpModule")
-Module.wrapInstanceFunc("__str__", "LLVMPrintModuleToString", [], c_char_p)
+Module.wrapInstanceFunc("toString", "LLVMPrintModuleToString", [], c_char_p)
 Module.wrapInstanceFunc("getType", "LLVMGetTypeByName", [c_char_p], Type)
-Module.wrapInstanceFunc("addFunction", "LLVMAddFunction", [c_char_p, Type], Value)
+Module.wrapInstanceFunc("addFunction", "LLVMAddFunction", [c_char_p, Function], FunctionValue)
 
 #
 # Builder
@@ -150,6 +157,8 @@ Builder.wrapConstructor("withContext", "LLVMCreateBuilderInContext", [Context])
 Builder.wrapDestructor("LLVMDisposeBuilder")
 
 # Functions
+Builder.wrapInstanceFunc("positionAtEnd", "LLVMPositionBuilderAtEnd", [Block])
+
 Builder.wrapInstanceFunc("retVoid", "LLVMBuildRetVoid", [], Value)
 Builder.wrapInstanceFunc("ret", "LLVMBuildRet", [Value], Value)
 #Builder.wrapInstanceFunc("aggregateRet", "LLVMBuildAggregateRet", [[Value]], Value) # Needs a manual wrap
@@ -168,6 +177,10 @@ Builder.wrapInstanceFunc("alloca", "LLVMBuildAlloca", [Type, c_char_p], Value)
 Builder.wrapInstanceFunc("load", "LLVMBuildLoad", [Value, c_char_p], Value)
 Builder.wrapInstanceFunc("store", "LLVMBuildStore", [Value, Value], Value)
 
+Builder.wrapInstanceFunc("call", "LLVMBuildCall", [Value, [Value], c_char_p], Value)
+
+Builder.wrapInstanceFunc("globalString", "LLVMBuildGlobalStringPtr", [c_char_p, c_char_p], Value)
+
 #
 # Type
 #
@@ -180,6 +193,14 @@ Type.wrapInstanceProp("isSized", "LLVMTypeIsSized", None, c_bool)
 
 Type.wrapInstanceFunc("dump", "LLVMDumpType")
 Type.wrapInstanceFunc("__str__", "LLVMPrintTypeToString", [], c_char_p)
+
+#
+# Pointer Types
+#
+
+Pointer.wrapConstructor("new", "LLVMPointerType", [Type, c_uint])
+
+Pointer.wrapInstanceProp("address_space", "LLVMGetPointerAddressSpace", None, c_uint)
 
 #
 # Integer Types
@@ -202,8 +223,6 @@ Float.wrapConstructor("double", "LLVMDoubleType")
 
 Function.wrapConstructor("new", "LLVMFunctionType", [Type, [Type], c_bool])
 
-Function.wrapInstanceFunc("appendBlock", "LLVMAppendBasicBlock", [c_char_p], Block)
-
 #
 # Block Types
 #
@@ -214,5 +233,9 @@ Block.wrapInstanceFunc("asValue", "LLVMBasicBlockAsValue", [], Value)
 # Value Types
 #
 
+Value.wrapConstructor("constInt", "LLVMConstInt", [Type, c_ulonglong, c_bool])
+
 Value.wrapInstanceProp("type", "LLVMTypeOf", None, Type)
 Value.wrapInstanceFunc("dump", "LLVMDumpValue")
+
+FunctionValue.wrapInstanceFunc("appendBlock", "LLVMAppendBasicBlock", [c_char_p], Block)
