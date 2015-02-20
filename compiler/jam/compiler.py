@@ -1,6 +1,6 @@
 from . import parser
 from ..lekvar import lekvar
-from ..llvm.emitter import Emitter
+from ..llvm import emitter as llvm
 
 from io import IOBase
 from subprocess import check_output
@@ -18,7 +18,5 @@ def compile(input:IOBase, output:IOBase):
     ir = parser.parseFile(input)
     lekvar.verify(ir)
     # Emit LLVM
-    emitter = Emitter(output)
-    ir.emitDefinition(emitter)
-    emitter.finalize()
+    output.write(llvm.emit(ir).decode("UTF-8"))
 

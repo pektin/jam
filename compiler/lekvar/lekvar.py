@@ -19,21 +19,12 @@ MethodSignature = None
 #
 
 class Object(ABC):
-    emit_data = None
-
     @abstract
     def resolveType(self) -> Type:
         """ Returns the type of this object.
         Must return an instance of Type or None.
         If the type is None, this object is considered void (side-effects only)
         Otherwise the object can be used as a value.
-        """
-
-    @abstract
-    def emit(self, emitter):
-        """ Redirects a call to an emitter object to emit an object of this kind.
-        The emit_data hook may be used by the emitter to store data necessary for emission.
-        This function may return data used for emission.
         """
 
     def __repr__(self):
@@ -93,22 +84,6 @@ class Scope(ScopeObject):
             out += more
         return out
 
-    def emit(self, emitter):
-        """ For scopes there is a distinction between emitting a definition and a value.
-        Use the emitValue and emitDefinition functions instead.
-        """
-        if self.emit_data is None:
-            self.emitDefinition(emitter)
-        return self.emitValue(emitter)
-
-    @abstract
-    def emitValue(self, emitter):
-        pass
-
-    @abstract
-    def emitDefinition(self, emitter):
-        pass
-
 class Type(Scope):
     @abstract
     def checkCompatibility(self, other:Type) -> bool:
@@ -136,9 +111,6 @@ class Comment(Object):
 
     def resolveType(self):
         return None
-
-    def emit(self, emitter):
-        return emitter.emitComment(self)
 
 class Assignment(Object):
     reference = None
@@ -171,9 +143,6 @@ class Assignment(Object):
     def resolveType(self):
         return None
 
-    def emit(self, emitter):
-        return emitter.emitAssignment(self)
-
 class Variable(ScopeObject):
     type = None
 
@@ -186,9 +155,6 @@ class Variable(ScopeObject):
 
     def resolveType(self):
         return self.type
-
-    def emit(self, emitter):
-        return emitter.emitVariable(self)
 
 class Reference(Object):
     reference = None
@@ -203,9 +169,6 @@ class Reference(Object):
 
     def resolveType(self):
         return self.value.resolveType()
-
-    def emit(self, emitter):
-        return self.value.emit(emitter)
 
     def __repr__(self):
         return "Reference<{}>".format(self.reference)
@@ -231,9 +194,6 @@ class Call(Object):
 
     def resolveType(self):
         return self.called.return_type
-
-    def emit(self, emitter):
-        return emitter.emitCall(self)
 
     def __repr__(self):
         return "Call<{}: {}>".format(self.reference, ", ".join(repr(value) for value in self.values))
@@ -262,13 +222,9 @@ class Return(Object):
     def resolveType(self):
         return None
 
-    def emit(self, emitter):
-        return emitter.emitReturn(self)
-
 class Literal(Object):
     type = None
     data = None
-    emit_data = None
 
     def __init__(self, data:bytes, type:Type):
         self.type = type
@@ -279,9 +235,6 @@ class Literal(Object):
 
     def resolveType(self):
         return self.type
-
-    def emit(self, emitter):
-        return emitter.emitLiteral(self)
 
 class FunctionType(Type):
     signature = None
@@ -310,12 +263,6 @@ class FunctionType(Type):
 
     def resolveType(self):
         raise InternalError("Not implemented")
-
-    def emitValue(self, emitter):
-        return emitter.emitFunctionTypeValue(self)
-
-    def emitDefinition(self):
-        emitter.emitFunctionTypeDefinition(self)
 
     def __repr__(self):
         return "(" + ", ".join(repr(type) for type in self.signature) + "):{}".format(self.return_type)
@@ -356,12 +303,6 @@ class Function(Scope):
                 objects.append(argument)
         return objects
 
-    def emitValue(self, emitter):
-        return emitter.emitFunctionValue(self)
-
-    def emitDefinition(self, emitter):
-        emitter.emitFunctionDefinition(self)
-
 class ExternalFunction(Scope):
     verified = True
     external_name = None
@@ -376,12 +317,6 @@ class ExternalFunction(Scope):
 
     def resolveType(self):
         return FunctionType(self.argument_types, self.return_type)
-
-    def emitValue(self, emitter):
-        return emitter.emitExternalFunctionValue(self)
-
-    def emitDefinition(self, emitter):
-        emitter.emitExternalFunctionDefinition(self)
 
 class MethodType(Type):
     overloads = None
@@ -408,12 +343,6 @@ class MethodType(Type):
     def resolveType(self):
         raise InternalError("Not implemented")
 
-    def emitValue(self, emitter):
-        return emitter.emitMethodTypeValue(self)
-
-    def emitDefinition(self):
-        emitter.emitMethodTypeDefinition(self)
-
 class Method(Scope):
     overloads = None
 
@@ -435,12 +364,6 @@ class Method(Scope):
     def resolveType(self):
         return MethodType(function.resolveType() for function in self.overloads)
 
-    def emitValue(self, emitter):
-        return emitter.emitMethodValue(self)
-
-    def emitDefinition(self, emitter):
-        emitter.emitMethodDefinition(self)
-
 class Module(Scope):
     main = None
 
@@ -456,12 +379,6 @@ class Module(Scope):
     def resolveType(self):
         #TODO
         raise InternalError("Not yet implemented")
-
-    def emitValue(self, emitter):
-        return emitter.emitModuleValue(self)
-
-    def emitDefinition(self, emitter):
-        emitter.emitModuleDefinition(self)
 
 #
 # Temporary Structures
@@ -486,12 +403,6 @@ class LLVMType(Type): # Temporary until stdlib is implemented
 
     def resolveType(self):
         raise InternalError("Not implemented yet")
-
-    def emitValue(self, emitter):
-        return emitter.emitLLVMType(self)
-
-    def emitDefinition(self, emitter):
-        pass # LLVMTypes are built into LLVM
 
     def __repr__(self):
         return "{}<{}>".format(self.__class__.__name__, self.llvm_type)
