@@ -160,6 +160,7 @@ Builder.wrapDestructor("LLVMDisposeBuilder")
 
 # Functions
 Builder.wrapInstanceFunc("positionAtEnd", "LLVMPositionBuilderAtEnd", [Block])
+Builder.wrapInstanceProp("position", "LLVMGetInsertBlock", None, Block)
 
 Builder.wrapInstanceFunc("retVoid", "LLVMBuildRetVoid", [], Value)
 Builder.wrapInstanceFunc("ret", "LLVMBuildRet", [Value], Value)
