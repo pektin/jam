@@ -8,18 +8,18 @@ BUILD_TARGET = "build/tests/llvm.ll"
 class LLVMTests(unittest.TestCase):
     def test_llvm(self):
         i32 = Int.new(32)
-        module = Module.fromName(b"test")
+        module = Module.fromName("test")
         builder = Builder.new()
 
-        puts = module.addFunction(b"puts", Function.new(i32, [Pointer.new(Int.new(8), 0)], False))
-        main = module.addFunction(b"main", Function.new(i32, [], False))
+        puts = module.addFunction("puts", Function.new(i32, [Pointer.new(Int.new(8), 0)], False))
+        main = module.addFunction("main", Function.new(i32, [], False))
 
-        entry = main.appendBlock(b"entry")
-        return_ = main.appendBlock(b"return")
+        entry = main.appendBlock("entry")
+        return_ = main.appendBlock("return")
 
         builder.positionAtEnd(entry)
-        hello = builder.globalString(b"Hello World!", b"temp.0")
-        builder.call(puts, [hello], b"")
+        hello = builder.globalString("Hello World!", "temp.0")
+        builder.call(puts, [hello], "")
         builder.br(return_)
 
         builder.positionAtEnd(return_)

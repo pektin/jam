@@ -36,6 +36,8 @@ def convertArgs(args):
         if isinstance(arg, list):
             arguments.append(cast((c_void_p * len(arg))(*arg), POINTER(c_void_p)))
             arguments.append(len(arg))
+        elif isinstance(arg, str):
+            arguments.append(arg.encode("UTF-8"))
         else:
             arguments.append(arg)
     return arguments
@@ -177,7 +179,7 @@ Builder.wrapInstanceFunc("alloca", "LLVMBuildAlloca", [Type, c_char_p], Value)
 Builder.wrapInstanceFunc("load", "LLVMBuildLoad", [Value, c_char_p], Value)
 Builder.wrapInstanceFunc("store", "LLVMBuildStore", [Value, Value], Value)
 
-Builder.wrapInstanceFunc("call", "LLVMBuildCall", [Value, [Value], c_char_p], Value)
+Builder.wrapInstanceFunc("call", "LLVMBuildCall", [FunctionValue, [Value], c_char_p], Value)
 
 Builder.wrapInstanceFunc("globalString", "LLVMBuildGlobalStringPtr", [c_char_p, c_char_p], Value)
 
