@@ -10,7 +10,7 @@ def getFiles():
     paths = os.listdir(TESTS_PATH)
     names = (os.path.splitext(path)[0] for path in paths)
     test_paths = (os.path.join(TESTS_PATH, path) for path in paths)
-    build_paths = (os.path.join(BUILD_PATH, path) for path in paths)
+    build_paths = (os.path.join(BUILD_PATH, path + ".ll") for path in paths)
     return zip(names, test_paths, build_paths)
 
 class CompilerTests(unittest.TestCase):
