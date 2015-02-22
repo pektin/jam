@@ -113,6 +113,12 @@ def Variable_emitValue(self, state:State):
     return state.builder.load(self.llvm_value, state.getTempName())
 lekvar.Variable.emitValue = Variable_emitValue
 
+def Assignment_emitValue(self, state:State):
+    value = self.value.emitValue(state)
+    self.variable.emit(state)
+    state.builder.store(value, self.variable.llvm_value)
+lekvar.Assignment.emitValue = Assignment_emitValue
+
 def Module_emit(self, state:State):
     if self.llvm_value is not None: return
 
