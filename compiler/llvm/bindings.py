@@ -242,3 +242,5 @@ Value.wrapInstanceProp("type", "LLVMTypeOf", None, Type)
 Value.wrapInstanceFunc("dump", "LLVMDumpValue")
 
 FunctionValue.wrapInstanceFunc("appendBlock", "LLVMAppendBasicBlock", [c_char_p], Block)
+FunctionValue.wrapInstanceFunc("getLastBlock", "LLVMGetLastBasicBlock", [], Block)
+FunctionValue.wrapInstanceFunc("getParam", "LLVMGetParam", [c_uint], Value)
