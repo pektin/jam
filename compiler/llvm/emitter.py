@@ -26,8 +26,18 @@ class State:
         self.main = []
 
     def finalize(self):
-        lekvar.Function("", [],
-            [ main_call(func) for func in self.main ], None).emit(self, "main")
+        main_type = lekvar.FunctionType([], lekvar.LLVMType("Int")).emitType(self)
+        main = self.module.addFunction("main", main_type)
+
+        entry = main.appendBlock("entry")
+        with self.blockScope(entry):
+            for func in self.main:
+                call = lekvar.Call("", [])
+                call.called = func
+                call.emitValue(self)
+
+            return_value = llvm.Value.constInt(lekvar.LLVMType("Int").emitType(self), 0, False)
+            self.builder.ret(return_value)
 
     @contextmanager
     def blockScope(self, block:llvm.Block):
@@ -83,6 +93,7 @@ def blank_emitValue(self, state:State):
 lekvar.Comment.emitValue = blank_emitValue
 
 def Module_emit(self, state:State):
+    self.main.emit(state)
     state.main.append(self.main)
 
     for child in self.children.values():
@@ -94,10 +105,10 @@ def Call_emitValue(self, state:State):
     return state.builder.call(self.called.emitValue(state), arguments, "")
 lekvar.Call.emitValue = Call_emitValue
 
-def Function_emit(self, state:State, name=None):
+def Function_emit(self, state:State):
     func_type = self.resolveType().emitType(state)
 
-    if name is None: name = resolveName(self)
+    name = resolveName(self)
     self.llvm_value = state.module.addFunction(name, func_type)
 
     entry = self.llvm_value.appendBlock("entry")
@@ -125,6 +136,17 @@ def FunctionType_emitType(self, state:State):
         return_type = llvm.Type.void()
     return llvm.Function.new(return_type, arguments, False)
 lekvar.FunctionType.emitType = FunctionType_emitType
+
+def ExternalFunction_emit(self, state:State):
+    func_type = self.resolveType().emitType(state)
+    self.llvm_value = state.module.addFunction(self.external_name, func_type)
+lekvar.ExternalFunction.emit = ExternalFunction_emit
+
+def ExternalFunction_emitValue(self, state:State):
+    if self.llvm_value is None:
+        self.emit(state)
+    return self.llvm_value
+lekvar.ExternalFunction.emitValue = ExternalFunction_emitValue
 
 def Literal_emitValue(self, state:State):
     type = self.type.llvm_type
