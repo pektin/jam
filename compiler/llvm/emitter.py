@@ -54,7 +54,8 @@ def main_call(func:lekvar.Function):
 
 # Abstract extensions
 
-lekvar.Scope.llvm_value = None
+lekvar.ScopeObject.llvm_value = None
+lekvar.Function.llvm_return = None
 
 # Extension abstract methods apparently don't work
 """@abstract
@@ -92,6 +93,22 @@ def blank_emitValue(self, state:State):
     return None
 lekvar.Comment.emitValue = blank_emitValue
 
+def Reference_emitValue(self, state:State):
+    return self.value.emitValue(state)
+lekvar.Reference.emitValue = Reference_emitValue
+
+def Variable_emit(self, state:State):
+    type = self.type.emitType(state)
+    name = resolveName(self)
+    self.llvm_value = state.builder.alloca(type, name)
+lekvar.Variable.emit = Variable_emit
+
+def Variable_emitValue(self, state:State):
+    if self.llvm_value is None:
+        self.emit(state)
+    return state.builder.load(self.llvm_value, "")
+lekvar.Variable.emitValue = Variable_emitValue
+
 def Module_emit(self, state:State):
     self.main.emit(state)
     state.main.append(self.main)
@@ -105,6 +122,16 @@ def Call_emitValue(self, state:State):
     return state.builder.call(self.called.emitValue(state), arguments, "")
 lekvar.Call.emitValue = Call_emitValue
 
+def Return_emitValue(self, state:State):
+    exit = self.parent.llvm_value.getLastBlock()
+    if self.value is None:
+        state.builder.br(return_)
+    else:
+        value = self.value.emitValue(state)
+        state.builder.store(value, self.parent.llvm_return)
+        state.builder.br(exit)
+lekvar.Return.emitValue = Return_emitValue
+
 def Function_emit(self, state:State):
     func_type = self.resolveType().emitType(state)
 
@@ -112,14 +139,29 @@ def Function_emit(self, state:State):
     self.llvm_value = state.module.addFunction(name, func_type)
 
     entry = self.llvm_value.appendBlock("entry")
-    return_ = self.llvm_value.appendBlock("return")
+    exit = self.llvm_value.appendBlock("exit")
     with state.blockScope(entry):
+        # Allocate Arguments
+        for index, arg in enumerate(self.arguments):
+            val = self.llvm_value.getParam(index)
+            arg.llvm_value = state.builder.alloca(arg.type.emitType(state), resolveName(arg))
+            state.builder.store(val, arg.llvm_value)
+
+        # Allocate Return Variable
+        if self.return_type is not None:
+            self.llvm_return = state.builder.alloca(self.return_type.emitType(state), "return")
+
         for instruction in self.instructions:
             instruction.emitValue(state)
-        state.builder.br(return_)
 
-    with state.blockScope(return_):
-        state.builder.retVoid() #TODO: Returns
+        state.builder.br(exit)
+
+    with state.blockScope(exit):
+        if self.llvm_return is not None:
+            val = state.builder.load(self.llvm_return, "")
+            state.builder.ret(val)
+        else:
+            state.builder.retVoid()
 lekvar.Function.emit = Function_emit
 
 def Function_emitValue(self, state:State):
