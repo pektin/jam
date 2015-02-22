@@ -32,6 +32,7 @@ class Object(ABC):
 
 class ScopeObject(Object):
     name = None
+    parent = None
 
     def __init__(self, name):
         self.name = name
@@ -53,6 +54,10 @@ class Scope(ScopeObject):
         for child in children:
             self.children[child.name] = child
             child.parent = self
+
+    def addChild(self, child:ScopeObject):
+        child.parent = self
+        self.children[child.name] = child
 
     def verify(self) -> None:
         if self.verified: return
@@ -127,7 +132,7 @@ class Assignment(Object):
             self.variable = scope.resolveReferenceDown(self.reference)
         except MissingReferenceError:
             self.variable = Variable(self.reference)
-            scope.children[self.reference] = self.variable
+            scope.addChild(self.variable)
 
         if not isinstance(self.variable, Variable):
             raise TypeError("Cannot assign to {}".format(self.variable))
