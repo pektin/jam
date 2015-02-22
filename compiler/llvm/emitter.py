@@ -46,6 +46,9 @@ class State:
         yield
         self.builder.positionAtEnd(previous_block)
 
+    def getTempName(self):
+        return "temp"
+
 
 def main_call(func:lekvar.Function):
     call = lekvar.Call("", [])
@@ -98,19 +101,22 @@ def Reference_emitValue(self, state:State):
 lekvar.Reference.emitValue = Reference_emitValue
 
 def Variable_emit(self, state:State):
+    if self.llvm_value is not None: return
+
     type = self.type.emitType(state)
     name = resolveName(self)
     self.llvm_value = state.builder.alloca(type, name)
 lekvar.Variable.emit = Variable_emit
 
 def Variable_emitValue(self, state:State):
-    if self.llvm_value is None:
-        self.emit(state)
-    return state.builder.load(self.llvm_value, "")
+    self.emit(state)
+    return state.builder.load(self.llvm_value, state.getTempName())
 lekvar.Variable.emitValue = Variable_emitValue
 
 def Module_emit(self, state:State):
-    self.main.emit(state)
+    if self.llvm_value is not None: return
+
+    self.llvm_value = self.main.emitValue(state)
     state.main.append(self.main)
 
     for child in self.children.values():
@@ -119,7 +125,11 @@ lekvar.Module.emit = Module_emit
 
 def Call_emitValue(self, state:State):
     arguments = [val.emitValue(state) for val in self.values]
-    return state.builder.call(self.called.emitValue(state), arguments, "")
+    if self.called.return_type is None:
+        name = ""
+    else:
+        name = state.getTempName()
+    return state.builder.call(self.called.emitValue(state), arguments, name)
 lekvar.Call.emitValue = Call_emitValue
 
 def Return_emitValue(self, state:State):
@@ -133,9 +143,10 @@ def Return_emitValue(self, state:State):
 lekvar.Return.emitValue = Return_emitValue
 
 def Function_emit(self, state:State):
-    func_type = self.resolveType().emitType(state)
+    if self.llvm_value is not None: return
 
     name = resolveName(self)
+    func_type = self.resolveType().emitType(state)
     self.llvm_value = state.module.addFunction(name, func_type)
 
     entry = self.llvm_value.appendBlock("entry")
@@ -158,15 +169,14 @@ def Function_emit(self, state:State):
 
     with state.blockScope(exit):
         if self.llvm_return is not None:
-            val = state.builder.load(self.llvm_return, "")
+            val = state.builder.load(self.llvm_return, state.getTempName())
             state.builder.ret(val)
         else:
             state.builder.retVoid()
 lekvar.Function.emit = Function_emit
 
 def Function_emitValue(self, state:State):
-    if self.llvm_value is None:
-        self.emit(state)
+    self.emit(state)
     return self.llvm_value
 lekvar.Function.emitValue = Function_emitValue
 
@@ -180,13 +190,14 @@ def FunctionType_emitType(self, state:State):
 lekvar.FunctionType.emitType = FunctionType_emitType
 
 def ExternalFunction_emit(self, state:State):
+    if self.llvm_value is not None: return
+
     func_type = self.resolveType().emitType(state)
     self.llvm_value = state.module.addFunction(self.external_name, func_type)
 lekvar.ExternalFunction.emit = ExternalFunction_emit
 
 def ExternalFunction_emitValue(self, state:State):
-    if self.llvm_value is None:
-        self.emit(state)
+    self.emit(state)
     return self.llvm_value
 lekvar.ExternalFunction.emitValue = ExternalFunction_emitValue
 
@@ -194,7 +205,7 @@ def Literal_emitValue(self, state:State):
     type = self.type.llvm_type
 
     if type == "String":
-        return state.builder.globalString(self.data, "")
+        return state.builder.globalString(self.data, state.getTempName())
     else:
         raise NotImplemented()
 lekvar.Literal.emitValue = Literal_emitValue
