@@ -25,6 +25,7 @@ COMMENT_CHAR = "#"
 STRING_CHAR = "\""
 WHITESPACE = set(" \t")
 WORD_CHARACTERS = set(string.ascii_letters + "_")
+WORD_CHARACTERS_AFTER = WORD_CHARACTERS | set(string.digits)
 KEYWORDS = {
     "def",
     "end",
@@ -110,7 +111,7 @@ class Lexer:
         name = self.current
 
         self.next()
-        while self.current in WORD_CHARACTERS:
+        while self.current in WORD_CHARACTERS_AFTER:
             name += self.current
             self.next()
 
