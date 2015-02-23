@@ -96,9 +96,30 @@ def blank_emitValue(self, state:State):
     return None
 lekvar.Comment.emitValue = blank_emitValue
 
+#
+# class Reference
+#
+
 def Reference_emitValue(self, state:State):
     return self.value.emitValue(state)
 lekvar.Reference.emitValue = Reference_emitValue
+
+#
+# class Literal
+#
+
+def Literal_emitValue(self, state:State):
+    type = self.type.llvm_type
+
+    if type == "String":
+        return state.builder.globalString(self.data, state.getTempName())
+    else:
+        raise NotImplemented()
+lekvar.Literal.emitValue = Literal_emitValue
+
+#
+# class Variable
+#
 
 def Variable_emit(self, state:State):
     if self.llvm_value is not None: return
@@ -113,11 +134,19 @@ def Variable_emitValue(self, state:State):
     return state.builder.load(self.llvm_value, state.getTempName())
 lekvar.Variable.emitValue = Variable_emitValue
 
+#
+# class Assignment
+#
+
 def Assignment_emitValue(self, state:State):
     value = self.value.emitValue(state)
     self.variable.emit(state)
     state.builder.store(value, self.variable.llvm_value)
 lekvar.Assignment.emitValue = Assignment_emitValue
+
+#
+# class Module
+#
 
 def Module_emit(self, state:State):
     if self.llvm_value is not None: return
@@ -129,6 +158,10 @@ def Module_emit(self, state:State):
         child.emit(state)
 lekvar.Module.emit = Module_emit
 
+#
+# class Call
+#
+
 def Call_emitValue(self, state:State):
     arguments = [val.emitValue(state) for val in self.values]
     if self.called.return_type is None:
@@ -137,6 +170,10 @@ def Call_emitValue(self, state:State):
         name = state.getTempName()
     return state.builder.call(self.called.emitValue(state), arguments, name)
 lekvar.Call.emitValue = Call_emitValue
+
+#
+# class Return
+#
 
 def Return_emitValue(self, state:State):
     exit = self.parent.llvm_value.getLastBlock()
@@ -147,6 +184,10 @@ def Return_emitValue(self, state:State):
         state.builder.store(value, self.parent.llvm_return)
         state.builder.br(exit)
 lekvar.Return.emitValue = Return_emitValue
+
+#
+# class Function
+#
 
 def Function_emit(self, state:State):
     if self.llvm_value is not None: return
@@ -186,6 +227,10 @@ def Function_emitValue(self, state:State):
     return self.llvm_value
 lekvar.Function.emitValue = Function_emitValue
 
+#
+# class FunctionType
+#
+
 def FunctionType_emitType(self, state:State):
     arguments = [type.emitType(state) for type in self.signature]
     if self.return_type is not None:
@@ -194,6 +239,10 @@ def FunctionType_emitType(self, state:State):
         return_type = llvm.Type.void()
     return llvm.Function.new(return_type, arguments, False)
 lekvar.FunctionType.emitType = FunctionType_emitType
+
+#
+# class ExternalFunction
+#
 
 def ExternalFunction_emit(self, state:State):
     if self.llvm_value is not None: return
@@ -207,14 +256,9 @@ def ExternalFunction_emitValue(self, state:State):
     return self.llvm_value
 lekvar.ExternalFunction.emitValue = ExternalFunction_emitValue
 
-def Literal_emitValue(self, state:State):
-    type = self.type.llvm_type
-
-    if type == "String":
-        return state.builder.globalString(self.data, state.getTempName())
-    else:
-        raise NotImplemented()
-lekvar.Literal.emitValue = Literal_emitValue
+#
+# class LLVMType
+#
 
 def LLVMType_emitType(self, state:State):
     return LLVMMAP[self.llvm_type]
