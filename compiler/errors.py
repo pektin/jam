@@ -1,16 +1,19 @@
-class MissingReferenceError(Exception):
-    pass
-
-class AmbiguetyError(Exception):
-    pass
-
-class TypeError(Exception):
-    pass
-
 class SyntaxError(Exception):
     pass
 
-class ValueError(Exception):
+class SemanticError(Exception):
+    pass
+
+class TypeError(SemanticError):
+    pass
+
+class ValueError(SemanticError):
+    pass
+
+class AmbiguetyError(SemanticError):
+    pass
+
+class MissingReferenceError(SemanticError):
     pass
 
 class InternalError(Exception):
