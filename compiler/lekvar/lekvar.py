@@ -294,8 +294,15 @@ class Function(Scope):
         if self.verified: return
         self.verified = True
 
+        returned = False
+
         for instruction in self.instructions:
+            if isinstance(instruction, Return):
+                returned = True
             instruction.verify(self)
+
+        if not returned and self.return_type is not None:
+            raise SemanticError("One or more function paths do not return")
 
     def resolveType(self):
         return FunctionType([arg.type for arg in self.arguments], self.return_type)
