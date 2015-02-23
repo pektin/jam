@@ -1,0 +1,6 @@
+!SemanticError
+
+def noReturn():String
+end
+
+print(noReturn())
