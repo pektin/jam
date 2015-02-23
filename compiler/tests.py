@@ -1,7 +1,9 @@
 import os
 import unittest
+from subprocess import check_output
 
-from .jam.compiler import compileRun
+from . import errors
+from .jam.compiler import compile, compileRun
 
 TESTS_PATH = os.path.join("compiler", "tests")
 BUILD_PATH = os.path.join("build", "tests")
@@ -22,11 +24,26 @@ for file in getFiles():
     if os.path.splitext(path)[1] != ".jm": continue
 
     def test(self, path=path, build=build):
-        # Get output data
-        with open(path, "r") as f:
-            output = f.readline()[1:-1].encode("UTF-8").decode("unicode-escape")
-        # compile and test
+        # Make the testing directories, if needed
         os.makedirs(BUILD_PATH, exist_ok=True)
-        self.assertEqual(output, compileRun(path, build).decode("UTF-8"))
+
+        # Get output data
+        with open(path, "r") as f_in, open(build, "w") as f_out:
+            # The first line is the output
+            first_line = f_in.readline()
+            type = first_line[0]
+            output = first_line[1:-1].encode("UTF-8").decode("unicode-escape")
+
+            # Check if the output was correct
+            if type == "#":
+                compile(f_in, f_out)
+                f_out.close()
+                self.assertEqual(output, check_output(["lli", build]).decode("UTF-8"))
+            # Check if the correct exception was thrown
+            elif type == "!":
+                with self.assertRaises(getattr(errors, output)):
+                    compile(f_in, f_out)
+            else:
+                raise errors.InternalError("Invalid Test Output Type: {}".format(type))
 
     setattr(CompilerTests, "test_" + name, test)
