@@ -4,9 +4,7 @@ LLVM is used as a target for the jam compiler. This contains the emitter used to
 
 ## Approach
 
-The current approach for emitting llvm-ir using Lekvar uses a file-like object as a target output. The final output target is used as a global write target for llvm-ir. Since emitting can jump from one function to the next without finishing, writing has to be buffered using a stack of strings, where the top of the stack is always the writing target and when removed is written to the global output.
-
-This approach is sub-optimal because of the mass-use of string addition, especially with the python implementation but it is good enough for now.
+The current approach uses a ctypes binding to the LLVM C bindings. Each lekvar class is extended to include a ``emitValue`` function, which should return a ``llvm.Value`` (``LLVMValueRef``) instance. ``lekvar.ScopeObject`` classes are extended to also include a ``emit`` function, which creates the lekvar object, without returning a value. ``lekvar.Type`` classes are extended to further include a ``emitType`` function, which should return a ``llvm.Type`` (``LLVMTypeRef``) instance.
 
 ## Example
 
