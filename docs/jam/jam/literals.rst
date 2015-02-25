@@ -12,3 +12,4 @@ syntax.
 .. toctree::
     :titlesonly:
 
+    literals/integers
