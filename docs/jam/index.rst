@@ -10,7 +10,8 @@ The Jam Language Reference describes the syntax, grammar and compilation of Jam.
     :titlesonly:
     :glob:
 
-    ./jam/*
+    jam/introduction
+    jam/comments
 
 The Lekvar Reference
 ====================
@@ -23,4 +24,4 @@ verifications and serialized formats.
     :titlesonly:
     :glob:
 
-    lekvar/*
+    lekvar/introduction
