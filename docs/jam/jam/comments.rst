@@ -10,7 +10,7 @@ use comments in order to maintain the maintainability of code without causing
 clutter.
 
 Syntax
-------
+======
 
 Comments start with a hashtag (``#``) and end with a newline (``\n``) character.
 
@@ -26,6 +26,6 @@ Examples
     dist = (x**2 + y**2)**0.5
 
 Compilation
------------
+===========
 
 Comments are only compiled when compiling in debug mode and otherwise ignored.
