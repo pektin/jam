@@ -14,6 +14,17 @@ Syntax
 
 Comments start with a hashtag (``#``) and end with a newline (``\n``) character.
 
+Multiline comments do not exist, primarily because most modern code editing
+tools have shortcuts to achieve the same thing.
+
+Examples
+--------
+
+::
+
+    # Find the distance using pythag
+    dist = (x**2 + y**2)**0.5
+
 Compilation
 -----------
 
