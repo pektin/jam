@@ -13,3 +13,4 @@ syntax.
     :titlesonly:
 
     literals/integers
+    literals/floats
