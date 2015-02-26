@@ -15,6 +15,7 @@ The Jam Language Reference describes the syntax, grammar and compilation of Jam.
     jam/values
     jam/literals
     jam/variables
+    jam/assignments
 
 The Lekvar Reference
 ====================
