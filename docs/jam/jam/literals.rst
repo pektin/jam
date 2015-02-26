@@ -14,3 +14,4 @@ syntax.
 
     literals/integers
     literals/floats
+    literals/strings
