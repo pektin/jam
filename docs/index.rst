@@ -10,7 +10,7 @@ Jam v\ |release| Documentation
 
 This collection of documents tries to provide comprehensive documentation on
 the Jam programming language. Any missing documentation, bugs or other problems
-please report them to the github_ repository.
+please report them to the github repository.
 
 Contents:
 =========

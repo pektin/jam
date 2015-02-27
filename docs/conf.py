@@ -24,16 +24,6 @@ version = '0.0'
 # The full version, including alpha/beta/rc tags.
 release = '0.0.1'
 
-# List of patterns, relative to source directory, that match files and
-# directories to ignore when looking for source files.
-exclude_patterns = [
-    "epilogue.rst"
-]
-
-# Loaded global include file
-with open("epilogue.rst") as f:
-    rst_epilog = f.read()
-
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
