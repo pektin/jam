@@ -15,3 +15,13 @@ syntax.
     literals/integers
     literals/floats
     literals/strings
+
+Syntax
+======
+
+::
+
+    Literal:
+        <Integer>
+        <Float>
+        <String>

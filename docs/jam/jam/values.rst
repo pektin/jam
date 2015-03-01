@@ -9,3 +9,10 @@ which will be used by other parts of the language.
 
 Values may be used as input for instructions or other values. Values may have
 side effects.
+
+::
+
+    Value:
+        <Identifier>
+        <Literals>
+        <Methods>

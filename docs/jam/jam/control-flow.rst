@@ -11,3 +11,12 @@ a program. There are two kinds of flow control:
 
     loops
     conditionals
+
+Syntax
+======
+
+::
+
+    FlowControl:
+        <Loop>
+        <Conditional>

@@ -9,13 +9,16 @@ impossible to add with standard code for themselves or others. It is advised to
 use comments in order to maintain the maintainability of code without causing
 clutter.
 
+Multiline comments do not exist, primarily because most modern code editing
+tools have shortcuts to achieve the same thing.
+
 Syntax
 ======
 
-Comments start with a hashtag (``#``) and end with a newline (``\n``) character.
+::
 
-Multiline comments do not exist, primarily because most modern code editing
-tools have shortcuts to achieve the same thing.
+    Comment:
+        # <(.*)> <newline>
 
 Examples
 --------

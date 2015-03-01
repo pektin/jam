@@ -11,15 +11,30 @@ Jam has two kinds of conditionals: A if conditional and a case conditional.
 Syntax
 ======
 
-The if conditional starts with the if keyword (``if``) followed by a condition.
-Optionally another condition may be checked if the previous one failed using
-the else if keyword (``elif``) followed by that respective condition. The
-conditional may optionally continue with a single else keyword (``else``)
-and then terminate with an end keyword (``end``)
+::
 
-The case conditional starts with the case keyword (``case``) followed by
-a single value. It may then continue with any number of when clauses, starting
-with the when keyword (``when``) followed by a value that is checked for
-equality against the case value. The conditional may contain an optional else
-clause using the else keyword (``else``) for values that don't match. It ends
-with the end keyword (``end``).
+    Conditional:
+        <IfConditional>
+        <CaseConditional>
+
+    ElifClause:
+        elif <Value> <newline> <InstructionSet>
+        elif <Value> <newline> <InstructionSet> <newline> <ElifClause>
+
+    IfConditional:
+        if <Value> <newline> <InstructionSet> <newline> end
+        if <Value> <newline> <InstructionSet> <newline> else <newline> <InstructionSet> <newline> end
+        if <Value> <newline> <InstructionSet> <newline> <ElifClause> <newline> end
+        if <Value> <newline> <InstructionSet> <newline> <ElifClause> <newline> else <newline> <InstructionSet> <newline> end
+
+    IfConditionalValue:
+        <Instruction> if <Value> <newline>
+        <Instruction> if <Value> else <Instruction> <newline>
+
+    WhenClause:
+        when <Value> <newline> <InstructionSet>
+        when <Value> <newline> <InstructionSet> <newline>  <WhenClause>
+
+    CaseConditional:
+        case <Value> <newline> <WhenClause> <newline> end
+        case <Value> <newline> <WhenClause> <newline> else <newline> <InstructionSet> <newline> end

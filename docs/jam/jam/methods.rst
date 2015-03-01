@@ -16,15 +16,25 @@ same name must be used for each definition in the same scope.
 Syntax
 ======
 
-A method definition starts with the definition keyword (``def``) then with an
-optional identifier for the method. Following comes a comma (``,``) separated
-list of variable declarations within a pair of brackets (``()``). After that
-a newline is expected, followed by any number of instructions and terminated
-by the end keyword (``end``).
+::
 
-A method call is similar. It starts with a value equivalent to a method,
-followed by a comma (``,``) separated list of values within a pair of brackets
-(``()``) that map to a list of variables in one of the methods definitions.
+    Argument:
+        <Variable>
+        <Variable> = <Value>
+
+    Arguments:
+        <Argument>
+        <Argument> , <Argument>
+
+    MethodEnd:
+         <newline> <InstructionSet> <newline> end
+
+    Method:
+        def <Identifier> ( ) <MethodEnd>
+        def <Identifier> ( ) : <Type> <MethodEnd>
+        def <Identifier> ( <Arguments> ) <MethodEnd>
+        def <Identifier> ( <Arguments> ) : <Type> <MethodEnd>
+
 
 Examples
 --------
