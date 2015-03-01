@@ -16,3 +16,5 @@ side effects.
         <Identifier>
         <Literals>
         <Methods>
+        <Class>
+        <TypeCast>

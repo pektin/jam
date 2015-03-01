@@ -46,6 +46,7 @@ Syntax
         <Variable>
         <Assignment>
         <Method>
+        <TypeCastDef>
 
     ClassInstructionSet:
         <ClassInstruction>
