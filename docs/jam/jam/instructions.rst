@@ -16,4 +16,5 @@ Syntax
         <Assignment>
         <FlowControl>
         <Method>
+        <Class>
 

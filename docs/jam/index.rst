@@ -20,6 +20,7 @@ The Jam Language Reference describes the syntax, grammar and compilation of Jam.
     jam/assignments
     jam/control-flow
     jam/methods
+    jam/types
 
 The Lekvar Reference
 ====================
