@@ -7,6 +7,7 @@ Jam v\ |release| Documentation
 
     jam/index
     lib/index
+    tutorial/index
 
 This collection of documents tries to provide comprehensive documentation on
 the Jam programming language. Any missing documentation, bugs or other problems
@@ -23,5 +24,8 @@ Contents:
 
     * :ref:`Library Reference <lib-index>`
         *the documentation to the standard library*
+
+    * :ref:`Tutorial <tutorial-index>`
+        *the official tutorial to the jam language*
 
 
