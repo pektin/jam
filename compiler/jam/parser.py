@@ -50,7 +50,7 @@ class Parser:
         return token.data
 
     def parseModule(self):
-        children = []
+        children = {}
         instructions = []
 
         while True:
@@ -59,9 +59,18 @@ class Parser:
             # EOF escape
             if value is None: break
 
-            if isinstance(value, lekvar.Scope):
-                # Scopes are automatically added as children
-                children.append(value)
+            if isinstance(value, lekvar.ScopeObject):
+                # ScopeObjects are automatically added as children
+                name = value.name
+
+                if isinstance(value, lekvar.Function):
+
+                    if name in children:
+                        children[name].addOverload(value)
+                    else:
+                        children[name] = lekvar.Method(value.name, [value])
+                else:
+                    children[name] = value
             else:
                 # Other values are added as instructions
                 instructions.append(value)

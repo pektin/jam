@@ -5,14 +5,15 @@ builtins = None
 def verify(module):
     # Create the builtins
     global builtins
-    builtins = Builtins([
-        ExternalFunction("print", "puts", [LLVMType("String")], LLVMType("Int"))
-    ])
+    builtins = Builtins({
+        "print": ExternalFunction("print", "puts", [LLVMType("String")], LLVMType("Int"))
+    })
     module.verify()
 
 # Python predefines
 Type = None
-MethodSignature = None
+Function = None
+FunctionType = None
 
 #
 # Abstract Base Structures
@@ -26,6 +27,12 @@ class Object(ABC):
         If the type is None, this object is considered void (side-effects only)
         Otherwise the object can be used as a value.
         """
+
+    def resolveCall(self, signature:FunctionType) -> Function:
+        """ Returns a function that matches a call signature for this object.
+        Must return either a Function instance or raise a TypeError
+        """
+        raise TypeError("{} object is not callable".format(self))
 
     def __repr__(self):
         return "{}<{}>".format(self.__class__.__name__, self.resolveType())
@@ -46,13 +53,12 @@ class Scope(ScopeObject):
     parent = None
     children = None
 
-    def __init__(self, name, children:[ScopeObject] = []):
+    def __init__(self, name, children:{str: ScopeObject} = {}):
         super().__init__(name)
 
         # set children
-        self.children = {}
-        for child in children:
-            self.children[child.name] = child
+        self.children = children
+        for child in children.values():
             child.parent = self
 
     def addChild(self, child:ScopeObject):
@@ -195,7 +201,7 @@ class Call(Object):
         signature = [value.resolveType() for value in self.values]
         self.called = scope.resolveReferenceDown(self.reference)
 
-        self.called.resolveType().resolveCompatibility(FunctionType(signature, []))
+        self.called = self.called.resolveCall(FunctionType(signature, []))
 
     def resolveType(self):
         return self.called.return_type
@@ -307,6 +313,12 @@ class Function(Scope):
     def resolveType(self):
         return FunctionType([arg.type for arg in self.arguments], self.return_type)
 
+    def resolveCall(self, other_signature:FunctionType):
+        self_signature = self.resolveType()
+        if not self_signature.checkCompatibility(other_signature):
+            raise TypeError("Function signature {} is not compatible with {}".format(self_signature, other_signature))
+        return self
+
     def collectReferencesDown(self, reference:str):
         objects = super().collectReferencesDown(reference)
         # Find any references in the function arguments
@@ -329,6 +341,8 @@ class ExternalFunction(Scope):
 
     def resolveType(self):
         return FunctionType(self.argument_types, self.return_type)
+
+    resolveCall = Function.resolveCall
 
 class MethodType(Type):
     overloads = None
@@ -361,10 +375,14 @@ class Method(Scope):
     def __init__(self, name:str, overloads:[Function]):
         super().__init__(name)
 
-        self.overloads = overloads
-        for index, overload in enumerate(self.overloads):
-            overload.name = str(index)
-            overload.parent = self
+        self.overloads = []
+        for overload in overloads:
+            self.addOverload(overload)
+
+    def addOverload(self, fn:Function):
+        fn.name = str(len(self.overloads))
+        fn.parent = self
+        self.overloads.append(fn)
 
     def verify(self):
         if self.verified: return
@@ -376,10 +394,24 @@ class Method(Scope):
     def resolveType(self):
         return MethodType(function.resolveType() for function in self.overloads)
 
+    def resolveCall(self, signature):
+        found = []
+
+        for overload in self.overloads:
+            overld_sig = overload.resolveType()
+            if signature.checkCompatibility(overld_sig):
+                found.append(overload)
+
+        if len(found) == 0:
+            raise TypeError("No compatible overload found for {}".format(signature))
+        elif len(found) > 1:
+            raise TypeError("Ambiguous overloads for {}",format(signature))
+        return found[0]
+
 class Module(Scope):
     main = None
 
-    def __init__(self, name:str, children:[ScopeObject], main:Function):
+    def __init__(self, name:str, children:{str: ScopeObject}, main:Function):
         super().__init__(name, children)
         self.main = main
         self.main.parent = self
