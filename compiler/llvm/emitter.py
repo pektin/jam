@@ -83,11 +83,11 @@ lekvar.Type.llvm_type = None"""
 
 def resolveName(scope:lekvar.ScopeObject):
     # Resolves the name of a scope, starting with a extraneous .
-    name = "lekvar"
+    name = ""
     while scope.parent is not None:
-        name += "." + scope.name
+        name = "." + scope.name + name
         scope = scope.parent
-    return name
+    return "lekvar" + name
 
 # Implements
 
