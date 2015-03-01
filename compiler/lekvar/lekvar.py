@@ -53,7 +53,8 @@ class Scope(ScopeObject):
     parent = None
     children = None
 
-    def __init__(self, name, children:{str: ScopeObject} = {}):
+    def __init__(self, name, children:{str: ScopeObject} = None):
+        if children is None: children = {}
         super().__init__(name)
 
         # set children
