@@ -257,6 +257,17 @@ def ExternalFunction_emitValue(self, state:State):
 lekvar.ExternalFunction.emitValue = ExternalFunction_emitValue
 
 #
+# class Method
+#
+
+def Method_emit(self, state:State):
+    if self.llvm_value is not None: return
+
+    for overload in self.overloads:
+        overload.emit(state)
+lekvar.Method.emit = Method_emit
+
+#
 # class LLVMType
 #
 

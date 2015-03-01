@@ -285,7 +285,6 @@ class Function(Scope):
 
     def __init__(self, name:str, arguments: [Variable], instructions: [Object], return_type: Type = None):
         super().__init__(name)
-        self.name = name
 
         self.arguments = arguments
         self.instructions = instructions
