@@ -8,6 +8,13 @@ variables. Type casting is either implicit or explicit. Implicit casts are
 inferred by the compiler, while explicit casts require the programmer to specify
 the cast.
 
+When an operation is done to a value all implicit casts are checked for that
+same operation. Although the direct type of the value takes precedence, having
+ambiguity between implicitly cast types is invalid.
+
+When a value is passed to a function, the value may be implicitly cast to the
+type of the respective argument if required.
+
 Syntax
 ======
 
@@ -28,3 +35,4 @@ Syntax
 
     ExplicitCastDef:
         def self as <Type> <newline> <InstructionSet> <newline> end
+
