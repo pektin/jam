@@ -19,9 +19,5 @@ syntax.
 Syntax
 ======
 
-::
-
-    Literal:
-        <Integer>
-        <Float>
-        <String>
+.. productionlist::
+    Literal: `Integer` | `Float` | `String`

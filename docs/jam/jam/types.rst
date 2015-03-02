@@ -31,48 +31,15 @@ A type may be marked as nullable either at definition or declaration.
 Syntax
 ======
 
-::
-
-    Type:
-        <Types>
-        <Types> ?
-
-    Types:
-        <Identifier>
-        <Identifier>
-        <ArrayType>
-        <DictType>
-        <Class>
-
-    ArrayTypeLength:
-        <Integer>
-        <Integer> , <ArrayTypeLength>
-        , <ArrayTypeLength>
-
-    ArrayType:
-        <Type> [ ]
-        <Type> [ <ArrayTypeLength> ]
-
-    DictType:
-        { <Type> -> <Type> }
-
-    ClassIdentifier:
-        <Identifier>
-        <Identifier> ?
-
-    ClassInstruction:
-        <Variable>
-        <Assignment>
-        <Method>
-        <TypeCastDef>
-
-    ClassInstructionSet:
-        <ClassInstruction>
-        <ClassInstruction> <newline> <ClassInstructionSet>
-
-    Class:
-        class <Identifier> <newline> <ClassInstructionSet> <newline> end
-        class <Identifier>(<Identifier>) <newline> <ClassInstructionSet> <newline> end
+.. productionlist::
+    Type: (`Identifier` | `ArrayType` | `DictType` | `Class`)["?"]
+    ArrayType: `Type` "[" ( [`Integer`] "," )* [`Integer`] "]"
+    DictType: "{" `Type` "->" `Type` "}"
+    ClassInstructionSet: (`Variable` | `Assignment` | `Method` | `TypeCastDef`
+                       : )*
+    Class: "class" `Identifier` ["?"] [ "(" `Identifier` ")" ]
+         :     `ClassInstructionSet`
+         : "end"
 
 .. note::
 

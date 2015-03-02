@@ -13,21 +13,14 @@ value. These are the break and continue statements.
 Syntax
 ======
 
-::
-
-    Loop:
-        <GenericLoop>
-        <WhileLoop>
-        <ForLoop>
-
-    GenericLoop:
-        loop <newline> <InstructionSet> <newline> end
-        <Instruction> loop <newline>
-
-    WhileLoop:
-        while <Value> <newline> <InstructionSet> <newline> end
-        <Instruction> while <Value> <newline>
-
-    ForLoop:
-        for <Variable> in <Value> <newline> <InstructionSet> <newline> end
-        <Instruction> for <Variable> in <Value> <newline>
+.. productionlist::
+    Loop: `GenericLoop` | `WhileLoop` | `ForLoop`
+    GenericLoop: "loop"
+               :     `InstructionSet`
+               : "end"
+    WhileLoop: "while" `Value`
+             :     `InstructionSet`
+             : "end"
+    ForLoop: "for" `Variable` "in" `Value`
+           :     `InstructionSet`
+           : "end"

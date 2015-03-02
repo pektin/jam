@@ -11,16 +11,6 @@ variables, but three values cannot be assigned to two variables.
 Syntax
 ======
 
-::
-
-    AssignmentVars:
-        <Variable>
-        <Variable> , <AssignmentVars>
-
-    AssignmentVals:
-        <Value>
-        <Value>, <AssignmentVals>
-
-    Assignment:
-        <AssignmentVars> = <AssignmentVals>
-        <AssignmentVars> = <Assignment>
+.. productionlist::
+    AssignmentVars: [`Variable` ","]* `Variable`
+    Assignment: [`AssignmentVars` "="]* `AssignmentVars` "=" [`Value` ","]* `Value`

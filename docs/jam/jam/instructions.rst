@@ -8,11 +8,6 @@ A instruction represents any single, top-level part of Jam's syntax.
 Syntax
 ======
 
-::
-
-    Instruction:
-        <Comment>
-        <Value>
-        <Assignment>
-        <FlowControl>
+.. productionlist::
+    Instruction: `Comment` | `Value` | `Assignment` | `FlowControl`
 

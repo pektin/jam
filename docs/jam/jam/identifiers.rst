@@ -10,10 +10,8 @@ same identifier.
 Syntax
 ======
 
-::
-
-    Identifier:
-        <([a-zA-Z_][a-zA-Z_0-9]*)>
+.. productionlist::
+    Identifier: ([a-zA-Z_][a-zA-Z_0-9]*)
 
 Examples
 --------

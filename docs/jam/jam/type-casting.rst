@@ -18,21 +18,10 @@ type of the respective argument if required.
 Syntax
 ======
 
-::
-
-    TypeCast:
-        <ExplicitCast>
-
-    ExplicitCast:
-        <Value> as <Type>
-
-    TypeCastDef:
-        <ImplicitCastDef>
-        <ExplicitCastDef>
-
-    ImplicitCastDef:
-        def self : <Type> <newline> <InstructionSet> <newline> end
-
-    ExplicitCastDef:
-        def self as <Type> <newline> <InstructionSet> <newline> end
-
+.. productionlist::
+    TypeCast: `Value` "as" `Type`
+    TypeCastDef: `ImplicitCastDef` | `ExplicitCastDef`
+    ImplicitCastDef: "def" "self" ":" `Type`
+                   :     `InstructionSet`
+                   : "end"
+    ExplicitCastDef: "def" "self" "as" `Type`

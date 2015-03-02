@@ -10,7 +10,5 @@ must be compatible with all of the variable's usage.
 Syntax
 ======
 
-::
-
-    Variable:
-        <Identifier> : <Type>
+.. productionlist::
+    Variable: `Identifier` ":" `Type`

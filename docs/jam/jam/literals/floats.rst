@@ -8,8 +8,8 @@ A floating point is a real number of the builtin type ``Float`` or ``Double``
 Syntax
 ======
 
-A floating point literal consists of two integer literals separated by a dot
-(``.``), with one integer literal being optional.
+.. productionlist::
+    Float: ([`Integer`]"." `Integer` ) | ( `Integer` "."[`Integer`])
 
 Examples
 --------

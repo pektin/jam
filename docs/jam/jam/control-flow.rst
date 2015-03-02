@@ -15,8 +15,5 @@ a program. There are two kinds of flow control:
 Syntax
 ======
 
-::
-
-    FlowControl:
-        <Loop>
-        <Conditional>
+.. productionlist::
+    FlowControl: `Loop` | `Conditional`

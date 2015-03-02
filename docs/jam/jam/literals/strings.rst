@@ -40,7 +40,5 @@ formatting.
 Examples
 --------
 
-::
-
-    "Foo: \"#{foo}\""
-    `\"\f`
+.. productionlist::
+    String: "\"" .* "\""

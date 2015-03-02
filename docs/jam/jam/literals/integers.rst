@@ -8,8 +8,8 @@ A integer is a whole number of the builtin type ``Int``.
 Syntax
 ======
 
-A integer literal may contain one or more digits (``0-9``) with optional
-separation by a underscore (``_``) for large numbers.
+.. productionlist::
+    Integer: [0-9][ [0-9_]*[0-9] ]
 
 Examples
 --------

@@ -16,24 +16,11 @@ same name must be used for each definition in the same scope.
 Syntax
 ======
 
-::
-
-    Argument:
-        <Variable>
-        <Variable> = <Value>
-
-    Arguments:
-        <Argument>
-        <Argument> , <Argument>
-
-    MethodEnd:
-         <newline> <InstructionSet> <newline> end
-
-    Method:
-        def <Identifier> ( ) <MethodEnd>
-        def <Identifier> ( ) : <Type> <MethodEnd>
-        def <Identifier> ( <Arguments> ) <MethodEnd>
-        def <Identifier> ( <Arguments> ) : <Type> <MethodEnd>
+.. productionlist::
+    Argument: `Variable` ["=" `Value`]
+    Method: "def" `Identifier` "(" [ [`Argument` ","]* `Argument` ] ")" [ ":" `Type` ]
+          :     `InstructionSet`
+          : "end"
 
 
 Examples

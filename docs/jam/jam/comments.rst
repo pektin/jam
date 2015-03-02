@@ -15,10 +15,9 @@ tools have shortcuts to achieve the same thing.
 Syntax
 ======
 
-::
-
-    Comment:
-        # <(.*)> <newline>
+.. productionlist::
+    Comment: ("#" .*
+           : )
 
 Examples
 --------
