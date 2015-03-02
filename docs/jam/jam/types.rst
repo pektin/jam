@@ -19,12 +19,26 @@ For a argument, the type is determined by every action involving that argument.
 From this it builds a "type expectation" that is used at compile time to check
 whether arguments are valid.
 
+Nullability
+===========
+
+A type may be explicitly marked as nullable, meaning that the ``null`` value may
+be assigned to it. A nullable type does not allow member access unless the value
+is checked for ``null``, or is cast to the type's non-nullable counterpart.
+
+A type may be marked as nullable either at definition or declaration.
+
 Syntax
 ======
 
 ::
 
     Type:
+        <Types>
+        <Types> ?
+
+    Types:
+        <Identifier>
         <Identifier>
         <ArrayType>
         <DictType>
@@ -41,6 +55,10 @@ Syntax
 
     DictType:
         { <Type> -> <Type> }
+
+    ClassIdentifier:
+        <Identifier>
+        <Identifier> ?
 
     ClassInstruction:
         <Variable>
