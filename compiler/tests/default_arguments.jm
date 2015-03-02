@@ -1,0 +1,8 @@
+#Hi\nHello World!\n
+
+def puts(string:String = "Hello World!")
+    print(string)
+end
+
+puts("Hi")
+puts()
