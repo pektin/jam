@@ -74,3 +74,7 @@ Syntax
         class <Identifier> <newline> <ClassInstructionSet> <newline> end
         class <Identifier>(<Identifier>) <newline> <ClassInstructionSet> <newline> end
 
+.. note::
+
+    The syntax for array and dictionary types is currently a place-holder
+
