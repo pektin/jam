@@ -35,7 +35,8 @@ Syntax
     Type: (`Identifier` | `ArrayType` | `DictType` | `Class`)["?"]
     ArrayType: `Type` "[" ( [`Integer`] "," )* [`Integer`] "]"
     DictType: "{" `Type` "->" `Type` "}"
-    ClassInstructionSet: (`Variable` | `Assignment` | `Method` | `TypeCastDef`
+    InstanceVariable: `Variable` ["=" `Value`]
+    ClassInstructionSet: (`InstanceVariable` | `Assignment` | `Method` | `TypeCastDef`
                        : )*
     Class: "class" `Identifier` ["?"] [ "(" `Identifier` ")" ]
          :     `ClassInstructionSet`
