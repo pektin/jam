@@ -63,12 +63,12 @@ class Parser:
                 # ScopeObjects are automatically added as children
                 name = value.name
 
-                if isinstance(value, lekvar.Function):
+                if isinstance(value, lekvar.Method):
 
                     if name in children:
-                        children[name].addOverload(value)
+                        children[name].assimilate(value)
                     else:
-                        children[name] = lekvar.Method(value.name, [value])
+                        children[name] = value
                 else:
                     children[name] = value
             else:
@@ -109,7 +109,7 @@ class Parser:
         # Identify the kind of value
         if token.type == Tokens.keyword:
             if token.data == "def":
-                return self.parseFunction()
+                return self.parseMethod()
         elif token.type == Tokens.identifier:
             if self.lookAhead(2).type == Tokens.group_start:
                 return self.parseCall()
@@ -121,13 +121,14 @@ class Parser:
 
         self._unexpected(token)
 
-    def parseFunction(self):
+    def parseMethod(self):
         # "def" should have already been identified
         self.next()
 
         name = self.expect()
 
         arguments = []
+        default_values = []
 
         token = self.lookAhead()
         if token.type != Tokens.newline and token.type != Tokens.typeof: # Allow for no arguments
@@ -143,7 +144,14 @@ class Parser:
                 while True:
                     arguments.append(self.parseVariable())
 
+                    # Parse default arguments
                     token = self.next()
+                    if token.type == Tokens.equal:
+                        default_values.append(self.parseValue())
+                        token = self.next()
+                    else:
+                        default_values.append(None)
+
                     # Arguments separated by comma
                     if token.type == Tokens.comma:
                         continue
@@ -157,9 +165,10 @@ class Parser:
 
         return_type = self.parseTypeSig()
 
-        instructions = []
 
         # Parse instructions
+        instructions = []
+
         while True:
             token = self.strip()
 
@@ -169,8 +178,31 @@ class Parser:
             if token.type == Tokens.keyword:
                 if token.data == "end":
                     self.next()
-                    return lekvar.Function(name, arguments, instructions, return_type)
+                    break
             instructions.append(self.parseLine())
+
+        # Create method with default arguments
+        overloads = [lekvar.Function("", arguments, instructions, return_type)]
+
+        in_defaults = True
+        for index, value in enumerate(reversed(default_values)):
+            if in_defaults:
+                if value is None:
+                    in_defaults = False
+                else:
+                    # Add an overload calling the previous overload with the default argument
+                    overloads.append(lekvar.Function("", arguments[:index], [
+                        lekvar.Call("", [
+                            # Add non-default arguments
+                            lekvar.Reference(argument.name) for argument in arguments[:index]
+                        ] + [default_values[index]], overloads[-1])
+                    ]))
+            else:
+                # Check for default arguments before a non-defaulted argument
+                if value is not None:
+                    raise SyntaxError("Cannot have non-defaulted arguments after defaulted ones")
+
+        return lekvar.Method(name, overloads)
 
     def parseVariable(self):
         # Parse a variable, with optional type signature

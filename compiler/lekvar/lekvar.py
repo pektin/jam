@@ -191,11 +191,13 @@ class Call(Object):
 
     values = None
 
-    def __init__(self, reference:str, values:[Object]):
+    def __init__(self, reference:str, values:[Object], called:Function = None):
         self.reference = reference
         self.values = values
+        self.called = called
 
     def verify(self, scope:Scope):
+        if self.called is not None: return
         # Pass on verification to contained values
         for value in self.values: value.verify(scope)
         # Verify signature
@@ -327,6 +329,11 @@ class Function(Scope):
                 objects.append(argument)
         return objects
 
+    def __repr__(self):
+        return "Function<{}({}): {}>".format(self.name,
+            ",".join(repr(arg) for arg in self.arguments),
+            ",".join(repr(ins) for ins in self.instructions))
+
 class ExternalFunction(Scope):
     verified = True
     external_name = None
@@ -383,6 +390,9 @@ class Method(Scope):
         fn.name = str(len(self.overloads))
         fn.parent = self
         self.overloads.append(fn)
+
+    def assimilate(self, method):
+        self.overloads += method.overloads
 
     def verify(self):
         if self.verified: return
