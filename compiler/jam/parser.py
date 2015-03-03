@@ -186,17 +186,25 @@ class Parser:
 
         in_defaults = True
         for index, value in enumerate(reversed(default_values)):
+            index = -index - 1
             if in_defaults:
                 if value is None:
                     in_defaults = False
                 else:
+                    # Copy arguments
+                    args = [arg.copy() for arg in arguments[:index]]
+
                     # Add an overload calling the previous overload with the default argument
-                    overloads.append(lekvar.Function("", arguments[:index], [
-                        lekvar.Call("", [
-                            # Add non-default arguments
-                            lekvar.Reference(argument.name) for argument in arguments[:index]
-                        ] + [default_values[index]], overloads[-1])
-                    ]))
+                    overloads.append(
+                        lekvar.Function("", args, [
+                            lekvar.Call(
+                                "",
+                                # Add non-default arguments with the default value
+                                args + [default_values[index]],
+                                overloads[-1],
+                            )
+                        ])
+                    )
             else:
                 # Check for default arguments before a non-defaulted argument
                 if value is not None:

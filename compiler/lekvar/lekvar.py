@@ -168,6 +168,9 @@ class Variable(ScopeObject):
     def resolveType(self):
         return self.type
 
+    def copy(self):
+        return Variable(self.name, self.type)
+
 class Reference(Object):
     reference = None
     value = None # resolved through reference
