@@ -1,8 +1,9 @@
-#Hi\nHello World!\n
+#Hello\nfoo\nHi\nbar\n
 
-def puts(string:String = "Hello World!")
-    print(string)
+def puts(name:String, message:String = "Hello")
+    print(message)
+    print(name)
 end
 
-puts("Hi")
-puts()
+puts("foo")
+puts("bar", "Hi")
