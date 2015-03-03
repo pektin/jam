@@ -1,6 +1,6 @@
 from ctypes import *
 
-_lib = CDLL("libLLVM-3.4.so")
+_lib = CDLL("/usr/lib/llvm-3.6/lib/libLLVM-3.6.so") #TODO: Do this properly
 
 c_bool = c_int
 
