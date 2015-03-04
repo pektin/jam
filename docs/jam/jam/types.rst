@@ -19,6 +19,8 @@ For a argument, the type is determined by every action involving that argument.
 From this it builds a "type expectation" that is used at compile time to check
 whether arguments are valid.
 
+.. _jam-types-nullability:
+
 Nullability
 ===========
 
