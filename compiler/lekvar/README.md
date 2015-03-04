@@ -6,6 +6,10 @@ Unlike Jam, Lekvar makes a very clear distinction between variables, functions a
 
 The Lekvar format is generally independent of Jam and similarly to the JVM could be used for languages beyond Jam. Lekvar is highly susceptible to change and currently contains no backward compatibility guarantee, however this will be eventually desirable.
 
+## Builtins
+
+In order for Lekvar to verify, a builtin module must exist that contains standard functionality. The builtin module is a combination of the backend builtins, which provide the low-level functionality, and the frontend builtins, which provide the higher level features for the frontend.
+
 ## Design
 
 The design follows similar principles as dynamic programming languages. Every value is an "object" and has a type. Every type is also an object and has a type. As a basis, the only other concept not directly being an object are instructions.
