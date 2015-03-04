@@ -15,6 +15,7 @@ syntax.
     literals/integers
     literals/floats
     literals/strings
+    literals/booleans
 
 Syntax
 ======
