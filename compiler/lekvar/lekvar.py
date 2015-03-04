@@ -108,7 +108,7 @@ class Scope(ScopeObject):
         if obj is not None:
             out.append(obj)
         # check parent
-        more = self.parent.collectReferencesDown(reference, state) if self.parent else builtins.collectReferencesDown(reference, state)
+        more = self.parent.collectReferencesDown(reference, state) if self.parent else state.builtins.collectReferencesDown(reference, state)
         if more is not None:
             out += more
         return out
@@ -358,8 +358,8 @@ class Function(Scope):
             raise TypeError("Function signature {} is not compatible with {}".format(self_signature, other_signature))
         return self
 
-    def collectReferencesDown(self, reference:str):
-        objects = super().collectReferencesDown(reference)
+    def collectReferencesDown(self, reference:str, state:State):
+        objects = super().collectReferencesDown(reference, state)
         # Find any references in the function arguments
         for argument in self.arguments:
             if argument.name == reference:
@@ -510,7 +510,7 @@ class Builtins(Module):
     def __init__(self, children):
         super().__init__("builtins", children, Function([], [], None))
 
-    def collectReferencesDown(self, reference:str):
+    def collectReferencesDown(self, reference:str, state):
         obj = self.children.get(reference, None)
         if obj is not None:
             return [obj]
