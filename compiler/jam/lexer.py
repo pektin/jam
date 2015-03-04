@@ -30,6 +30,7 @@ KEYWORDS = {
     "def",
     "end",
     "return",
+    "class",
 }
 DIRECT_MAP = {
     "(": Tokens.group_start,

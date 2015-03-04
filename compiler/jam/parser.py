@@ -110,6 +110,8 @@ class Parser:
         if token.type == Tokens.keyword:
             if token.data == "def":
                 return self.parseMethod()
+            elif token.data == "class":
+                return self.parseClass()
         elif token.type == Tokens.identifier:
             if self.lookAhead(2).type == Tokens.group_start:
                 return self.parseCall()
@@ -211,6 +213,33 @@ class Parser:
                     raise SyntaxError("Cannot have non-defaulted arguments after defaulted ones")
 
         return lekvar.Method(name, overloads)
+
+    def parseClass(self):
+        # class should have already been identified
+        token = self.next()
+
+        name = self.expect()
+
+        methods = []
+        fields = []
+
+        while True:
+            token = self.strip()
+            if token is None:
+                raise SyntaxError("Expected 'end' before EOF")
+            elif token.type == Tokens.keyword:
+                if token.data == "end":
+                    self.next()
+                    break
+                elif token.data == "def":
+                    methods.append(self.parseMethod())
+            elif token.type == Tokens.identifier:
+                fields.append(self.parseVariable())
+            else:
+                self._unexpected(token)
+
+        return lekvar.Class()
+
 
     def parseVariable(self):
         # Parse a variable, with optional type signature
