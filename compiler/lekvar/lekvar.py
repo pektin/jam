@@ -35,7 +35,7 @@ class Object(ABC):
         raise TypeError("{} object is not callable".format(self))
 
     def __repr__(self):
-        return "{}<{}>".format(self.__class__.__name__, self.resolveType())
+        return "{}:{}".format(self.__class__.__name__, self.resolveType())
 
 class ScopeObject(Object):
     name = None
@@ -45,7 +45,7 @@ class ScopeObject(Object):
         self.name = name
 
     def __repr__(self):
-        return "{}<{}:{}>".format(self.__class__.__name__, self.name, self.resolveType())
+        return "{}({}):{}".format(self.__class__.__name__, self.name, self.resolveType())
 
 class Scope(ScopeObject):
     verified = False # cache for circular program flows
@@ -96,6 +96,10 @@ class Scope(ScopeObject):
             out += more
         return out
 
+    def __repr__(self):
+        return "{}({}):{}<{}>".format(self.__class__.__name__, self.name, self.resolveType(),
+            ", ".join(repr(child) for child in self.children.values()))
+
 class Type(Scope):
     @abstract
     def checkCompatibility(self, other:Type) -> bool:
@@ -123,6 +127,9 @@ class Comment(Object):
 
     def resolveType(self):
         return None
+
+    def __repr__(self):
+        return "{}({})".format(self.__class__.__name__, self.contents)
 
 class Assignment(Object):
     reference = None
@@ -155,6 +162,9 @@ class Assignment(Object):
     def resolveType(self):
         return None
 
+    def __repr__(self):
+        return "{}<{}({}) := {}>".format(self.__class__.__name__, self.reference, self.variable, self.value)
+
 class Variable(ScopeObject):
     type = None
 
@@ -186,7 +196,7 @@ class Reference(Object):
         return self.value.resolveType()
 
     def __repr__(self):
-        return "Reference<{}>".format(self.reference)
+        return "{}({})<{}>".format(self.__class__.__name__, self.reference, self.value)
 
 class Call(Object):
     reference = None
@@ -213,7 +223,8 @@ class Call(Object):
         return self.called.return_type
 
     def __repr__(self):
-        return "Call<{}: {}>".format(self.reference, ", ".join(repr(value) for value in self.values))
+        return "{}({})<{}>{{{}}}".format(self.__class__.__name__, self.reference,
+            self.called, ", ".join(repr(value) for value in self.values))
 
 class Return(Object):
     value = None
@@ -239,6 +250,9 @@ class Return(Object):
     def resolveType(self):
         return None
 
+    def __repr__(self):
+        return "{}<{}>".format(self.__class__.__name__, self.value)
+
 class Literal(Object):
     type = None
     data = None
@@ -252,6 +266,9 @@ class Literal(Object):
 
     def resolveType(self):
         return self.type
+
+    def __repr__(self):
+        return "{}({}):{}".format(self.__class__.__name__, self.data, self.type)
 
 class FunctionType(Type):
     signature = None
@@ -282,7 +299,7 @@ class FunctionType(Type):
         raise InternalError("Not implemented")
 
     def __repr__(self):
-        return "(" + ", ".join(repr(type) for type in self.signature) + "):{}".format(self.return_type)
+        return "{}({}):{}".format(self.__class__.__name__, ", ".join(repr(type) for type in self.signature), self.return_type)
 
 class Function(Scope):
     arguments = None
@@ -333,9 +350,9 @@ class Function(Scope):
         return objects
 
     def __repr__(self):
-        return "Function<{}({}): {}>".format(self.name,
-            ",".join(repr(arg) for arg in self.arguments),
-            ",".join(repr(ins) for ins in self.instructions))
+        return "{}({}):{}({}){{{}}}".format(self.__class__.__name__, self.name, self.resolveType(),
+            ", ".join(repr(argument) for argument in self.arguments),
+            ", ".join(repr(instruction) for instruction in self.instructions))
 
 class ExternalFunction(Scope):
     verified = True
@@ -353,6 +370,9 @@ class ExternalFunction(Scope):
         return FunctionType(self.argument_types, self.return_type)
 
     resolveCall = Function.resolveCall
+
+    def __repr__(self):
+        return "{}({} -> {}):{}".format(self.__class__.__name__, self.name, self.external_name, self.resolveType())
 
 class MethodType(Type):
     overloads = None
@@ -421,6 +441,10 @@ class Method(Scope):
             raise TypeError("Ambiguous overloads for {}",format(signature))
         return found[0]
 
+    def __repr__(self):
+        return "{}({}){{{}}}".format(self.__class__.__name__, self.name,
+            ", ".join(repr(overload) for overload in self.overloads))
+
 class Module(Scope):
     main = None
 
@@ -437,6 +461,10 @@ class Module(Scope):
         #TODO
         raise InternalError("Not yet implemented")
 
+    def __repr__(self):
+        return "{}({})<{}>{{{}}}".format(self.__class__.__name__, self.name,
+            self.main, ", ".join(repr(child) for child in self.children))
+
 #
 # Temporary Structures
 #
@@ -447,9 +475,6 @@ class LLVMType(Type): # Temporary until stdlib is implemented
 
     def __init__(self, llvm_type:str):
         self.llvm_type = llvm_type
-
-    def __repr__(self):
-        return "LLVM:{}".format(self.llvm_type)
 
     def checkCompatibility(self, other:Type) -> bool:
         if not isinstance(other, LLVMType):
