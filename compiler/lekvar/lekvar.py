@@ -1,25 +1,38 @@
-from ..errors import *
+import logging
 from abc import abstractmethod as abstract, ABC
 
-builtins = None
-def verify(module):
-    # Create the builtins
-    global builtins
-    builtins = Builtins({
-        "print": ExternalFunction("print", "puts", [LLVMType("String")], LLVMType("Int"))
-    })
-    module.verify()
+from ..errors import *
 
 # Python predefines
 Type = None
+Scope = None
+Module = None
 Function = None
 FunctionType = None
+
+#
+# Infrastructure
+#
+
+def verify(module:Module, builtins:Module, logger:logging.Logger = None):
+    if logger is None: logger = logging.getLogger()
+
+    module.verify(State(builtins, logger))
+
+class State:
+    def __init__(self, builtins:Module, logger:logging.Logger):
+        self.builtins = builtins
+        self.logger = logger
 
 #
 # Abstract Base Structures
 #
 
 class Object(ABC):
+    @abstract
+    def verify(self, scope:Scope, state:State):
+        pass
+
     @abstract
     def resolveType(self) -> Type:
         """ Returns the type of this object.
@@ -44,6 +57,10 @@ class ScopeObject(Object):
     def __init__(self, name):
         self.name = name
 
+    @abstract
+    def verify(self, state:State):
+        pass
+
     def __repr__(self):
         return "{}({}):{}".format(self.__class__.__name__, self.name, self.resolveType())
 
@@ -66,32 +83,32 @@ class Scope(ScopeObject):
         child.parent = self
         self.children[child.name] = child
 
-    def verify(self) -> None:
+    def verify(self, state:State) -> None:
         if self.verified: return
         self.verified = True
 
         for child in self.children.values():
-            child.verify()
+            child.verify(state)
 
-    def resolveReferenceDown(self, reference:str) -> Object:
-        objects = self.collectReferencesDown(reference)
+    def resolveReferenceDown(self, reference:str, state:State) -> Object:
+        objects = self.collectReferencesDown(reference, state)
         if len(objects) < 1:
             raise MissingReferenceError("Missing reference to {}".format(reference))
         elif len(objects) > 1:
             raise AmbiguetyError("Ambiguous reference to {}".format(reference))
         return objects[0]
 
-    def resolveReferenceUp(self, reference:str) -> Object: #TODO: Make this work
+    def resolveReferenceUp(self, reference:str, state:State) -> Object: #TODO: Make this work
         return self._resolveReference(reference)
 
-    def collectReferencesDown(self, reference:str) -> Object:
+    def collectReferencesDown(self, reference:str, state:State) -> Object:
         out = []
         # check local
         obj = self.children.get(reference, None)
         if obj is not None:
             out.append(obj)
         # check parent
-        more = self.parent.collectReferencesDown(reference) if self.parent else builtins.collectReferencesDown(reference)
+        more = self.parent.collectReferencesDown(reference, state) if self.parent else builtins.collectReferencesDown(reference, state)
         if more is not None:
             out += more
         return out
@@ -122,7 +139,7 @@ class Comment(Object):
     def __init__(self, contents):
         self.contents = contents
 
-    def verify(self, scope:Scope):
+    def verify(self, scope:Scope, state:State):
         pass
 
     def resolveType(self):
@@ -141,9 +158,9 @@ class Assignment(Object):
         self.reference = reference
         self.value = value
 
-    def verify(self, scope:Scope):
+    def verify(self, scope:Scope, state:State):
         try:
-            self.variable = scope.resolveReferenceDown(self.reference)
+            self.variable = scope.resolveReferenceDown(self.reference, state)
         except MissingReferenceError:
             self.variable = Variable(self.reference)
             scope.addChild(self.variable)
@@ -152,7 +169,7 @@ class Assignment(Object):
             raise TypeError("Cannot assign to {}".format(self.variable))
 
         # Resolve type compatibility
-        self.value.verify(scope)
+        self.value.verify(scope, state)
         value_type = self.value.resolveType()
         if self.variable.type is None:
             self.variable.type = value_type
@@ -172,7 +189,7 @@ class Variable(ScopeObject):
         super().__init__(name)
         self.type = type
 
-    def verify(self, scope:Scope):
+    def verify(self, scope:Scope, state:State):
         pass
 
     def resolveType(self):
@@ -188,9 +205,9 @@ class Reference(Object):
     def __init__(self, reference:str):
         self.reference = reference
 
-    def verify(self, scope:Scope):
-        self.value = scope.resolveReferenceDown(self.reference)
-        self.value.verify(scope)
+    def verify(self, scope:Scope, state:State):
+        self.value = scope.resolveReferenceDown(self.reference, state)
+        self.value.verify(scope, state)
 
     def resolveType(self):
         return self.value.resolveType()
@@ -209,13 +226,13 @@ class Call(Object):
         self.values = values
         self.called = called
 
-    def verify(self, scope:Scope):
+    def verify(self, scope:Scope, state:State):
         if self.called is not None: return
         # Pass on verification to contained values
-        for value in self.values: value.verify(scope)
+        for value in self.values: value.verify(scope, state)
         # Verify signature
         signature = [value.resolveType() for value in self.values]
-        self.called = scope.resolveReferenceDown(self.reference)
+        self.called = scope.resolveReferenceDown(self.reference, state)
 
         self.called = self.called.resolveCall(FunctionType(signature, []))
 
@@ -233,9 +250,9 @@ class Return(Object):
     def __init__(self, value:Object):
         self.value = value
 
-    def verify(self, scope:Scope):
+    def verify(self, scope:Scope, state:State):
         # Pass on verification
-        self.value.verify(scope)
+        self.value.verify(scope, state)
 
         # Verify signature
         if not isinstance(scope, Function):
@@ -261,7 +278,7 @@ class Literal(Object):
         self.type = type
         self.data = data
 
-    def verify(self, scope):
+    def verify(self, scope, state:State):
         pass # Literals are always verified
 
     def resolveType(self):
@@ -318,7 +335,7 @@ class Function(Scope):
             if argument.type is None:
                 raise InternalError("Function argument type inference is not yet supported")
 
-    def verify(self):
+    def verify(self, state:State):
         if self.verified: return
         self.verified = True
 
@@ -327,7 +344,7 @@ class Function(Scope):
         for instruction in self.instructions:
             if isinstance(instruction, Return):
                 returned = True
-            instruction.verify(self)
+            instruction.verify(self, state)
 
         if not returned and self.return_type is not None:
             raise SemanticError("One or more function paths do not return")
@@ -417,12 +434,12 @@ class Method(Scope):
     def assimilate(self, method):
         self.overloads += method.overloads
 
-    def verify(self):
+    def verify(self, state:State):
         if self.verified: return
         self.verified = True
 
         for overload in self.overloads:
-            overload.verify()
+            overload.verify(state)
 
     def resolveType(self):
         return MethodType(function.resolveType() for function in self.overloads)
@@ -453,9 +470,9 @@ class Module(Scope):
         self.main = main
         self.main.parent = self
 
-    def verify(self):
-        super().verify()
-        self.main.verify()
+    def verify(self, state:State):
+        super().verify(state)
+        self.main.verify(state)
 
     def resolveType(self):
         #TODO
