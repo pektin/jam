@@ -140,7 +140,7 @@ class Comment(Object):
         self.contents = contents
 
     def verify(self, scope:Scope, state:State):
-        pass
+        state.logger.debug(self)
 
     def resolveType(self):
         return None
@@ -159,6 +159,8 @@ class Assignment(Object):
         self.value = value
 
     def verify(self, scope:Scope, state:State):
+        state.logger.debug(self)
+
         try:
             self.variable = scope.resolveReferenceDown(self.reference, state)
         except MissingReferenceError:
@@ -190,7 +192,7 @@ class Variable(ScopeObject):
         self.type = type
 
     def verify(self, scope:Scope, state:State):
-        pass
+        state.logger.debug(self)
 
     def resolveType(self):
         return self.type
@@ -206,6 +208,8 @@ class Reference(Object):
         self.reference = reference
 
     def verify(self, scope:Scope, state:State):
+        state.logger.debug(self)
+
         self.value = scope.resolveReferenceDown(self.reference, state)
         self.value.verify(scope, state)
 
@@ -227,6 +231,8 @@ class Call(Object):
         self.called = called
 
     def verify(self, scope:Scope, state:State):
+        state.logger.debug(self)
+
         if self.called is not None: return
         # Pass on verification to contained values
         for value in self.values: value.verify(scope, state)
@@ -251,6 +257,8 @@ class Return(Object):
         self.value = value
 
     def verify(self, scope:Scope, state:State):
+        state.logger.debug(self)
+
         # Pass on verification
         self.value.verify(scope, state)
 
@@ -279,7 +287,8 @@ class Literal(Object):
         self.data = data
 
     def verify(self, scope, state:State):
-        pass # Literals are always verified
+        state.logger.debug(self)
+        # Literals are always verified
 
     def resolveType(self):
         return self.type
@@ -336,6 +345,8 @@ class Function(Scope):
                 raise InternalError("Function argument type inference is not yet supported")
 
     def verify(self, state:State):
+        state.logger.debug(self)
+
         if self.verified: return
         self.verified = True
 
@@ -435,6 +446,8 @@ class Method(Scope):
         self.overloads += method.overloads
 
     def verify(self, state:State):
+        state.logger.debug(self)
+
         if self.verified: return
         self.verified = True
 
@@ -471,6 +484,8 @@ class Module(Scope):
         self.main.parent = self
 
     def verify(self, state:State):
+        state.logger.debug(self)
+
         super().verify(state)
         self.main.verify(state)
 
