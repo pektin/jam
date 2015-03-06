@@ -22,4 +22,4 @@ Syntax
 ======
 
 .. productionlist::
-    Literal: `Integer` | `Float` | `String` | `Boolean` | `null` 
+    Literal: `Integer` | `Float` | `String` | `Boolean` | `Null` 

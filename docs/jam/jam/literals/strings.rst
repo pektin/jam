@@ -44,12 +44,13 @@ Examples
 --------
 ::
 
-	# String assigned to a Variable
-	# Double quotes are convention for String assignments
-	name = "Harold"
+    # String assigned to a Variable
+    # Double quotes are convention for String assignments
+    name = "Harold"
+    
 
-	# This function will print out "My name is Harrold" with a newline
-	print("My name is #{name}\n")
+    # This function will print out "My name is Harrold" with a newline
+    print("My name is #{name}\n")
 
 
 
