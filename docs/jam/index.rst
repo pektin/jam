@@ -35,3 +35,4 @@ verifications and serialized formats.
     :glob:
 
     lekvar/introduction
+    lekvar/builtins
