@@ -42,11 +42,7 @@ Multi Variable
 	upperLimit, currentPosition = currentPosition, lowerLimit
 
 
-	# Defines a Cube
-	width, length, height = 5
-
-
-	# Velocity is equal to speed which is equal to 55.25, and
+	# velocity is equal to speed which is equal to 55.25, and
 	# mass is equal to weight which is 100 
 	velocity, mass = speed, weight = 55.25, 100
 
