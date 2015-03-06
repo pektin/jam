@@ -14,14 +14,16 @@ In order for Lekvar to verify, a builtin module must exist that contains standar
 
 The design follows similar principles as dynamic programming languages. Every value is an "object" and has a type. Every type is also an object and has a type. As a basis, the only other concept not directly being an object are instructions.
 
+For debugging and other global input/output, Lekvar creates a `State` object that is passed from function to function when Lekvar is verified.
+
 ### Object
 
 In terms of Lekvar, every object has a type and each objects behaviour is entirely defined by it's type.
 
 Every object must define:
-* `resolveType(Scope):Type`, returns the type of the object
-* `verify(Scope)`, verifies the objects integrity
-* `collectReferences(Scope, String):Object`, returns possible attributes of the object
+* `resolveType(Scope, State):Type`, returns the type of the object
+* `verify(Scope, State)`, verifies the objects integrity
+* `collectReferences(Scope, State, String):Object`, returns possible attributes of the object
 
 ### Scope
 
@@ -32,5 +34,5 @@ A scope is an Object that also defined a `name:String` and a `parent:Scope` attr
 A type defines what an object is and what it can do. Type is also a Scope.
 
 Every type must define:
-* `collectAttributes(String):Object`
+* `collectAttributes(State, String):Object`
 
