@@ -23,9 +23,14 @@ Every object must define:
 * `verify(Scope)`, verifies the objects integrity
 * `collectReferences(Scope, String):Object`, returns possible attributes of the object
 
+### Scope
+
+A scope is an Object that also defined a `name:String` and a `parent:Scope` attribute.
+
 ### Type
 
-A type defines what an object is and what it can do. Type is also an Object.
+A type defines what an object is and what it can do. Type is also a Scope.
 
 Every type must define:
-* `collectAttributes(String)`
+* `collectAttributes(String):Object`
+
