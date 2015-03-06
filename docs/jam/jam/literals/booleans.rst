@@ -14,8 +14,8 @@ Syntax
 
 Example
 -------
-
 ::
+
 	# Boolean variables used in a conditional block
 	state = true
 

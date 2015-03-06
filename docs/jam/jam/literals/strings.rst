@@ -43,6 +43,7 @@ formatting.
 Examples
 --------
 ::
+
 	# String assigned to a Variable
 	# Double quotes are convention for String assignments
 	name = "Harold"

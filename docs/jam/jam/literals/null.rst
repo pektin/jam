@@ -18,8 +18,8 @@ Syntax
 
 Example
 -------
-
 ::
+
 	# null can only be assigned to nullable variables
 	woman:Person? = null
 
