@@ -4,8 +4,9 @@ from abc import abstractmethod as abstract, ABC
 from ..errors import *
 
 # Python predefines
-Type = None
+Object = None
 Scope = None
+Type = None
 Module = None
 Function = None
 FunctionType = None
@@ -24,6 +25,22 @@ class State:
         self.builtins = builtins
         self.logger = logger
 
+def resolveReference(scope:Object, state:State, object:Object, reference:str):
+    attrs = object.collectAttributes(scope, state, reference)
+
+    # If the object is a scope, resolve up the tree
+    if isinstance(object, Scope):
+        while object.parent is not None:
+            object = object.parent
+            attrs += object.collectAttributes(scope, state, reference)
+
+    if len(attrs) < 1:
+        raise MissingReferenceError("No reference to {}".format(reference))
+    elif len(attrs) > 1:
+        raise AmbiguetyError("Ambiguous reference to {}".format(reference))
+
+    return attrs[0]
+
 #
 # Abstract Base Structures
 #
@@ -34,97 +51,33 @@ class Object(ABC):
         pass
 
     @abstract
-    def resolveType(self) -> Type:
-        """ Returns the type of this object.
-        Must return an instance of Type or None.
-        If the type is None, this object is considered void (side-effects only)
-        Otherwise the object can be used as a value.
-        """
+    def resolveType(self, scope:Scope, state:State):
+        pass
 
-    def resolveCall(self, signature:FunctionType) -> Function:
-        """ Returns a function that matches a call signature for this object.
-        Must return either a Function instance or raise a TypeError
-        """
-        raise TypeError("{} object is not callable".format(self))
+    def collectAttributes(scope:Scope, state:State, reference:str) -> [Object]:
+        return self.resolveType(scope, state).collectAttributes(state, reference)
 
     def __repr__(self):
         return "{}:{}".format(self.__class__.__name__, self.resolveType())
 
-class ScopeObject(Object):
+class Scope(Object):
     name = None
     parent = None
 
     def __init__(self, name):
         self.name = name
 
-    @abstract
-    def verify(self, state:State):
-        pass
-
     def __repr__(self):
         return "{}({}):{}".format(self.__class__.__name__, self.name, self.resolveType())
 
-class Scope(ScopeObject):
-    verified = False # cache for circular program flows
-
-    parent = None
-    children = None
-
-    def __init__(self, name, children:{str: ScopeObject} = None):
-        if children is None: children = {}
-        super().__init__(name)
-
-        # set children
-        self.children = children
-        for child in children.values():
-            child.parent = self
-
-    def addChild(self, child:ScopeObject):
-        child.parent = self
-        self.children[child.name] = child
-
-    def verify(self, state:State) -> None:
-        if self.verified: return
-        self.verified = True
-
-        for child in self.children.values():
-            child.verify(state)
-
-    def resolveReferenceDown(self, reference:str, state:State) -> Object:
-        objects = self.collectReferencesDown(reference, state)
-        if len(objects) < 1:
-            raise MissingReferenceError("Missing reference to {}".format(reference))
-        elif len(objects) > 1:
-            raise AmbiguetyError("Ambiguous reference to {}".format(reference))
-        return objects[0]
-
-    def resolveReferenceUp(self, reference:str, state:State) -> Object: #TODO: Make this work
-        return self._resolveReference(reference)
-
-    def collectReferencesDown(self, reference:str, state:State) -> Object:
-        out = []
-        # check local
-        obj = self.children.get(reference, None)
-        if obj is not None:
-            out.append(obj)
-        # check parent
-        more = self.parent.collectReferencesDown(reference, state) if self.parent else state.builtins.collectReferencesDown(reference, state)
-        if more is not None:
-            out += more
-        return out
-
-    def __repr__(self):
-        return "{}({}):{}<{}>".format(self.__class__.__name__, self.name, self.resolveType(),
-            ", ".join(repr(child) for child in self.children.values()))
-
 class Type(Scope):
+    @abstract
+    def collectAttributes(self, state:State, reference:str) -> [Object]:
+        pass
+
     @abstract
     def checkCompatibility(self, other:Type) -> bool:
         pass
-
-    def resolveCompatibility(self, other:Type):
-        if not self.checkCompatibility(other):
-            raise TypeError("{} is not compatible with {}".format(self, other))
 
     def __repr__(self):
         return "{}".format(self.__class__.__name__)
