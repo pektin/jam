@@ -9,7 +9,7 @@ impossible to add with standard code for themselves or others. It is advised to
 use comments in order to maintain the maintainability of code without causing
 clutter.
 
-Multiline comments do not exist, primarily because most modern code editing
+Multi-line comments do not exist, primarily because most modern code editing
 tools have shortcuts to achieve the same thing.
 
 Syntax
@@ -22,10 +22,20 @@ Syntax
 Examples
 --------
 
+Single Line Comments
+~~~~~~~~~~~~~~~~~~~~
 ::
 
     # Find the distance using pythag
     dist = (x**2 + y**2)**0.5
+
+Multi-line Comments
+~~~~~~~~~~~~~~~~~~~
+::
+
+	# This is how Multi-line Comments will be written
+	# Having sequential single line comments is more efficient
+	# Due to modern code editing tools
 
 Compilation
 ===========
