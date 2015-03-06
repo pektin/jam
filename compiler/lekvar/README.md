@@ -23,7 +23,6 @@ In terms of Lekvar, every object has a type and each objects behaviour is entire
 Every object must define:
 * `resolveType(Scope, State):Type`, returns the type of the object
 * `verify(Scope, State)`, verifies the objects integrity
-* `collectReferences(Scope, State, String):Object`, returns possible attributes of the object
 
 ### Scope
 
@@ -35,4 +34,8 @@ A type defines what an object is and what it can do. Type is also a Scope.
 
 Every type must define:
 * `collectAttributes(State, String):Object`
+* `checkCompatibility(Type):Bool`
 
+### Function
+
+A function is a single callable collection of instructions.
