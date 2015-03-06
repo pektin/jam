@@ -1,8 +1,10 @@
+import os
 import unittest
 from .bindings import *
 
 from subprocess import check_output
 
+BUILD_PATH = "build/tests"
 BUILD_TARGET = "build/tests/llvm.ll"
 
 class LLVMTests(unittest.TestCase):
@@ -25,6 +27,7 @@ class LLVMTests(unittest.TestCase):
         builder.positionAtEnd(return_)
         builder.ret(Value.constInt(i32, 0, False))
 
+        os.makedirs(BUILD_PATH, exist_ok=True)
         with open(BUILD_TARGET, "w") as f:
             f.write(module.toString().decode("UTF-8"))
 
