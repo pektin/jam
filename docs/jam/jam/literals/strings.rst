@@ -12,6 +12,9 @@ type ``String``.
 Syntax
 ======
 
+.. productionlist::
+    String: "\"" .* "\""
+
 Format strings start and end with double quotes (``"``) and may contain any of
 the following escape sequences:
 
@@ -39,6 +42,20 @@ formatting.
 
 Examples
 --------
+::
 
-.. productionlist::
-    String: "\"" .* "\""
+    # String assigned to a Variable
+    # Double quotes are convention for String assignments
+    name = "Harold"
+    
+
+    # This function will print out "My name is Harrold" with a newline
+    print("My name is #{name}\n")
+
+
+
+
+
+
+
+

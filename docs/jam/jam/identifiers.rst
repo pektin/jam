@@ -15,9 +15,15 @@ Syntax
 
 Examples
 --------
-
 ::
 
+    # Identifiers can begin with a lower case letter and then follow CamelCase structure
     fooBar
+
+
+    # They can also start with an underscore and then follow _under_score structure
     _foo_bar_fizz_bazz_
+    
+
+    # Identifiers can also be Natural numbers
     _9

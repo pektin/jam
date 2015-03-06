@@ -10,16 +10,25 @@ Syntax
 ======
 
 .. productionlist::
-    Booleans: "true" | "false"
+    Boolean: "true" | "false"
 
-Example
--------
-
+Examples
+--------
 ::
+    
+    # Boolean variables used in a conditional block
+    state = true
 
-    # Print: bar
-    if false
-        print("foo")
-    elif true
-        print("bar")
+    if state == true
+        print("This will print\n")
+    else
+        print("This will not\n")
+    end
+
+
+    # Boolean value used in a conditional block 
+    if true
+        print("This will always print\n")
+    else
+       print("This will never print\n")
     end
