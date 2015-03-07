@@ -7,11 +7,7 @@ from ..errors import *
 
 from . import bindings as llvm
 
-# Temporary until LLVMType is replaced
-LLVMMAP = {
-    "String": llvm.Pointer.new(llvm.Int.new(8), 0),
-    "Int": llvm.Int.new(32),
-}
+llvm.Int32 = llvm.Int.new(32)
 
 def emit(module:lekvar.Module):
     state = State(b"main")
@@ -26,7 +22,7 @@ class State:
         self.main = []
 
     def finalize(self):
-        main_type = lekvar.FunctionType([], lekvar.LLVMType("Int")).emitType(self)
+        main_type = llvm.Function.new(llvm.Int32, [], False)
         main = self.module.addFunction("main", main_type)
 
         entry = main.appendBlock("entry")
@@ -36,7 +32,7 @@ class State:
                 call.called = func
                 call.emitValue(self)
 
-            return_value = llvm.Value.constInt(lekvar.LLVMType("Int").emitType(self), 0, False)
+            return_value = llvm.Value.constInt(llvm.Int32, 0, False)
             self.builder.ret(return_value)
 
     @contextmanager
@@ -57,7 +53,7 @@ def main_call(func:lekvar.Function):
 
 # Abstract extensions
 
-lekvar.ScopeObject.llvm_value = None
+lekvar.Scope.llvm_value = None
 lekvar.Function.llvm_return = None
 
 # Extension abstract methods apparently don't work
@@ -81,7 +77,7 @@ lekvar.Type.llvm_type = None"""
 # Tools
 #
 
-def resolveName(scope:lekvar.ScopeObject):
+def resolveName(scope:lekvar.Scope):
     # Resolves the name of a scope, starting with a extraneous .
     name = ""
     while scope.parent is not None:
@@ -103,6 +99,10 @@ lekvar.Comment.emitValue = blank_emitValue
 def Reference_emitValue(self, state:State):
     return self.value.emitValue(state)
 lekvar.Reference.emitValue = Reference_emitValue
+
+def Reference_emitType(self, state:State):
+    return self.value.emitType(state)
+lekvar.Reference.emitType = Reference_emitType
 
 #
 # class Literal
@@ -154,7 +154,8 @@ def Module_emit(self, state:State):
     self.llvm_value = self.main.emitValue(state)
     state.main.append(self.main)
 
-    for child in self.children.values():
+    for child in self.collectAttributes():
+        print(child)
         child.emit(state)
 lekvar.Module.emit = Module_emit
 
@@ -266,11 +267,3 @@ def Method_emit(self, state:State):
     for overload in self.overloads:
         overload.emit(state)
 lekvar.Method.emit = Method_emit
-
-#
-# class LLVMType
-#
-
-def LLVMType_emitType(self, state:State):
-    return LLVMMAP[self.llvm_type]
-lekvar.LLVMType.emitType = LLVMType_emitType

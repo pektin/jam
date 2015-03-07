@@ -59,8 +59,8 @@ class Parser:
             # EOF escape
             if value is None: break
 
-            if isinstance(value, lekvar.ScopeObject):
-                # ScopeObjects are automatically added as children
+            if isinstance(value, lekvar.Scope):
+                # Scopes are automatically added as children
                 name = value.name
 
                 if isinstance(value, lekvar.Method):
@@ -119,7 +119,7 @@ class Parser:
                 return lekvar.Reference(self.next().data)
         elif token.type == Tokens.string:
             token = self.next()
-            return lekvar.Literal(token.data, lekvar.LLVMType("String"))
+            return lekvar.Literal(token.data, lekvar.Reference("String"))
 
         self._unexpected(token)
 
@@ -261,7 +261,7 @@ class Parser:
         # Parse an expected type
 
         name = self.expect()
-        return lekvar.LLVMType(name)
+        return lekvar.Reference(name)
 
     def parseCall(self):
         # Parse a function call
