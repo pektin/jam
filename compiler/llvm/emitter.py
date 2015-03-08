@@ -115,7 +115,7 @@ def Literal_emitValue(self, state:State):
         return state.builder.globalString(self.data, state.getTempName())
     else:
         raise NotImplemented()
-lekvar.Literal.emitValue = Literal_emitValue
+#lekvar.Literal.emitValue = Literal_emitValue
 
 #
 # class Variable
@@ -127,12 +127,12 @@ def Variable_emit(self, state:State):
     type = self.type.emitType(state)
     name = resolveName(self)
     self.llvm_value = state.builder.alloca(type, name)
-lekvar.Variable.emit = Variable_emit
+#lekvar.Variable.emit = Variable_emit
 
 def Variable_emitValue(self, state:State):
     self.emit(state)
     return state.builder.load(self.llvm_value, state.getTempName())
-lekvar.Variable.emitValue = Variable_emitValue
+#lekvar.Variable.emitValue = Variable_emitValue
 
 #
 # class Assignment
@@ -142,7 +142,7 @@ def Assignment_emitValue(self, state:State):
     value = self.value.emitValue(state)
     self.variable.emit(state)
     state.builder.store(value, self.variable.llvm_value)
-lekvar.Assignment.emitValue = Assignment_emitValue
+#lekvar.Assignment.emitValue = Assignment_emitValue
 
 #
 # class Module
@@ -154,7 +154,7 @@ def Module_emit(self, state:State):
     self.llvm_value = self.main.emitValue(state)
     state.main.append(self.main)
 
-    for child in self.collectAttributes():
+    for child in self.children.values():
         print(child)
         child.emit(state)
 lekvar.Module.emit = Module_emit
@@ -165,7 +165,7 @@ lekvar.Module.emit = Module_emit
 
 def Call_emitValue(self, state:State):
     arguments = [val.emitValue(state) for val in self.values]
-    if self.called.return_type is None:
+    if self.called.type.return_type is None:
         name = ""
     else:
         name = state.getTempName()
@@ -184,7 +184,7 @@ def Return_emitValue(self, state:State):
         value = self.value.emitValue(state)
         state.builder.store(value, self.parent.llvm_return)
         state.builder.br(exit)
-lekvar.Return.emitValue = Return_emitValue
+#lekvar.Return.emitValue = Return_emitValue
 
 #
 # class Function
@@ -207,8 +207,8 @@ def Function_emit(self, state:State):
             state.builder.store(val, arg.llvm_value)
 
         # Allocate Return Variable
-        if self.return_type is not None:
-            self.llvm_return = state.builder.alloca(self.return_type.emitType(state), "return")
+        if self.type.return_type is not None:
+            self.llvm_return = state.builder.alloca(self.type.return_type.emitType(state), "return")
 
         for instruction in self.instructions:
             instruction.emitValue(state)
@@ -233,7 +233,7 @@ lekvar.Function.emitValue = Function_emitValue
 #
 
 def FunctionType_emitType(self, state:State):
-    arguments = [type.emitType(state) for type in self.signature]
+    arguments = [type.emitType(state) for type in self.arguments]
     if self.return_type is not None:
         return_type = self.return_type.emitType(state)
     else:

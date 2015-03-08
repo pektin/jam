@@ -1,5 +1,5 @@
 import logging
-from abc import abstractmethod as abstract, ABC
+from abc import abstractmethod as abstract, ABC, abstractproperty
 
 from ..errors import *
 
@@ -24,7 +24,7 @@ def verify(module:Module, builtin:Module, log:logging.Logger = None):
     builtins = builtin
     if log is None: logger = logging.getLogger()
 
-
+    print(module)
     module.verify()
 
 def resolveReference(scope:Object, reference:str):
@@ -33,24 +33,28 @@ def resolveReference(scope:Object, reference:str):
     def getattrs(scope):
         attrs = scope.collectAttributes(scope)
         if reference in attrs:
-            attrs.append(attrs[reference])
+            found.append(attrs[reference])
 
     # If the object is a scope, resolve up the tree
+    print(scope)
     getattrs(scope)
-    if isinstance(object, Scope):
+    if isinstance(scope, Scope):
+        print(scope.parent)
         while scope.parent is not None:
             scope = scope.parent
+            print(scope)
             getattrs(scope)
+    print()
 
     # Check for reference in builtins
     getattrs(builtins)
 
-    if len(attrs) < 1:
+    if len(found) < 1:
         raise MissingReferenceError("No reference to {}".format(reference))
-    elif len(attrs) > 1:
+    elif len(found) > 1:
         raise AmbiguetyError("Ambiguous reference to {}".format(reference))
 
-    return attrs[0]
+    return found[0]
 
 #
 # Abstract Base Structures
@@ -65,16 +69,21 @@ class Object(ABC):
     def resolveType(self, scope:Scope):
         pass
 
-    def collectAttributes(self, scope:Scope) -> {str: Object}:
-        return self.resolveType(scope).collectAttributes()
+    def resolveAttribute(self, reference:str, scope:Scope) -> Object:
+        attributes = self.resolveType(scope).attributes
+        if reference in attributes:
+            return attributes[reference]
+        return None
+
+    def resolveCall(self, call:FunctionType, scope:Scope) -> Function:
+        raise TypeError("{} object is not callable".format(self))
 
     def __repr__(self):
-        return "{}:{}".format(self.__class__.__name__, self.resolveType())
+        return "{}".format(self.__class__.__name__)
 
-class Scope(Object):
+class ScopeObject(Object):
     name = None
     parent = None
-    verified = False
 
     def __init__(self, name):
         self.name = name
@@ -87,87 +96,284 @@ class Scope(Object):
     def resolveType(self, scope:Scope = None):
         pass
 
-    def collectAttributes(self, scope:Scope = None):
-        return super().collectAttributes(None)
+    def resolveAttribute(self, reference:str, scope:Scope = None):
+        return super().resolveAttribute(reference, scope)
 
     def __repr__(self):
         return "{}({}):{}".format(self.__class__.__name__, self.name, self.resolveType())
 
-class Type(Scope):
-    @abstract
-    def collectAttributes(self, scope:Scope) -> {str: Object}:
+class Scope(ScopeObject):
+    def __init__(self, name, children:[ScopeObject]):
+        super().__init__(name)
+
+        for child in children:
+            self.addChild(child)
+
+    def verify(self, scope:Scope = None):
+        for child in self.children.values():
+            child.verify()
+
+    def resolveAttribute(self, reference:str, scope:Scope = None):
+        if reference in self.children:
+            return self.children[reference]
+        return None
+
+    @abstractproperty
+    def children(self) -> {str: ScopeObject}:
         pass
 
     @abstract
-    def checkCompatibility(self, other:Type) -> bool:
+    def addChild(self, child:ScopeObject):
+        child.parent = self
+
+    def __repr__(self):
+        return "{}({})<{}>".format(self.__class__.__name__, self.name, self.children)
+
+class Type(Scope):
+    def __init__(self, name, attributes:[ScopeObject]):
+        super().__init__(name, attributes)
+
+    def resolveAttribute(self, reference:str, scope:Scope = None):
+        super(ScopeObject).resolveAttribute(reference, scope)
+
+    @abstract
+    def checkCompatibility(self, other:Type):
         pass
 
     def __repr__(self):
         return "{}".format(self.__class__.__name__)
 
 #
-# Modules
+# Module
 #
 
 class Module(Scope):
     main = None
-    type = None
+    _children = None
 
-    def __init__(self, name:str, children:{str: Scope}, main:Function):
-        super().__init__(name)
+    def __init__(self, name:str, children:[ScopeObject], main:Function):
+        print(children)
+        self._children = {}
+        super().__init__(name, children)
         self.main = main
-        self.main.parent = self
-        self.type = ModuleType(name,children)
 
     def verify(self, scope:Scope = None):
-        logger.debug(self)
+        super().verify()
+        self.main.verify()
 
-        self.main.verify(self)
+    def resolveType(self, scope:Scope = None):
+        raise InternalError("Not Implemented")
+
+    @property
+    def children(self):
+        return self._children
+
+    def addChild(self, child:ScopeObject):
+        super().addChild(child)
+        self._children[child.name] = child
+
+#
+# Function
+#
+
+class Function(Scope):
+    _children = None
+    arguments = None
+    instructions = None
+    type = None
+
+    def __init__(self, name:str, arguments:[Variable], instructions:[Object], return_type:Type):
+        self._children = {}
+        super().__init__(name, arguments)
+        self.arguments = arguments
+        self.instructions = instructions
+
+        for arg in self.arguments:
+            if arg.type is None:
+                raise InternalError("Not Implemented")
+
+        self.type = FunctionType(name, [arg.type for arg in arguments], return_type)
+
+    def verify(self, scope:Scope = None):
+        self.type.verify()
+
+        for instruction in self.instructions:
+            instruction.verify(self)
+
+        super().verify()
 
     def resolveType(self, scope:Scope = None):
         return self.type
 
-    def __repr__(self):
-        return "{}({})<{}>{{{}}}".format(self.__class__.__name__, self.name,
-            self.main, ", ".join(repr(child) for child in self.children))
+    def resolveCall(self, call:FunctionType, scope:Scope):
+        self.resolveType(scope).checkCompatibility(call)
+        return self
 
-class ModuleType(Type):
-    def __init__(self, name:str, children:{str: Scope}):
-        super().__init__(name)
-        self.children = children
+    @property
+    def children(self):
+        return self._children
 
-    def verify(self):
+    def addChild(self, child:ScopeObject):
+        super().addChild(child)
+        self._children[child.name] = child
+
+class ExternalFunction(Scope):
+    external_name = None
+    type = None
+
+    def __init__(self, name:str, external_name:str, arguments:[Type], return_type:Type):
+        self.type = FunctionType(external_name, arguments, return_type)
+
+    def verify(self, scope:Scope = None):
         pass
 
-    def collectAttributes(self, scope:Scope = None):
-        return self.children
+    def resolveType(self, scope:Scope = None):
+        return self.type
 
-    def checkCompatibility(self, other:Type):
-        raise InternalError("Not implemented")
+    resolveCall = Function.resolveCall
 
-    def resolveType(self, scope:Scope):
-        raise InternalError("Not implemented")
+    @property
+    def children(self):
+        raise InternalError("Not Implemented")
 
-#
-# Functions
-#
+    def addChild(self, child:ScopeObject):
+        raise InternalError("Not Implemented")
 
-class Function(Scope):
+    def __repr__(self):
+        return "{}({}->{}):{}".format(self.__class__.__name__, self.name, self.external_name, self.type)
+
+class FunctionType(Type):
     arguments = None
-    instructions = None
     return_type = None
 
-    def __init__(self, name:str, arguments: [Variable], instructions: [Object], return_type: Type = None):
-        super().__init__(name)
-
+    def __init__(self, name:str, arguments:[Type], return_type:Type = None):
         self.arguments = arguments
-        self.instructions = instructions
         self.return_type = return_type
 
-        #TODO: Replace unknown types with temps
-        for argument in self.arguments:
-            if argument.type is None:
-                raise InternalError("Function argument type inference is not yet supported")
+    def verify(self, scope:Scope = None):
+        pass
+
+    def resolveType(self, scope:Scope = None):
+        raise InternalError("Not Implemented")
+
+    @property
+    def children(self):
+        raise InternalError("Not Implemented")
+
+    def addChild(self, child):
+        raise InternalError("Not Implemented")
+
+    def checkCompatibility(self, other:Type):
+        if isinstance(other, FunctionType):
+            for self_arg, other_arg in zip(self.arguments, other.arguments):
+                self_arg.checkCompatibility(other.arguments)
+
+            #if self.return_type is not None and other.return_type is not None:
+            #    self.return_type.checkCompatibility(other.return_type)
+            #elif self.return_type is None or other.return_type is None:
+            #    raise TypeError("{} is not compatible with {}".format(self, other))
+        else:
+            raise TypeError("{} is not compatible with {}".format(self, other))
+
+#
+# Call
+#
+
+class Call(Object):
+    called = None
+    values = None
+
+    def __init__(self, called:Object, values:[Object]):
+        self.called = called
+        self.values = values
+
+    def verify(self, scope:Scope):
+        self.called.verify(scope)
+        arg_types = []
+        for val in self.values:
+            val.verify(scope)
+            arg_types.append(val.resolveType(scope))
+
+        call_type = FunctionType("", arg_types)
+        self.called = called.resolveCall(call_type, scope)
+
+    def resolveType(self, scope:Scope):
+        return None
+
+    def resolveAttribute(self, reference:str, scope:Scope):
+        raise InternalError("Not Implemented")
+
+#
+# Method
+#
+
+class Method(Scope):
+    pass
+
+#
+# Reference
+#
+
+class Reference(Object):
+    reference = None
+    value = None
+
+    def __init__(self, reference:str):
+        self.reference = reference
+
+    def verify(self, scope:Scope):
+        self.value = resolveReference(scope, self.reference)
+        self.value.verify(scope)
+
+    def resolveType(self, scope:Scope):
+        return self.value.resolveType(scope)
+
+    def resolveAttribute(self, reference:str, scope:Scope):
+        return self.value.resolveAttribute(reference, scope)
+
+    def resolveCall(self, call:FunctionType, scope:Scope):
+        return self.value.resolveCall(call, scope)
+
+#
+# Comment
+#
+
+class Comment(Object):
+    contents = None
+
+    def __init__(self, contents):
+        self.contents = contents
+
+    def verify(self, scope:Scope):
+        pass
+
+    def resolveType(self, scope:Scope):
+        return None
+
+
+
+"""
+#
+# Methods
+#
+
+class Method(Scope):
+    overloads = None
+
+    def __init__(self, name:str, overloads:[Function]):
+        super().__init__(name)
+
+        self.overloads = []
+        for overload in overloads:
+            self.addOverload(overload)
+
+    def addOverload(self, fn:Function):
+        fn.name = str(len(self.overloads))
+        fn.parent = self
+        self.overloads.append(fn)
+
+    def assimilate(self, method):
+        self.overloads += method.overloads
 
     def verify(self, scope:Scope):
         logger.debug(self)
@@ -175,117 +381,53 @@ class Function(Scope):
         if self.verified: return
         self.verified = True
 
-        returned = False
-
-        for instruction in self.instructions:
-            if isinstance(instruction, Return):
-                returned = True
-            instruction.verify(self)
-
-        if not returned and self.return_type is not None:
-            raise SemanticError("One or more function paths do not return")
+        for overload in self.overloads:
+            overload.verify(scope)
 
     def resolveType(self, scope:Scope = None):
-        return FunctionType([arg.type for arg in self.arguments], self.return_type)
+        return MethodType(function.resolveType() for function in self.overloads)
 
-    def resolveCall(self, other_signature:FunctionType):
-        self_signature = self.resolveType()
-        if not self_signature.checkCompatibility(other_signature):
-            raise TypeError("Function signature {} is not compatible with {}".format(self_signature, other_signature))
-        return self
+    def resolveCall(self, signature):
+        found = []
+
+        for overload in self.overloads:
+            overld_sig = overload.resolveType()
+            if signature.checkCompatibility(overld_sig):
+                found.append(overload)
+
+        if len(found) == 0:
+            raise TypeError("No compatible overload found for {}".format(signature))
+        elif len(found) > 1:
+            raise TypeError("Ambiguous overloads for {}",format(signature))
+        return found[0]
 
     def __repr__(self):
-        return "{}({}):{}({}){{{}}}".format(self.__class__.__name__, self.name, self.resolveType(),
-            ", ".join(repr(argument) for argument in self.arguments),
-            ", ".join(repr(instruction) for instruction in self.instructions))
+        return "{}({}){{{}}}".format(self.__class__.__name__, self.name,
+            ", ".join(repr(overload) for overload in self.overloads))
 
-class FunctionType(Type):
-    signature = None
-    return_type = None
+class MethodType(Type):
+    overloads = None
 
-    def __init__(self, signature: [Type], return_type:Type):
-        self.signature = signature
-        self.return_type = return_type
+    def __init__(self, overloads:[FunctionType]):
+        self.overloads = overloads
 
-    def verify(self, scope:Scope = None):
+    def verify(self, scope:Scope):
         pass
 
     def checkCompatibility(self, other:Type):
-        if isinstance(other, FunctionType):
-            # check if signature is compatible
-            if len(self.signature) != len(other.signature):
-                return False
-            for self_t, other_t in zip(self.signature, other.signature):
-                if not self_t.checkCompatibility(other_t):
-                    return False
-
-            #TODO: Return types
-            # same check with return types
-            # if not other_t.checkCompatibility(self_t):
-            #     return False
-        else:
-            return False
-        return True
+        if isinstance(other, MethodType):
+            # sanity check
+            if len(self.overloads) == len(other.overloads):
+                # Check that there is a match to any overload in the other, for all overloads in this one
+                return all(
+                    any(self_over.checkCompatibility(other_over) for other_over in other.overloads)
+                        for self_over in self.overloads)
 
     def collectAttributes(self, scope:Scope = None):
-        raise InternalError("Not implemented")
-
-    def resolveType(self, scope:Scope = None):
-        raise InternalError("Not implemented")
-
-    def __repr__(self):
-        return "{}({}):{}".format(self.__class__.__name__, ", ".join(repr(type) for type in self.signature), self.return_type)
-
-
-
-
-
-
-#
-#TODO: Make tests pass
-#
-
-class Reference(Type):
-    def __init__(self, reference:str):
-        self.reference = reference
-        self.value = None
-
-    def verify(self, scope:Scope):
-        logger.debug(self)
-
-        self.value = resolveReference(scope, self.reference)
-        self.value.verify(scope)
+        return {fn.name: fn for fn in self.overloads}
 
     def resolveType(self, scope:Scope):
-        return self.value.resolveType(scope)
-
-    def collectAttributes(self, scope:Scope, reference:str):
-        return self.value.collectAttributes(scope, reference)
-
-    def checkCompatibility(self, other:Type) -> bool:
-        return self.value.checkCompatibility(other)
-
-    def __repr__(self):
-        return "{}({})<{}>".format(self.__class__.__name__, self.reference, self.value)
-
-class Instruction(Object):
-    def resolveType(self, scope:Scope):
-        return None
-
-    def collectAttributes(self, scope:Scope, reference:str):
-        raise InternalError("Cannot collect attributes of instructions")
-
-class Comment(Instruction):
-    contents = None
-
-    def __init__(self, contents):
-        self.contents = contents
-
-    def verify(self, scope:Scope):
-        logger.debug(self)
-
-    def __repr__(self):
-        return "{}({})".format(self.__class__.__name__, self.contents)
+        raise InternalError("Not implemented")
 
 class Assignment(Instruction):
     reference = None
@@ -328,42 +470,11 @@ class Variable(Scope):
     def verify(self, scope:Scope = None):
         logger.debug(self)
 
-    def resolveType(self, scope:Scope):
+    def resolveType(self, scope:Scope = None):
         return self.type
 
     def copy(self):
         return Variable(self.name, self.type)
-
-class Call(Object):
-    called = None
-    values = None
-
-    def __init__(self, called:Object, values:[Object]):
-        self.values = values
-        self.called = called
-
-    def verify(self, scope:Scope):
-        logger.debug(self)
-
-        # Pass on verification
-        self.called.verify(scope)
-        for value in self.values:
-            value.verify(scope)
-
-        # Resolve types
-        signature = [value.resolveType(scope) for value in self.values]
-        self_type = FunctionType(signature, None)
-        called_type = self.called.resolveType(scope)
-
-        # Check for type compatibility
-        called_type.checkCompatibility(self_type)
-
-    def resolveType(self, scope:Scope):
-        return self.called.return_type
-
-    def __repr__(self):
-        return "{}<{}>{{{}}}".format(self.__class__.__name__,
-            self.called, ", ".join(repr(value) for value in self.values))
 
 class Return(Instruction):
     value = None
@@ -411,99 +522,4 @@ class Literal(Object):
 
     def __repr__(self):
         return "{}({}):{}".format(self.__class__.__name__, self.data, self.type)
-
-class ExternalFunction(Scope):
-    verified = True
-    external_name = None
-    argument_types = None
-    return_type = None
-
-    def __init__(self, name:str, external_name:str, argument_types: [Type], return_type: Type):
-        super().__init__(name)
-        self.external_name = external_name
-        self.argument_types = argument_types
-        self.return_type = return_type
-
-    def verify(self, scope:Scope = None):
-        pass
-
-    def resolveType(self, scope:Scope = None):
-        return FunctionType(self.argument_types, self.return_type)
-
-    resolveCall = Function.resolveCall
-
-    def __repr__(self):
-        return "{}({} -> {}):{}".format(self.__class__.__name__, self.name, self.external_name, self.resolveType())
-
-class MethodType(Type):
-    overloads = None
-
-    def __init__(self, overloads:[FunctionType]):
-        self.overloads = overloads
-
-    def checkCompatibility(self, other:Type):
-        if isinstance(other, MethodType):
-            # sanity check
-            if len(self.overloads) == len(other.overloads):
-                # Check that there is a match to any overload in the other, for all overloads in this one
-                return all(
-                    any(self_over.checkCompatibility(other_over) for other_over in other.overloads)
-                        for self_over in self.overloads)
-
-    def resolveCompatibility(self, other:Type):
-        if isinstance(other, FunctionType):
-            for overload in self.overloads:
-                if overload.checkCompatibility(other):
-                    return
-        raise TypeError("{} is not compatible with {}".format(self, other))
-
-    def resolveType(self, scope:Scope):
-        raise InternalError("Not implemented")
-
-class Method(Scope):
-    overloads = None
-
-    def __init__(self, name:str, overloads:[Function]):
-        super().__init__(name)
-
-        self.overloads = []
-        for overload in overloads:
-            self.addOverload(overload)
-
-    def addOverload(self, fn:Function):
-        fn.name = str(len(self.overloads))
-        fn.parent = self
-        self.overloads.append(fn)
-
-    def assimilate(self, method):
-        self.overloads += method.overloads
-
-    def verify(self, scope:Scope):
-        logger.debug(self)
-
-        if self.verified: return
-        self.verified = True
-
-        for overload in self.overloads:
-            overload.verify(scope)
-
-    def resolveType(self, scope:Scope):
-        return MethodType(function.resolveType() for function in self.overloads)
-
-    def resolveCall(self, signature):
-        found = []
-
-        for overload in self.overloads:
-            overld_sig = overload.resolveType()
-            if signature.checkCompatibility(overld_sig):
-                found.append(overload)
-
-        if len(found) == 0:
-            raise TypeError("No compatible overload found for {}".format(signature))
-        elif len(found) > 1:
-            raise TypeError("Ambiguous overloads for {}",format(signature))
-        return found[0]
-
-    def __repr__(self):
-        return "{}({}){{{}}}".format(self.__class__.__name__, self.name,
-            ", ".join(repr(overload) for overload in self.overloads))
+"""

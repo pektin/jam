@@ -75,7 +75,7 @@ class Parser:
                 # Other values are added as instructions
                 instructions.append(value)
 
-        return lekvar.Module("main", children,
+        return lekvar.Module("main", children.values(),
                lekvar.Function("main", [], instructions, None))
 
     def parseLine(self):
@@ -286,7 +286,7 @@ class Parser:
         else:
             self.next()
 
-        return lekvar.Call(name, arguments)
+        return lekvar.Call(lekvar.Reference(name), arguments)
 
     def parseReturn(self):
         # Parse a return statement
