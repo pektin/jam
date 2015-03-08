@@ -31,27 +31,30 @@ def resolveReference(scope:Object, reference:str):
 
     # If the object is a scope, resolve up the tree
 
-    print("Reference: {}".format(reference))
     while scope is not None:
         attr = scope.resolveAttribute(reference, scope)
         if attr is not None:
             found.append(attr)
-            print("Scope: {}".format(attr))
         scope = scope.parent
 
     # Check for reference in builtins
     attr = builtins.resolveAttribute(reference, scope)
     if attr is not None:
         found.append(attr)
-        print("Scope: {}".format(attr))
 
-    print("Found: {}".format(found))
     if len(found) < 1:
         raise MissingReferenceError("No reference to {}".format(reference))
     elif len(found) > 1:
         raise AmbiguetyError("Ambiguous reference to {}".format(reference))
 
     return found[0]
+
+def ensure_verified(fn):
+    def func(self, *args):
+        if not self.verified:
+            self.verify(self.parent)
+        return fn(self, *args)
+    return func
 
 #
 # Abstract Base Structures
@@ -81,23 +84,26 @@ class Object(ABC):
 class ScopeObject(Object):
     name = None
     parent = None
+    verified = False
 
     def __init__(self, name):
         self.name = name
 
     @abstract
     def verify(self, scope:Scope):
-        pass
+        self.verified = True
 
     @abstract
+    @ensure_verified
     def resolveType(self, scope:Scope):
         pass
 
+    @ensure_verified
     def resolveAttribute(self, reference:str, scope:Scope):
         return super().resolveAttribute(reference, scope)
 
     def __repr__(self):
-        return "{}({}):{}".format(self.__class__.__name__, self.name, self.resolveType())
+        return "{}({})".format(self.__class__.__name__, self.name)
 
 class Scope(ScopeObject):
     def __init__(self, name, children:[ScopeObject] = []):
@@ -107,9 +113,11 @@ class Scope(ScopeObject):
             self.addChild(child)
 
     def verify(self, scope:Scope):
+        super().verify(scope)
         for child in self.children.values():
             child.verify(self)
 
+    @ensure_verified
     def resolveAttribute(self, reference:str, scope:Scope):
         if reference in self.children:
             return self.children[reference]
@@ -124,21 +132,21 @@ class Scope(ScopeObject):
         child.parent = self
 
     def __repr__(self):
-        return "{}({})<{}>".format(self.__class__.__name__, self.name, self.children)
+        return "{}({}){}".format(self.__class__.__name__, self.name, self.children)
 
 class Type(Scope):
     def __init__(self, name, attributes:[ScopeObject] = []):
         super().__init__(name, attributes)
 
+    @ensure_verified
     def resolveAttribute(self, reference:str, scope:Scope):
         super(ScopeObject).resolveAttribute(reference, scope)
 
     @abstract
+    @ensure_verified
     def checkCompatibility(self, other:Type) -> bool:
         pass
 
-    def __repr__(self):
-        return "{}".format(self.__class__.__name__)
 
 #
 # Module
@@ -157,6 +165,7 @@ class Module(Scope):
         super().verify(scope)
         self.main.verify(self)
 
+    @ensure_verified
     def resolveType(self, scope:Scope):
         raise InternalError("Not Implemented")
 
@@ -166,8 +175,10 @@ class Module(Scope):
 
     def addChild(self, child:ScopeObject):
         super().addChild(child)
-        print(child)
         self._children[child.name] = child
+
+    def __repr__(self):
+        return "{}({})<{}>{}".format(self.__class__.__name__, self.name, self.main, self.children)
 
 #
 # Function
@@ -198,12 +209,14 @@ class Function(Scope):
         for instruction in self.instructions:
             instruction.verify(self)
 
+    @ensure_verified
     def resolveType(self, scope:Scope):
         return self.type
 
+    @ensure_verified
     def resolveCall(self, call:FunctionType, scope:Scope):
         if not self.resolveType(scope).checkCompatibility(call):
-            raise TypeError("{} is not compatible with {}".format(call, self))
+            raise TypeError("{} is not compatible with {}".format(call, self.resolveType(scope)))
         return self
 
     @property
@@ -214,6 +227,9 @@ class Function(Scope):
         super().addChild(child)
         self._children[child.name] = child
 
+    def __repr__(self):
+        return "{}({}):{}{}".format(self.__class__.__name__, self.name, self.type, self.instructions)
+
 class ExternalFunction(Scope):
     external_name = None
     type = None
@@ -223,8 +239,9 @@ class ExternalFunction(Scope):
         self.type = FunctionType(external_name, arguments, return_type)
 
     def verify(self, scope:Scope):
-        pass
+        super().verify(scope)
 
+    @ensure_verified
     def resolveType(self, scope:Scope):
         return self.type
 
@@ -232,7 +249,7 @@ class ExternalFunction(Scope):
 
     @property
     def children(self):
-        raise InternalError("Not Implemented")
+        return {}
 
     def addChild(self, child:ScopeObject):
         raise InternalError("Not Implemented")
@@ -250,30 +267,37 @@ class FunctionType(Type):
         self.return_type = return_type
 
     def verify(self, scope:Scope):
-        pass
+        super().verify(scope)
 
+    @ensure_verified
     def resolveType(self, scope:Scope):
         raise InternalError("Not Implemented")
 
     @property
     def children(self):
-        raise InternalError("Not Implemented")
+        return {}
 
     def addChild(self, child):
         raise InternalError("Not Implemented")
 
+    @ensure_verified
     def checkCompatibility(self, other:Type):
         if isinstance(other, FunctionType):
             for self_arg, other_arg in zip(self.arguments, other.arguments):
-                if not self_arg.checkCompatibility(other.arguments):
+                if not self_arg.checkCompatibility(other_arg):
                     return False
 
+            #TODO: Return type handling
             #if self.return_type is not None and other.return_type is not None:
             #    self.return_type.checkCompatibility(other.return_type)
             #elif self.return_type is None or other.return_type is None:
             #    raise TypeError("{} is not compatible with {}".format(self, other))
             return True
         return False
+
+    def __repr__(self):
+        return "{}({}):{}".format(self.__class__.__name__,
+            ", ".join(repr(arg) for arg in self.arguments), self.return_type)
 
 #
 # Method
@@ -291,16 +315,24 @@ class Method(ScopeObject):
 
     def addOverload(self, overload:Function):
         overload.name = str(len(self.overloads))
-        overload.parent = self.parent
+        overload.parent = self
         self.overloads.append(overload)
 
     def verify(self, scope:Scope):
+        super().verify(scope)
+
         for overload in self.overloads:
             overload.verify(scope)
 
+    @ensure_verified
+    def resolveAttribute(self, reference:str, scope:Scope):
+        return None
+
+    @ensure_verified
     def resolveType(self, scope:Scope):
         return MethodType(self.name, [fn.resolveType(scope) for fn in self.overloads])
 
+    @ensure_verified
     def resolveCall(self, call:FunctionType, scope:Scope):
         matches = []
 
@@ -315,13 +347,15 @@ class Method(ScopeObject):
             raise TypeError("Ambiguous overloads: {}".format(matches))
         return matches[0]
 
+    def __repr__(self):
+        return "{}({}){}".format(self.__class__.__name__, self.name, self.overloads)
+
 class MethodType(Type):
     overloads = None
 
     def __init__(self, name:str, overloads:[FunctionType]):
         super().__init__(name)
         self.overloads = overloads
-
 
 #
 # Call
@@ -336,6 +370,8 @@ class Call(Object):
         self.values = values
 
     def verify(self, scope:Scope):
+        super().verify(scope)
+
         self.called.verify(scope)
         arg_types = []
         for val in self.values:
@@ -343,13 +379,16 @@ class Call(Object):
             arg_types.append(val.resolveType(scope))
 
         call_type = FunctionType("", arg_types)
-        self.called = called.resolveCall(call_type, scope)
+        self.called = self.called.resolveCall(call_type, scope)
 
     def resolveType(self, scope:Scope):
         return None
 
     def resolveAttribute(self, reference:str, scope:Scope):
         raise InternalError("Not Implemented")
+
+    def __repr__(self):
+        return "{}<{}>({})".format(self.__class__.__name__, self.called, self.values)
 
 #
 # Literal
@@ -364,16 +403,21 @@ class Literal(Object):
         self.type = type
 
     def verify(self, scope:Scope):
+        super().verify(scope)
+
         self.type.verify(scope)
 
     def resolveType(self, scope:Scope):
         return self.type
 
+    def __repr__(self):
+        return "{}<{}>".format(self.type, self.data)
+
 #
 # Reference
 #
 
-class Reference(Object):
+class Reference(Type):
     reference = None
     value = None
 
@@ -381,17 +425,32 @@ class Reference(Object):
         self.reference = reference
 
     def verify(self, scope:Scope):
+        Object.verify(self, scope)
         self.value = resolveReference(scope, self.reference)
         self.value.verify(scope)
 
+    @ensure_verified
     def resolveType(self, scope:Scope):
         return self.value.resolveType(scope)
 
-    def resolveAttribute(self, reference:str, scope:Scope):
-        return self.value.resolveAttribute(reference, scope)
-
+    @ensure_verified
     def resolveCall(self, call:FunctionType, scope:Scope):
         return self.value.resolveCall(call, scope)
+
+    @property
+    @ensure_verified
+    def children(self):
+        return self.value.children
+
+    def addChild(self, child:ScopeObject):
+        self.value.addChild(child)
+
+    @ensure_verified
+    def checkCompatibility(self, other:Type):
+        return self.value.checkCompatibility(other)
+
+    def __repr__(self):
+        return "{}({})<{}>".format(self.__class__.__name__, self.reference, self.value)
 
 #
 # Comment
@@ -404,12 +463,13 @@ class Comment(Object):
         self.contents = contents
 
     def verify(self, scope:Scope):
-        pass
+        super().verify(scope)
 
     def resolveType(self, scope:Scope):
         return None
 
-
+    def __repr__(self):
+        return "{}<{}>".format(self.__class__.__name__, self.contents)
 
 """
 #

@@ -59,7 +59,7 @@ class Parser:
             # EOF escape
             if value is None: break
 
-            if isinstance(value, lekvar.Scope):
+            if isinstance(value, lekvar.ScopeObject):
                 # Scopes are automatically added as children
                 name = value.name
 
@@ -75,7 +75,7 @@ class Parser:
                 # Other values are added as instructions
                 instructions.append(value)
 
-        return lekvar.Module("main", children.values(),
+        return lekvar.Module("main", list(children.values()),
                lekvar.Function("main", [], instructions, None))
 
     def parseLine(self):
