@@ -2,4 +2,4 @@
 
 FOUND=$(find -name 'tests.py' | sed 's/\.\///')
 echo $FOUND
-python3 -m unittest $FOUND
+python3 -m unittest $FOUND $@
