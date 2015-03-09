@@ -1,8 +1,12 @@
 from ctypes import *
+import traceback
 
 _lib = CDLL("/usr/lib/llvm-3.6/lib/libLLVM-3.6.so") #TODO: Do this properly
 
 c_bool = c_int
+
+class NullException(Exception):
+    pass
 
 #
 # Wrapping tools
@@ -42,14 +46,28 @@ def convertArgs(args):
             arguments.append(arg)
     return arguments
 
+def debuggable(cls_name, name, check_null = True):
+    def debuggable(func):
+        def f(cls, *args):
+            traceback.print_stack()
+            print(cls_name, name, args)
+            ret = func(cls, *args)
+            if check_null and ret is None:
+                raise NullException("Binding returned null")
+            return ret
+        return f
+    return debuggable
+
 class Wrappable:
     @classmethod
     def wrapInstanceFunc(cls, cls_name:str, name:str, args:[] = [], ret = None):
         setTypes(name, convertArgtypes([cls] + args), ret)
         if ret is None:
+            @debuggable(cls_name, name, False)
             def func(self, *args):
                 getattr(_lib, name)(self, *convertArgs(args))
         else:
+            @debuggable(cls_name, name)
             def func(self, *args):
                 return getattr(_lib, name)(self, *convertArgs(args))
         setattr(cls, cls_name, func)
@@ -58,11 +76,13 @@ class Wrappable:
     def wrapInstanceProp(cls, cls_name:str, get_name:str, set_name:str, type):
         setTypes(get_name, [cls], type)
         @property
+        @debuggable(cls_name, get_name)
         def get(self):
             return getattr(_lib, get_name)(self)
         if set_name:
             setTypes(set_name, [cls, type], None)
             @get.setter
+            @debuggable(cls_name, set_name, False)
             def set(self, val:type):
                 getattr(_lib, set_name)(self, val)
         setattr(cls, cls_name, get)
@@ -76,6 +96,7 @@ class Wrappable:
     def wrapConstructor(cls, cls_name:str, name:str, args:[] = []):
         setTypes(name, convertArgtypes(args), cls)
         @classmethod
+        @debuggable(cls_name, name)
         def make(cls, *args):
             return getattr(_lib, name)(*convertArgs(args))
         setattr(cls, cls_name, make)
