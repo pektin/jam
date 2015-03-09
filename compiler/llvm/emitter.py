@@ -6,8 +6,7 @@ from ..lekvar import lekvar
 from ..errors import *
 
 from . import bindings as llvm
-
-llvm.Int32 = llvm.Int.new(32)
+from .builtins import LLVMType
 
 def emit(module:lekvar.Module):
     state = State(b"main")
@@ -22,7 +21,7 @@ class State:
         self.main = []
 
     def finalize(self):
-        main_type = llvm.Function.new(llvm.Int32, [], False)
+        main_type = llvm.Function.new(llvm.Int.new(32), [], False)
         main = self.module.addFunction("main", main_type)
 
         entry = main.appendBlock("entry")
@@ -32,7 +31,7 @@ class State:
                 call.called = func
                 call.emitValue(self)
 
-            return_value = llvm.Value.constInt(llvm.Int32, 0, False)
+            return_value = llvm.Value.constInt(llvm.Int.new(32), 0, False)
             self.builder.ret(return_value)
 
     @contextmanager
@@ -101,6 +100,7 @@ def Reference_emitValue(self, state:State):
 lekvar.Reference.emitValue = Reference_emitValue
 
 def Reference_emitType(self, state:State):
+    if self.value is None: print("Missing:", self)
     return self.value.emitType(state)
 lekvar.Reference.emitType = Reference_emitType
 
@@ -109,13 +109,13 @@ lekvar.Reference.emitType = Reference_emitType
 #
 
 def Literal_emitValue(self, state:State):
-    type = self.type.llvm_type
+    type = self.type.emitType(state)
 
-    if type == "String":
+    if type == LLVM_MAP["String"]:
         return state.builder.globalString(self.data, state.getTempName())
     else:
         raise NotImplemented()
-#lekvar.Literal.emitValue = Literal_emitValue
+lekvar.Literal.emitValue = Literal_emitValue
 
 #
 # class Variable
@@ -194,7 +194,7 @@ def Function_emit(self, state:State):
     if self.llvm_value is not None: return
 
     name = resolveName(self)
-    func_type = self.resolveType().emitType(state)
+    func_type = self.resolveType(self).emitType(state)
     self.llvm_value = state.module.addFunction(name, func_type)
 
     entry = self.llvm_value.appendBlock("entry")
@@ -248,7 +248,8 @@ lekvar.FunctionType.emitType = FunctionType_emitType
 def ExternalFunction_emit(self, state:State):
     if self.llvm_value is not None: return
 
-    func_type = self.resolveType().emitType(state)
+    func_type = self.type.emitType(state)
+    print(self)
     self.llvm_value = state.module.addFunction(self.external_name, func_type)
 lekvar.ExternalFunction.emit = ExternalFunction_emit
 
@@ -267,3 +268,20 @@ def Method_emit(self, state:State):
     for overload in self.overloads:
         overload.emit(state)
 lekvar.Method.emit = Method_emit
+
+#
+# class LLVMType
+#
+
+LLVM_MAP = None
+
+def LLVMType_emitType(self, state:State):
+    global LLVM_MAP
+    if LLVM_MAP is None:
+        LLVM_MAP = {
+            "String": llvm.Pointer.new(llvm.Int.new(8), 0),
+            "Int32": llvm.Int.new(32),
+            "Int8": llvm.Int.new(8),
+        }
+    return LLVM_MAP[self.name]
+LLVMType.emitType = LLVMType_emitType
