@@ -391,6 +391,24 @@ class MethodType(Type):
         self.overloads = overloads
 
 #
+# Variable
+#
+
+class Variable(ScopeObject):
+    type = None
+
+    def __init__(self, name:str, type:Type = None):
+        super().__init__(name)
+        self.type = type
+
+    def verify(self, scope:Scope):
+        pass
+
+    @ensure_verified
+    def resolveType(self, scope:Scope):
+        return self.type
+
+#
 # Call
 #
 
@@ -415,7 +433,7 @@ class Call(Object):
         self.called = self.called.resolveCall(scope, call_type)
 
     def resolveType(self, scope:Scope):
-        return None
+        return self.called.resolveType(scope).return_type
 
     def resolveAttribute(self, scope:Scope, reference:str):
         raise InternalError("Not Implemented")
@@ -489,6 +507,33 @@ class Reference(Type):
         return "{}({})<{}>".format(self.__class__.__name__, self.reference, self.value)
 
 #
+# Return
+#
+
+class Return(Object):
+    value = None
+    function = None
+
+    def __init__(self, value:Object = None):
+        self.value = value
+
+    def verify(self, scope:Scope):
+        self.value.verify(scope)
+
+        if not isinstance(scope, Function):
+            raise SyntaxError("Cannot return outside of a method")
+        self.function = scope
+
+        # Infer function types
+        if self.function.type.return_type is None:
+            self.function.type.return_type = self.value.resolveType(scope)
+        else:
+            self.function.type.return_type.resolveCompatibility(self.value.resolveType(scope))
+
+    def resolveType(self, scope:Scope):
+        return None
+
+#
 # Comment
 #
 
@@ -499,7 +544,7 @@ class Comment(Object):
         self.contents = contents
 
     def verify(self, scope:Scope):
-        super().verify(scope)
+        pass
 
     def resolveType(self, scope:Scope):
         return None

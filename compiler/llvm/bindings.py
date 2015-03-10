@@ -1,7 +1,7 @@
 from ctypes import *
 import traceback
 
-from .emitter import State
+#from .emitter import State
 
 
 _lib = CDLL("/usr/lib/llvm-3.6/lib/libLLVM-3.6.so") #TODO: Do this properly
@@ -53,8 +53,8 @@ def debuggable(cls_name, name, check_null = True):
     def debuggable(func):
         def f(cls, *args):
             # Log the call, if possible
-            if State.logger is not None:
-                State.logger.debug("{}.{} calling {}({})".format(cls.__name__, cls_name, name, args), stack_info=True)
+            #if State.logger is not None:
+            #    State.logger.debug("{}.{} calling {}({})".format(cls.__name__, cls_name, name, args), stack_info=True)
 
             # Perform the call
             ret = func(cls, *args)

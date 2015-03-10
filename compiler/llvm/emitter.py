@@ -135,12 +135,12 @@ def Variable_emit(self):
     type = self.type.emitType()
     name = resolveName(self)
     self.llvm_value = State.builder.alloca(type, name)
-#lekvar.Variable.emit = Variable_emit
+lekvar.Variable.emit = Variable_emit
 
 def Variable_emitValue(self):
     self.emit()
     return State.builder.load(self.llvm_value, State.getTempName())
-#lekvar.Variable.emitValue = Variable_emitValue
+lekvar.Variable.emitValue = Variable_emitValue
 
 #
 # class Assignment
@@ -184,14 +184,14 @@ lekvar.Call.emitValue = Call_emitValue
 #
 
 def Return_emitValue(self):
-    exit = self.parent.llvm_value.getLastBlock()
+    exit = self.function.llvm_value.getLastBlock()
     if self.value is None:
         State.builder.br(return_)
     else:
         value = self.value.emitValue()
-        State.builder.store(value, self.parent.llvm_return)
+        State.builder.store(value, self.function.llvm_return)
         State.builder.br(exit)
-#lekvar.Return.emitValue = Return_emitValue
+lekvar.Return.emitValue = Return_emitValue
 
 #
 # class Function
