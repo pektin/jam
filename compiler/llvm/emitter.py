@@ -60,7 +60,7 @@ def main_call(func:lekvar.Function):
 
 # Abstract extensions
 
-lekvar.Scope.llvm_value = None
+lekvar.ScopeObject.llvm_value = None
 lekvar.Function.llvm_return = None
 
 # Extension abstract methods apparently don't work
@@ -150,7 +150,7 @@ def Assignment_emitValue(self):
     value = self.value.emitValue()
     self.variable.emit()
     State.builder.store(value, self.variable.llvm_value)
-#lekvar.Assignment.emitValue = Assignment_emitValue
+lekvar.Assignment.emitValue = Assignment_emitValue
 
 #
 # class Module

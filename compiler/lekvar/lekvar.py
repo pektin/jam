@@ -427,6 +427,45 @@ class Variable(ScopeObject):
         return self.type
 
 #
+# Assignment
+#
+
+class Assignment(Object):
+    variable = None
+    value = None
+
+    def __init__(self, variable:Variable, value:Object):
+        self.variable = variable
+        self.value = value
+
+    def verify(self, scope:Scope):
+        try:
+            variable = resolveReference(scope, self.variable.name)
+        except MissingReferenceError:
+            scope.addChild(self.variable)
+        else:
+            if variable.type is None:
+                variable.type = self.variable.type
+            elif self.variable.type is not None:
+                raise TypeError("Cannot override variable type")
+
+            self.variable = variable
+
+        self.value.verify(scope)
+        value_type = self.value.resolveType(scope)
+        if self.variable.type is None:
+            self.variable.type = value_type
+        elif not self.variable.type.checkCompatibility(scope, value_type):
+            raise TypeError("Cannot assign {} of type {} to variable {} of type {}".format(
+                self.value, value_type, self.variable, self.variable.type))
+
+    def resolveType(self, scope:Scope):
+        return None
+
+    def __repr__(self):
+        return "{}<{} = {}>".format(self.__class__.__name__, self.variable, self.name)
+
+#
 # Call
 #
 

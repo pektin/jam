@@ -303,9 +303,9 @@ class Parser:
     def parseAssignment(self):
         # Parse a assignment
 
-        name = self.next().data
+        variable = self.parseVariable()
 
         assert self.next().type == Tokens.equal
 
         value = self.parseValue()
-        return lekvar.Assignment(name, value)
+        return lekvar.Assignment(variable, value)
