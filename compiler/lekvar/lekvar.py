@@ -213,8 +213,15 @@ class Function(Scope):
 
         self.type.verify(self)
 
+        returned = False
+
         for instruction in self.instructions:
+            if isinstance(instruction, Return):
+                returned = True
             instruction.verify(self)
+
+        if not returned and self.type.return_type is not None:
+            raise SemanticError("All code paths must return")
 
     @ensure_verified
     def resolveType(self, scope:Scope):
@@ -613,48 +620,4 @@ class Assignment(Instruction):
 
     def __repr__(self):
         return "{}<{}({}) := {}>".format(self.__class__.__name__, self.reference, self.variable, self.value)
-
-class Variable(Scope):
-    def __init__(self, name:str, type:Type=None):
-        super().__init__(name)
-        self.type = type
-
-    def verify(self, scope:Scope = None):
-        logger.debug(self)
-
-    def resolveType(self, scope:Scope = None):
-        return self.type
-
-    def copy(self):
-        return Variable(self.name, self.type)
-
-class Return(Instruction):
-    value = None
-    parent = None
-
-    def __init__(self, value:Object):
-        self.value = value
-
-    def verify(self, scope:Scope):
-        logger.debug(self)
-
-        # Pass on verification
-        self.value.verify(scope)
-
-        # Verify signature
-        if not isinstance(scope, Function):
-            raise SyntaxError("Cannot return outside of a function")
-        self.parent = scope
-
-        if scope.return_type is None:
-            scope.return_type = self.value.resolveType()
-        else:
-            scope.return_type.resolveCompatibility(self.value.resolveType())
-
-    def resolveType(self, scope:Scope):
-        return None
-
-    def __repr__(self):
-        return "{}<{}>".format(self.__class__.__name__, self.value)
-
 """
