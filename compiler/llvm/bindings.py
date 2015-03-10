@@ -1,6 +1,9 @@
 from ctypes import *
 import traceback
 
+from .emitter import State
+
+
 _lib = CDLL("/usr/lib/llvm-3.6/lib/libLLVM-3.6.so") #TODO: Do this properly
 
 c_bool = c_int
@@ -49,11 +52,17 @@ def convertArgs(args):
 def debuggable(cls_name, name, check_null = True):
     def debuggable(func):
         def f(cls, *args):
-            traceback.print_stack()
-            print(cls_name, name, args)
+            # Log the call, if possible
+            if State.logger is not None:
+                State.logger.debug("{}.{} calling {}({})".format(cls.__name__, cls_name, name, args), stack_info=True)
+
+            # Perform the call
             ret = func(cls, *args)
+
+            # Check for invalid output
             if check_null and ret is None:
                 raise NullException("Binding returned null")
+
             return ret
         return f
     return debuggable
