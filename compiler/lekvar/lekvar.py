@@ -195,7 +195,7 @@ class Function(Scope):
     instructions = None
     type = None
 
-    def __init__(self, name:str, arguments:[Variable], instructions:[Object], return_type:Type):
+    def __init__(self, name:str, arguments:[Variable], instructions:[Object], return_type:Type = None):
         self._children = {}
         super().__init__(name, arguments)
         self.arguments = arguments
@@ -415,6 +415,9 @@ class Variable(ScopeObject):
     def __init__(self, name:str, type:Type = None):
         super().__init__(name)
         self.type = type
+
+    def copy(self):
+        return Variable(self.name, self.type)
 
     def verify(self, scope:Scope):
         pass

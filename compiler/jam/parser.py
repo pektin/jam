@@ -200,10 +200,9 @@ class Parser:
                     overloads.append(
                         lekvar.Function("", args, [
                             lekvar.Call(
-                                "",
+                                overloads[-1],
                                 # Add non-default arguments with the default value
                                 args + [default_values[index]],
-                                overloads[-1],
                             )
                         ])
                     )
