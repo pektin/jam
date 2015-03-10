@@ -10,6 +10,7 @@ Variable = None
 Module = None
 Function = None
 FunctionType = None
+Method = None
 Type = None
 
 #
@@ -24,7 +25,7 @@ def verify(module:Module, builtin:Module, log:logging.Logger = None):
     builtins = builtin
     if log is None: logger = logging.getLogger()
 
-    print(module)
+    logger.info(module)
     module.verify(None)
 
 def resolveReference(scope:Object, reference:str):
@@ -315,6 +316,9 @@ class FunctionType(Type):
             other = other.value
 
         if isinstance(other, FunctionType):
+            if len(self.arguments) != len(other.arguments):
+                return False
+
             for self_arg, other_arg in zip(self.arguments, other.arguments):
                 if not self_arg.checkCompatibility(scope, other_arg):
                     return False
@@ -349,6 +353,10 @@ class Method(Scope):
         overload.name = str(len(self.overloads))
         overload.parent = self
         self.overloads.append(overload)
+
+    def assimilate(self, other:Method):
+        for overload in other.overloads:
+            self.addOverload(overload)
 
     @property
     def children(self):
