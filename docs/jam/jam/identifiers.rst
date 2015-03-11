@@ -7,7 +7,11 @@ Identifiers are used to identify values in Jam. When an identifier is used by
 itself, it is understood as a reference to everything that was defined with that
 same identifier.
 
-Identifiers are also used to get attributes of objects.
+When a reference is resolved, each scope up the tree is checked for the
+reference as an attribute. When no references are found, or when there is an
+ambiguity for which attribute is referenced, the reference becomes invalid.
+
+Identifiers are also used to get attributes of values explicit.
 
 Syntax
 ======
