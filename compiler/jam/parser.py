@@ -134,7 +134,7 @@ class Parser:
 
     def parseMethod(self):
         # "def" should have already been identified
-        self.next()
+        assert self.next().data == "def"
 
         name = self.expect()
 
@@ -224,7 +224,7 @@ class Parser:
 
     def parseClass(self):
         # class should have already been identified
-        token = self.next()
+        assert self.next().data == "class"
 
         name = self.expect()
 
