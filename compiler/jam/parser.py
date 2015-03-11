@@ -96,6 +96,18 @@ class Parser:
         return self.parseValue()
 
     def parseValue(self):
+        value = self.parseSingleValue()
+
+        token = self.lookAhead()
+
+        if token.type == Tokens.group_start:
+            return self.parseCall(value)
+        elif token.type == Tokens.dot:
+            return self.parseAttribute(value)
+        else:
+            return value
+
+    def parseSingleValue(self):
         # Parse for a value. The value is expected to exist
 
         token = self.lookAhead()
@@ -113,10 +125,7 @@ class Parser:
             elif token.data == "class":
                 return self.parseClass()
         elif token.type == Tokens.identifier:
-            if self.lookAhead(2).type == Tokens.group_start:
-                return self.parseCall()
-            else:
-                return lekvar.Reference(self.next().data)
+            return lekvar.Reference(self.next().data)
         elif token.type == Tokens.string:
             token = self.next()
             return lekvar.Literal(token.data, lekvar.Reference("String"))
@@ -219,8 +228,7 @@ class Parser:
 
         name = self.expect()
 
-        methods = []
-        fields = []
+        attributes = []
 
         while True:
             token = self.strip()
@@ -231,13 +239,13 @@ class Parser:
                     self.next()
                     break
                 elif token.data == "def":
-                    methods.append(self.parseMethod())
+                    attributes.append(self.parseMethod())
             elif token.type == Tokens.identifier:
-                fields.append(self.parseVariable())
+                attributes.append(self.parseVariable())
             else:
                 self._unexpected(token)
 
-        return lekvar.Class()
+        return lekvar.Class(name, attributes)
 
 
     def parseVariable(self):
@@ -262,11 +270,10 @@ class Parser:
         name = self.expect()
         return lekvar.Reference(name)
 
-    def parseCall(self):
+    def parseCall(self, called):
         # Parse a function call
 
-        name = self.expect()
-        self.expect(Tokens.group_start)
+        assert self.next().type == Tokens.group_start
 
         arguments = []
         if self.lookAhead().type != Tokens.group_end:
@@ -285,7 +292,7 @@ class Parser:
         else:
             self.next()
 
-        return lekvar.Call(lekvar.Reference(name), arguments)
+        return lekvar.Call(called, arguments)
 
     def parseReturn(self):
         # Parse a return statement
@@ -309,3 +316,9 @@ class Parser:
 
         value = self.parseValue()
         return lekvar.Assignment(variable, value)
+
+    def parseAttribute(self, value):
+        assert self.next().type == Tokens.dot
+
+        attribute = self.expect()
+        return lekvar.Attribute(value, attribute)

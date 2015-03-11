@@ -13,6 +13,7 @@ Tokens = Enum("Tokens", [
     "group_start",
     "group_end",
     "typeof",
+    "dot",
     "comma",
     "equal"
 ])
@@ -38,6 +39,7 @@ DIRECT_MAP = {
     ":": Tokens.typeof,
     ",": Tokens.comma,
     "=": Tokens.equal,
+    ".": Tokens.dot,
 }
 
 class Token:
