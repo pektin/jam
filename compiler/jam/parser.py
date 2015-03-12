@@ -5,11 +5,15 @@ from ..lekvar import lekvar
 from .lexer import Lexer, Tokens
 
 #
-# Setup functions
+# Tools
 #
 
 def parseFile(source:IOBase):
     return Parser(Lexer(source)).parseModule()
+
+#
+# Parser
+#
 
 class Parser:
     lexer = None
@@ -31,15 +35,18 @@ class Parser:
         return self.tokens[num - 1]
 
     def _unexpected(self, token):
-        raise SyntaxError("Unexpected {}: '{}'".format(token.type, token.data))
+        raise SyntaxError("Unexpected {}: '{}'".format(token.type, token.data), [token])
 
     def strip(self, types:[Tokens] = [Tokens.newline]):
         # Strip all tokens of a type, returning one lookAhead or None
         token = self.lookAhead()
+        if token is None: return None
+
         while token.type in types:
             self.next()
             token = self.lookAhead()
             if token is None: return None
+
         return token
 
     def expect(self, type:Tokens = Tokens.identifier):
@@ -98,22 +105,25 @@ class Parser:
     def parseValue(self):
         value = self.parseSingleValue()
 
-        token = self.lookAhead()
+        while True:
+            token = self.strip([Tokens.comment, Tokens.newline])
 
-        if token.type == Tokens.group_start:
-            return self.parseCall(value)
-        elif token.type == Tokens.dot:
-            return self.parseAttribute(value)
-        else:
-            return value
+            if token is None:
+                break
+
+            if token.type == Tokens.group_start:
+                value = self.parseCall(value)
+            elif token.type == Tokens.dot:
+                value = self.parseAttribute(value)
+            else:
+                break
+
+        return value
 
     def parseSingleValue(self):
-        # Parse for a value. The value is expected to exist
-
-        token = self.lookAhead()
-
         # Ignore comments and newlines until a value is reached
         token = self.strip([Tokens.comment, Tokens.newline])
+
         # EOF handling
         if token is None:
             raise SyntaxError("Expected value before EOF")
