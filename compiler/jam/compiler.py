@@ -1,10 +1,11 @@
+from io import IOBase
+from subprocess import check_output
+
 from . import parser
 from ..lekvar import lekvar
 from ..llvm import emitter as llvm
 from ..llvm.builtins import builtins
-
-from io import IOBase
-from subprocess import check_output
+from ..errors import CompilerError
 
 def compileRun(path:str, target:str):
     compileFile(path, target)
@@ -15,9 +16,14 @@ def compileFile(path:str, target:str):
         compile(input, output)
 
 def compile(input:IOBase, output:IOBase):
-    # Produce lekvar
-    ir = parser.parseFile(input)
-    lekvar.verify(ir, builtins())
-    # Emit LLVM
-    output.write(llvm.emit(ir).decode("UTF-8"))
+    try:
+        # Produce lekvar
+        ir = parser.parseFile(input)
+        lekvar.verify(ir, builtins())
+        # Emit LLVM
+        output.write(llvm.emit(ir).decode("UTF-8"))
+    except CompilerError as err:
+        input.seek(0)
+        err.format(input.read())
+        raise err
 
