@@ -463,7 +463,7 @@ class Assignment(Object):
         return None
 
     def __repr__(self):
-        return "{}<{} = {}>".format(self.__class__.__name__, self.variable, self.name)
+        return "{}<{} = {}>".format(self.__class__.__name__, self.variable, self.value)
 
 #
 # Call
