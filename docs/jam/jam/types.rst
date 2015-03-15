@@ -30,6 +30,13 @@ is checked for ``null``, or is cast to the type's non-nullable counterpart.
 
 A type may be marked as nullable either at definition or declaration.
 
+Classes
+=======
+
+A class is a user defined type. A class may have instance fields and methods,
+which can be accessed as attributes. It may also inherit functionality from
+other types, or include functionality from templates.
+
 Syntax
 ======
 
@@ -38,6 +45,7 @@ Syntax
     ArrayType: `Type` "[" ( [`Integer`] "," )* [`Integer`] "]"
     DictType: "{" `Type` "->" `Type` "}"
     InstanceVariable: `Variable` ["=" `Value`]
+    ClassConstructor:
     ClassInstructionSet: (`InstanceVariable` | `Assignment` | `Method` | `TypeCastDef`
                        : )*
     Class: "class" `Identifier` ["?"] [ "(" `Identifier` ")" ]
