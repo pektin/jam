@@ -238,6 +238,7 @@ class Parser:
 
         name = self.expect()
 
+        constructor = None
         attributes = []
 
         while True:
@@ -249,13 +250,17 @@ class Parser:
                     self.next()
                     break
                 elif token.data == "def":
-                    attributes.append(self.parseMethod())
+                    meth = self.parseMethod()
+                    if meth.name == "new":
+                        constructor = meth
+                    else:
+                        attributes.append(meth)
             elif token.type == Tokens.identifier:
                 attributes.append(self.parseVariable())
             else:
                 self._unexpected(token)
 
-        return lekvar.Class(name, attributes)
+        return lekvar.Class(name, constructor, attributes)
 
 
     def parseVariable(self):
