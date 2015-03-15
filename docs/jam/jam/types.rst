@@ -46,7 +46,7 @@ Syntax
     DictType: "{" `Type` "->" `Type` "}"
     InstanceVariable: `Variable` ["=" `Value`]
     ClassConstructor:
-    ClassInstructionSet: (`InstanceVariable` | `Assignment` | `Method` | `TypeCastDef`
+    ClassInstructionSet: (`InstanceVariable` | `Assignment` | `Method` | `TypeCastDef` | `TemplateInclude`
                        : )*
     Class: "class" `Identifier` ["?"] [ "(" `Identifier` ")" ]
          :     `ClassInstructionSet`
