@@ -28,20 +28,20 @@ def verify(module:Module, builtin:Module, log:logging.Logger = None):
     logger.info(module)
     module.verify(None)
 
-def resolveReference(scope:Object, reference:str):
+def resolveReference(scope:Scope, reference:str):
     found = []
 
     # If the object is a scope, resolve up the tree
 
     while scope is not None:
-        attr = scope.resolveAttribute(scope, reference)
+        attr = scope.resolveReference(scope, reference)
         if attr is not None:
             found.append(attr)
 
         if scope is builtins:
             break
         else:
-            scope = scope.parent if scope.parent is not None else builtins
+            scope = scope.parent if (scope.parent is not None) else builtins
 
     if len(found) < 1:
         raise MissingReferenceError("No reference to {}".format(reference))
@@ -71,10 +71,7 @@ class Object(ABC):
         pass
 
     def resolveAttribute(self, scope:Scope, reference:str) -> Object:
-        attributes = self.resolveType(scope).attributes
-        if reference in attributes:
-            return attributes[reference]
-        return None
+        return self.resolveType(scope).resolveReference(scope, reference)
 
     def resolveCall(self, scope:Scope, call:FunctionType) -> Function:
         raise TypeError("{} object is not callable".format(self))
@@ -126,6 +123,12 @@ class Scope(ScopeObject):
             return self.children[reference]
         return None
 
+    @ensure_verified
+    def resolveReference(self, scope:Scope, reference:str):
+        if reference in self.children:
+            return self.children[reference]
+        return None
+
     @abstractproperty
     def children(self) -> {str: ScopeObject}:
         pass
@@ -143,13 +146,56 @@ class Type(Scope):
 
     @ensure_verified
     def resolveAttribute(self, scope:Scope, reference:str):
-        ScopeObject.resolveAttribute(self, scope, reference)
+        return ScopeObject.resolveAttribute(self, scope, reference)
 
     @abstract
     @ensure_verified
     def checkCompatibility(self, other:Type) -> bool:
         pass
 
+#
+# Class
+#
+
+class Class(Type):
+    constructor = None
+    _attributes = None
+
+    def __init__(self, name:str, constructor:ScopeObject, attributes:{str: ScopeObject}):
+        self._attributes = {}
+        super().__init__(name, attributes)
+
+        self.constructor = constructor
+
+    def verify(self, scope:Scope):
+        if self.verified: return
+        super().verify(scope)
+        self.constructor.verify(scope)
+
+    @ensure_verified
+    def resolveCall(self, scope:Scope, call:FunctionType):
+        function = self.constructor.resolveCall(scope, call)
+        function.type.return_type = self
+        return function
+
+    @ensure_verified
+    def resolveType(self, scope:Scope):
+        raise InternalError("Not Implemented")
+
+    @property
+    def children(self):
+        return self._attributes
+
+    def addChild(self, child:ScopeObject):
+        super().addChild(child)
+        self._attributes[child.name] = child
+
+    @ensure_verified
+    def checkCompatibility(self, other:Type) -> bool:
+        if isinstance(other, Reference):
+            other = other.value
+
+        return other is self
 
 #
 # Module
@@ -420,7 +466,8 @@ class Variable(ScopeObject):
         return Variable(self.name, self.type)
 
     def verify(self, scope:Scope):
-        pass
+        if self.type is not None:
+            self.type.verify(scope)
 
     @ensure_verified
     def resolveType(self, scope:Scope):
@@ -535,7 +582,6 @@ class Reference(Type):
     def verify(self, scope:Scope):
         if self.verified: return
         self.verified = True
-        Object.verify(self, scope)
 
         self.value = resolveReference(scope, self.reference)
         self.value.verify(scope)
@@ -549,7 +595,6 @@ class Reference(Type):
         return self.value.resolveCall(scope, call)
 
     @property
-    @ensure_verified
     def children(self):
         return self.value.children
 
@@ -562,6 +607,47 @@ class Reference(Type):
 
     def __repr__(self):
         return "{}({})<{}>".format(self.__class__.__name__, self.reference, self.value)
+
+class Attribute(Type):
+    value = None
+    reference = None
+    attribute = None
+
+    def __init__(self, value:Object, reference:str):
+        self.value = value
+        self.reference = reference
+
+    def verify(self, scope:Scope):
+        if self.verified: return
+        self.verified = True
+
+        self.value.verify(scope)
+        self.attribute = self.value.resolveAttribute(scope, self.reference)
+
+        if self.attribute is None:
+            raise MissingReferenceError("{} does not have an attribute {}".format(self.value, self.reference))
+
+    @ensure_verified
+    def resolveType(self, scope:Scope):
+        return self.attribute.resolveType(scope)
+
+    @ensure_verified
+    def resolveCall(self, scope:Scope, call:FunctionType):
+        return self.attribute.resolveCall(scope, call)
+
+    @property
+    def children(self):
+        return self.attribute.children
+
+    def addChild(self, child:ScopeObject):
+        self.attribute.addChild(child)
+
+    @ensure_verified
+    def checkCompatibility(self, scope:Scope, other:Type):
+        return self.attribute.checkCompatibility(scope, other)
+
+    def __repr__(self):
+        return "{}({}).{}<{}>".format(self.__class__.__name__, self.value, self.reference, self.attribute)
 
 #
 # Return
@@ -608,66 +694,3 @@ class Comment(Object):
 
     def __repr__(self):
         return "{}<{}>".format(self.__class__.__name__, self.contents)
-
-"""
-#
-# Methods
-#
-
-class MethodType(Type):
-    overloads = None
-
-    def __init__(self, overloads:[FunctionType]):
-        self.overloads = overloads
-
-    def verify(self, scope:Scope):
-        pass
-
-    def checkCompatibility(self, other:Type):
-        if isinstance(other, MethodType):
-            # sanity check
-            if len(self.overloads) == len(other.overloads):
-                # Check that there is a match to any overload in the other, for all overloads in this one
-                return all(
-                    any(self_over.checkCompatibility(other_over) for other_over in other.overloads)
-                        for self_over in self.overloads)
-
-    def collectAttributes(self, scope:Scope = None):
-        return {fn.name: fn for fn in self.overloads}
-
-    def resolveType(self, scope:Scope):
-        raise InternalError("Not implemented")
-
-class Assignment(Instruction):
-    reference = None
-    variable = None # resolved through reference
-
-    value = None
-
-    def __init__(self, reference:str, value:Object):
-        self.reference = reference
-        self.value = value
-
-    def verify(self, scope:Scope):
-        logger.debug(self)
-
-        try:
-            self.variable = resolveReference(scope, self.reference)
-        except MissingReferenceError:
-            self.variable = Variable(self.reference)
-            scope.addChild(self.variable)
-
-        if not isinstance(self.variable, Variable):
-            raise TypeError("Cannot assign to {}".format(self.variable))
-
-        # Resolve type compatibility
-        self.value.verify(scope)
-        value_type = self.value.resolveType()
-        if self.variable.type is None:
-            self.variable.type = value_type
-        else:
-            self.variable.type.resolveCompatibility(value_type)
-
-    def __repr__(self):
-        return "{}<{}({}) := {}>".format(self.__class__.__name__, self.reference, self.variable, self.value)
-"""
