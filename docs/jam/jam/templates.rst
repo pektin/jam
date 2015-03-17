@@ -15,3 +15,24 @@ Syntax
     Template: "template" `identifier`
             :     `ClassInstructionSet`
             : "end"
+
+Examples
+--------
+
+::
+
+    template Person
+        name:String
+
+        def new(n)
+            name = n
+        end
+    end
+
+    class Employee
+        include Person
+    end
+
+    class Client
+        include Person
+    end
