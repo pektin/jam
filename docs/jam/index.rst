@@ -16,6 +16,7 @@ The Jam Language Reference describes the syntax, grammar and compilation of Jam.
     jam/values
     jam/identifiers
     jam/literals
+    jam/operations
     jam/variables
     jam/assignments
     jam/control-flow
