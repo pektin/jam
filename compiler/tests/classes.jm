@@ -7,15 +7,8 @@ class Person
         forename = fore
         surname = sur
     end
-
-    def puts()
-        print(forename)
-        print(surname)
-    end
 end
 
 v = Person("foo", "bar")
 print(v.surname)
 print(v.forename)
-w = Person("bar", "foo")
-w.puts()
