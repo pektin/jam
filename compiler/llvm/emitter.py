@@ -122,7 +122,7 @@ def Literal_emitValue(self):
     if type == LLVM_MAP["String"]:
         return State.builder.globalString(self.data, State.getTempName())
     else:
-        raise NotImplemented()
+        raise InternalError("Not Implemented")
 lekvar.Literal.emitValue = Literal_emitValue
 
 #
