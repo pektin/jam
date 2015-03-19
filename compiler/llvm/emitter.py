@@ -172,11 +172,16 @@ lekvar.Module.emit = Module_emit
 
 def Call_emitValue(self):
     arguments = [val.emitValue() for val in self.values]
-    if self.called.type.return_type is None:
+    called = self.called.emitValue()
+    # Get the llvm function type
+    function_type = llvm.cast(llvm.cast(called.type, llvm.Pointer).element_type, llvm.Function)
+
+    # Check the return type
+    if function_type.return_type.kind == llvm.TypeKind.VoidTypeKind:
         name = ""
     else:
         name = State.getTempName()
-    return State.builder.call(self.called.emitValue(), arguments, name)
+    return State.builder.call(called, arguments, name)
 lekvar.Call.emitValue = Call_emitValue
 
 #
