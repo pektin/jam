@@ -154,50 +154,6 @@ class Type(Scope):
         pass
 
 #
-# Class
-#
-
-class Class(Type):
-    constructor = None
-    _attributes = None
-
-    def __init__(self, name:str, constructor:ScopeObject, attributes:{str: ScopeObject}):
-        self._attributes = {}
-        super().__init__(name, attributes)
-
-        self.constructor = constructor
-
-    def verify(self, scope:Scope):
-        if self.verified: return
-        super().verify(scope)
-        self.constructor.verify(scope)
-
-    @ensure_verified
-    def resolveCall(self, scope:Scope, call:FunctionType):
-        function = self.constructor.resolveCall(scope, call)
-        function.type.return_type = self
-        return function
-
-    @ensure_verified
-    def resolveType(self, scope:Scope):
-        raise InternalError("Not Implemented")
-
-    @property
-    def children(self):
-        return self._attributes
-
-    def addChild(self, child:ScopeObject):
-        super().addChild(child)
-        self._attributes[child.name] = child
-
-    @ensure_verified
-    def checkCompatibility(self, other:Type) -> bool:
-        if isinstance(other, Reference):
-            other = other.value
-
-        return other is self
-
-#
 # Module
 #
 
@@ -450,6 +406,56 @@ class MethodType(Type):
     def __init__(self, name:str, overloads:[FunctionType]):
         super().__init__(name)
         self.overloads = overloads
+
+#
+# Class
+#
+
+class Class(Type):
+    constructor = None
+    _attributes = None
+
+    def __init__(self, name:str, constructor:Method, attributes:{str: ScopeObject}):
+        self._attributes = {}
+        super().__init__(name, attributes)
+
+        self.constructor = constructor
+        for index, overload in enumerate(self.constructor.overloads):
+            self.constructor.overloads[index] = Constructor(overload)
+
+    def verify(self, scope:Scope):
+        if self.verified: return
+        super().verify(scope)
+        self.constructor.verify(scope)
+
+    @ensure_verified
+    def resolveCall(self, scope:Scope, call:FunctionType):
+        function = self.constructor.resolveCall(scope, call)
+        function.type.return_type = self
+        return function
+
+    @ensure_verified
+    def resolveType(self, scope:Scope):
+        raise InternalError("Not Implemented")
+
+    @property
+    def children(self):
+        return self._attributes
+
+    def addChild(self, child:ScopeObject):
+        super().addChild(child)
+        self._attributes[child.name] = child
+
+    @ensure_verified
+    def checkCompatibility(self, other:Type) -> bool:
+        if isinstance(other, Reference):
+            other = other.value
+
+        return other is self
+
+class Constructor(Function):
+    def __init__(self, function:Function):
+        super().__init__(function.name, function.arguments, function.instructions, function.type.return_type)
 
 #
 # Variable
