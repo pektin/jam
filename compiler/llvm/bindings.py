@@ -54,7 +54,7 @@ def debuggable(cls_name, name, check_null = True):
         def f(cls, *args):
             # Log the call, if possible
             #if State.logger is not None:
-            #    State.logger.debug("{}.{} calling {}({})".format(cls.__name__, cls_name, name, args), stack_info=True)
+            #print("{}.{} calling {}({})".format(cls.__class__.__name__, cls_name, name, args))
 
             # Perform the call
             ret = func(cls, *args)
@@ -138,6 +138,9 @@ class Float(Type):
 class Function(Type):
     pass
 
+class Struct(Type):
+    pass
+
 class Block(Wrappable, c_void_p):
     pass
 
@@ -212,6 +215,9 @@ Builder.wrapInstanceFunc("store", "LLVMBuildStore", [Value, Value], Value)
 
 Builder.wrapInstanceFunc("call", "LLVMBuildCall", [FunctionValue, [Value], c_char_p], Value)
 
+Builder.wrapInstanceFunc("inBoundsGEP", "LLVMBuildInBoundsGEP", [Value, [Value], c_char_p])
+Builder.wrapInstanceFunc("structGEP", "LLVMBuildStructGEP", [Value, c_uint, c_char_p])
+
 Builder.wrapInstanceFunc("globalString", "LLVMBuildGlobalStringPtr", [c_char_p, c_char_p], Value)
 
 #
@@ -223,6 +229,25 @@ Type.wrapConstructor("label", "LLVMLabelType")
 
 Type.wrapInstanceProp("context", "LLVMGetTypeContext", None, Context)
 Type.wrapInstanceProp("isSized", "LLVMTypeIsSized", None, c_bool)
+Type.wrapInstanceProp("kind", "LLVMGetTypeKind", None, c_uint)
+
+class TypeKind:
+    VoidTypeKind = 0
+    HalfTypeKind = 1
+    FloatTypeKind = 2
+    DoubleTypeKind = 3
+    X86_FP80TypeKind = 4
+    FP128TypeKind = 5
+    PPC_FP128TypeKind = 6
+    LabelTypeKind = 7
+    IntegerTypeKind = 8
+    FunctionTypeKind = 9
+    StructTypeKind = 10
+    ArrayTypeKind = 11
+    PointerTypeKind = 12
+    VectorTypeKind = 13
+    MetadataTypeKind = 14
+    X86_MMXTypeKind = 15
 
 Type.wrapInstanceFunc("dump", "LLVMDumpType")
 Type.wrapInstanceFunc("__str__", "LLVMPrintTypeToString", [], c_char_p)
@@ -234,6 +259,7 @@ Type.wrapInstanceFunc("__str__", "LLVMPrintTypeToString", [], c_char_p)
 Pointer.wrapConstructor("new", "LLVMPointerType", [Type, c_uint])
 
 Pointer.wrapInstanceProp("address_space", "LLVMGetPointerAddressSpace", None, c_uint)
+Pointer.wrapInstanceProp("element_type", "LLVMGetElementType", None, Type)
 
 #
 # Integer Types
@@ -256,6 +282,14 @@ Float.wrapConstructor("double", "LLVMDoubleType")
 
 Function.wrapConstructor("new", "LLVMFunctionType", [Type, [Type], c_bool])
 
+Function.wrapInstanceProp("return_type", "LLVMGetReturnType", None, Type)
+
+#
+# Struct Types
+#
+
+Struct.wrapConstructor("new", "LLVMStructType", [[Type], c_bool])
+
 #
 # Block Types
 #
@@ -274,3 +308,5 @@ Value.wrapInstanceFunc("dump", "LLVMDumpValue")
 FunctionValue.wrapInstanceFunc("appendBlock", "LLVMAppendBasicBlock", [c_char_p], Block)
 FunctionValue.wrapInstanceFunc("getLastBlock", "LLVMGetLastBasicBlock", [], Block)
 FunctionValue.wrapInstanceFunc("getParam", "LLVMGetParam", [c_uint], Value)
+
+FunctionValue.wrapInstanceProp("type", "LLVMTypeOf", None, Function)
