@@ -32,9 +32,9 @@ def resolveReference(scope:Scope, reference:str):
     found = []
 
     # If the object is a scope, resolve up the tree
-
     while scope is not None:
         attr = scope.resolveReference(scope, reference)
+
         if attr is not None:
             found.append(attr)
 
@@ -216,14 +216,14 @@ class Function(Scope):
 
         self.type.verify(self)
 
-        returned = False
-
         for instruction in self.instructions:
-            if isinstance(instruction, Return):
-                returned = True
             instruction.verify(self)
 
-        if not returned and self.type.return_type is not None:
+        self.verifySelf()
+
+    def verifySelf(self):
+        # Ensure non-void functions return
+        if not any(isinstance(inst, Return) for inst in self.instructions) and self.type.return_type is not None:
             raise SemanticError("All code paths must return")
 
     @ensure_verified
@@ -325,11 +325,6 @@ class FunctionType(Type):
                 if not self_arg.checkCompatibility(scope, other_arg):
                     return False
 
-            #TODO: Return type handling
-            #if self.return_type is not None and other.return_type is not None:
-            #    self.return_type.checkCompatibility(other.return_type)
-            #elif self.return_type is None or other.return_type is None:
-            #    raise TypeError("{} is not compatible with {}".format(self, other))
             return True
         return False
 
@@ -420,8 +415,10 @@ class Class(Type):
         super().__init__(name, attributes)
 
         self.constructor = constructor
+        self.constructor.parent = self
         for index, overload in enumerate(self.constructor.overloads):
             self.constructor.overloads[index] = Constructor(overload)
+            self.constructor.overloads[index].parent = self.constructor
 
     def verify(self, scope:Scope):
         if self.verified: return
@@ -457,6 +454,15 @@ class Constructor(Function):
     def __init__(self, function:Function):
         super().__init__(function.name, function.arguments, function.instructions, function.type.return_type)
 
+        if function.type.return_type is not None:
+            raise TypeError("Constructors must return nothing")
+        function.type.return_type = self.parent
+
+    def verifySelf(self):
+        for instruction in self.instructions:
+            if isinstance(instruction, Return):
+                raise SyntaxError("Returns within constructors are invalid")
+
 #
 # Variable
 #
@@ -486,12 +492,15 @@ class Variable(ScopeObject):
 class Assignment(Object):
     variable = None
     value = None
+    scope = None
 
     def __init__(self, variable:Variable, value:Object):
         self.variable = variable
         self.value = value
 
     def verify(self, scope:Scope):
+        self.scope = scope
+
         try:
             variable = resolveReference(scope, self.variable.name)
         except MissingReferenceError:
