@@ -1,4 +1,4 @@
-#bar\nfoo\nbar\nfoo\n
+#bar\nfoo\n
 
 class Person
     forename:String
