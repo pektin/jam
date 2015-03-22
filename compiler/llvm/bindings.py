@@ -54,7 +54,7 @@ def debuggable(cls_name, name, check_null = True):
         def f(cls, *args):
             # Log the call, if possible
             #if State.logger is not None:
-            print("{}.{} calling {}{}".format(cls.__class__.__name__, cls_name, name, args))
+            #print("{}.{} calling {}{}".format(cls.__class__.__name__, cls_name, name, args))
 
             # Perform the call
             ret = func(cls, *args)
@@ -305,6 +305,8 @@ Struct.wrapConstructor("new", "LLVMStructType", [[Type], c_bool])
 #
 
 Block.wrapInstanceFunc("asValue", "LLVMBasicBlockAsValue", [], Value)
+
+Block.wrapInstanceProp("function", "LLVMGetBasicBlockParent", None, FunctionValue)
 
 #
 # Value Types
