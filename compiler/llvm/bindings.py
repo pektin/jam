@@ -54,7 +54,7 @@ def debuggable(cls_name, name, check_null = True):
         def f(cls, *args):
             # Log the call, if possible
             #if State.logger is not None:
-            #print("{}.{} calling {}({})".format(cls.__class__.__name__, cls_name, name, args))
+            print("{}.{} calling {}{}".format(cls.__class__.__name__, cls_name, name, args))
 
             # Perform the call
             ret = func(cls, *args)
@@ -182,6 +182,13 @@ Module.wrapInstanceFunc("toString", "LLVMPrintModuleToString", [], c_char_p)
 Module.wrapInstanceFunc("getType", "LLVMGetTypeByName", [c_char_p], Type)
 Module.wrapInstanceFunc("addFunction", "LLVMAddFunction", [c_char_p, Function], FunctionValue)
 
+Module.wrapInstanceFunc("verify", "LLVMVerifyModule", [c_uint, c_void_p], c_bool)
+
+class FailureAction:
+    AbortProcessAction = 0
+    PrintMessageAction = 1
+    ReturnStatusAction = 2
+
 #
 # Builder
 #
@@ -213,10 +220,13 @@ Builder.wrapInstanceFunc("alloca", "LLVMBuildAlloca", [Type, c_char_p], Value)
 Builder.wrapInstanceFunc("load", "LLVMBuildLoad", [Value, c_char_p], Value)
 Builder.wrapInstanceFunc("store", "LLVMBuildStore", [Value, Value], Value)
 
+Builder.wrapInstanceFunc("extractValue", "LLVMBuildExtractValue", [Value, c_uint, c_char_p], Value)
+Builder.wrapInstanceFunc("insertValue", "LLVMBuildInsertValue", [Value, Value, c_uint, c_char_p], Value)
+
 Builder.wrapInstanceFunc("call", "LLVMBuildCall", [FunctionValue, [Value], c_char_p], Value)
 
-Builder.wrapInstanceFunc("inBoundsGEP", "LLVMBuildInBoundsGEP", [Value, [Value], c_char_p])
-Builder.wrapInstanceFunc("structGEP", "LLVMBuildStructGEP", [Value, c_uint, c_char_p])
+Builder.wrapInstanceFunc("inBoundsGEP", "LLVMBuildInBoundsGEP", [Value, [Value], c_char_p], Value)
+Builder.wrapInstanceFunc("structGEP", "LLVMBuildStructGEP", [Value, c_uint, c_char_p], Value)
 
 Builder.wrapInstanceFunc("globalString", "LLVMBuildGlobalStringPtr", [c_char_p, c_char_p], Value)
 
