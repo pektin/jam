@@ -12,8 +12,10 @@ from .builtins import LLVMType
 def emit(module:lekvar.Module, logger:logging.Logger = None):
     if logger is None: logger = logging.getLogger()
 
+    print(module)
     with State.begin(b"main", logger):
         module.emit()
+    print(State.module.verify(llvm.FailureAction.PrintMessageAction, None))
 
     return State.module.toString()
 
@@ -103,14 +105,30 @@ lekvar.Comment.emitValue = blank_emitValue
 # class Reference
 #
 
+def Reference_emit(self):
+    return self.value.emit()
+lekvar.Reference.emit = Reference_emit
+
 def Reference_emitValue(self):
     return self.value.emitValue()
 lekvar.Reference.emitValue = Reference_emitValue
 
 def Reference_emitType(self):
-    if self.value is None: print("Missing:", self)
     return self.value.emitType()
 lekvar.Reference.emitType = Reference_emitType
+
+#
+# class Attribute
+#
+
+def Attribute_emitValue(self):
+    if isinstance(self.attribute, lekvar.Variable):
+        self.attribute.parent.emit()
+        pointer = State.builder.structGEP(self.value.emit(), self.attribute.llvm_value, State.getTempName())
+        return State.builder.load(pointer, State.getTempName())
+    else:
+        raise InternalError("Not Implemented")
+lekvar.Attribute.emitValue = Attribute_emitValue
 
 #
 # class Literal
@@ -130,11 +148,12 @@ lekvar.Literal.emitValue = Literal_emitValue
 #
 
 def Variable_emit(self):
-    if self.llvm_value is not None: return
+    if self.llvm_value is not None: return self.llvm_value
 
     type = self.type.emitType()
     name = resolveName(self)
     self.llvm_value = State.builder.alloca(type, name)
+    return self.llvm_value
 lekvar.Variable.emit = Variable_emit
 
 def Variable_emitValue(self):
@@ -148,8 +167,11 @@ lekvar.Variable.emitValue = Variable_emitValue
 
 def Assignment_emitValue(self):
     value = self.value.emitValue()
-    self.variable.emit()
-    State.builder.store(value, self.variable.llvm_value)
+    if isinstance(self.variable.parent, lekvar.Class):
+        variable = State.builder.structGEP(self.scope.llvm_return, self.variable.llvm_value, State.getTempName())
+    else:
+        variable = self.variable.emit()
+    State.builder.store(value, variable)
 lekvar.Assignment.emitValue = Assignment_emitValue
 
 #
@@ -191,7 +213,7 @@ lekvar.Call.emitValue = Call_emitValue
 def Return_emitValue(self):
     exit = self.function.llvm_value.getLastBlock()
     if self.value is None:
-        State.builder.br(return_)
+        State.builder.br(exit)
     else:
         value = self.value.emitValue()
         State.builder.store(value, self.function.llvm_return)
@@ -211,20 +233,9 @@ def Function_emit(self):
 
     entry = self.llvm_value.appendBlock("entry")
     exit = self.llvm_value.appendBlock("exit")
+
     with State.blockScope(entry):
-        # Allocate Arguments
-        for index, arg in enumerate(self.arguments):
-            val = self.llvm_value.getParam(index)
-            arg.llvm_value = State.builder.alloca(arg.type.emitType(), resolveName(arg))
-            State.builder.store(val, arg.llvm_value)
-
-        # Allocate Return Variable
-        if self.type.return_type is not None:
-            self.llvm_return = State.builder.alloca(self.type.return_type.emitType(), "return")
-
-        for instruction in self.instructions:
-            instruction.emitValue()
-
+        self.emitBody()
         State.builder.br(exit)
 
     with State.blockScope(exit):
@@ -234,6 +245,21 @@ def Function_emit(self):
         else:
             State.builder.retVoid()
 lekvar.Function.emit = Function_emit
+
+def Function_emitBody(self):
+    # Allocate Arguments
+    for index, arg in enumerate(self.arguments):
+        val = self.llvm_value.getParam(index)
+        arg.llvm_value = State.builder.alloca(arg.type.emitType(), resolveName(arg))
+        State.builder.store(val, arg.llvm_value)
+
+    # Allocate Return Variable
+    if self.type.return_type is not None:
+        self.llvm_return = State.builder.alloca(self.type.return_type.emitType(), "return")
+
+    for instruction in self.instructions:
+        instruction.emitValue()
+lekvar.Function.emitBody = Function_emitBody
 
 def Function_emitValue(self):
     self.emit()
@@ -279,6 +305,29 @@ def Method_emit(self):
     for overload in self.overloads:
         overload.emit()
 lekvar.Method.emit = Method_emit
+
+#
+# class Class
+#
+
+lekvar.Class.llvm_type = None
+
+def Class_emit(self):
+    if self.llvm_type is not None: return
+
+    var_types = []
+    for child in self.children.values():
+        if isinstance(child, lekvar.Variable):
+            child.llvm_value = len(var_types)
+            var_types.append(child.type.emitType())
+
+    self.llvm_type = llvm.Struct.new(var_types, False)
+lekvar.Class.emit = Class_emit
+
+def Class_emitType(self):
+    self.emit()
+    return self.llvm_type
+lekvar.Class.emitType = Class_emitType
 
 #
 # class LLVMType
