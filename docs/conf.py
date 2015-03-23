@@ -1,9 +1,15 @@
 import sys
 import os
 
+sys.path.append(os.getcwd())
+
+from .highlighting import JamLexer
+
 extensions = [
     'sphinx.ext.todo',
 ]
+
+highlight_language = "Jam"
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -27,3 +33,6 @@ keep_warnings = True
 
 # The theme to use for HTML and HTML Help pages.
 html_theme = 'basic'
+
+def setup(sphinx):
+    sphinx.add_lexer("Jam", JamLexer())
