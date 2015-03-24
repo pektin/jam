@@ -17,16 +17,16 @@ Type = None
 # Infrastructure
 #
 
-#shared
-builtins = logger = None
-
-def verify(module:Module, builtin:Module, log:logging.Logger = None):
-    global builtins, logger
-    builtins = builtin
-    if log is None: logger = logging.getLogger()
+def verify(module:Module, builtin:Module, logger:logging.Logger = None):
+    State.builtins = builtin
+    State.logger = logger or logging.getLogger()
 
     logger.info(module)
     module.verify(None)
+
+class State:
+    builtins = None
+    logger = None
 
 def resolveReference(scope:Scope, reference:str):
     found = []
@@ -38,10 +38,10 @@ def resolveReference(scope:Scope, reference:str):
         if attr is not None:
             found.append(attr)
 
-        if scope is builtins:
+        if scope is State.builtins:
             break
         else:
-            scope = scope.parent if (scope.parent is not None) else builtins
+            scope = scope.parent if (scope.parent is not None) else State.builtins
 
     if len(found) < 1:
         raise MissingReferenceError("No reference to {}".format(reference))
