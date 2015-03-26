@@ -24,6 +24,7 @@ The Jam Language Reference describes the syntax, grammar and compilation of Jam.
     jam/types
     jam/type-casting
     jam/templates
+    jam/unittests
 
 The Lekvar Reference
 ====================

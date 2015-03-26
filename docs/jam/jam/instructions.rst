@@ -9,5 +9,7 @@ Syntax
 ======
 
 .. productionlist::
-    Instruction: `Comment` | `Value` | `Assignment` | `FlowControl`
+    Instruction: `Comment` | `Value` | `Assignment` | `FlowControl` | `Unittest`
+    InstructionSet: `Instruction` [
+                  : `InstructionSet`]
 
