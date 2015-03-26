@@ -1,0 +1,7 @@
+#foo\n
+
+def foo(bar)
+    print(bar)
+end
+
+foo("foo")
