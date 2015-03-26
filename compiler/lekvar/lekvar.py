@@ -60,6 +60,8 @@ def ensure_verified(fn):
 #
 # Abstract Base Structures
 #
+# These structures form the basis of Lekvar. They provide the base functionality
+# needed to implement higher level features.
 
 class Object(ABC):
     @abstract
@@ -156,6 +158,7 @@ class Type(Scope):
 #
 # Module
 #
+# A module represents a simple namespace container scope.
 
 class Module(Scope):
     main = None
@@ -188,8 +191,20 @@ class Module(Scope):
         return "{}({})<{}>{}".format(self.__class__.__name__, self.name, self.main, self.children)
 
 #
+# Dependent Type
+#
+# A Dependent type acts as an interface for types. When a variable has a
+# dependent type and is called, it's dependent type changes to reflect the call.
+# This means that dependent types can be used to implement generics.
+
+class DependentType(Type):
+    def __init__(self):
+        raise InternalError("Not Implemented")
+
+#
 # Function
 #
+# Functions are a basic container for instructions.
 
 class Function(Scope):
     _children = None
@@ -205,7 +220,7 @@ class Function(Scope):
 
         for arg in self.arguments:
             if arg.type is None:
-                raise InternalError("Not Implemented")
+                arg.type = DependentType()
 
         self.type = FunctionType(name, [arg.type for arg in arguments], return_type)
         self.type.parent = self
@@ -335,6 +350,8 @@ class FunctionType(Type):
 #
 # Method
 #
+# A method is a generic container for functions. It implements the functionality
+# for function overloading.
 
 class Method(Scope):
     overloads = None
@@ -405,6 +422,7 @@ class MethodType(Type):
 #
 # Class
 #
+# A class provides a generic interface for creating user types.
 
 class Class(Type):
     constructor = None
@@ -466,6 +484,8 @@ class Constructor(Function):
 #
 # Variable
 #
+# A variable is a simple container for a value. The scope object may be used
+# in conjunction with assignments and values for advanced functionality.
 
 class Variable(ScopeObject):
     type = None
@@ -488,6 +508,7 @@ class Variable(ScopeObject):
 #
 # Assignment
 #
+# Assignment instructions allow for saving values inside of variables.
 
 class Assignment(Object):
     variable = None
@@ -530,6 +551,8 @@ class Assignment(Object):
 #
 # Call
 #
+# A call is a simple instruction to execute a given function with specific
+# arguments.
 
 class Call(Object):
     called = None
@@ -563,6 +586,7 @@ class Call(Object):
 #
 # Literal
 #
+# A literal is a direct piece of constant data in memory.
 
 class Literal(Object):
     data = None
@@ -586,6 +610,8 @@ class Literal(Object):
 #
 # Reference
 #
+# A reference is a by-name link to a object in the current or parent scopes.
+# References are used to prevent object duplication.
 
 class Reference(Type):
     reference = None
@@ -667,6 +693,8 @@ class Attribute(Type):
 #
 # Return
 #
+# Returns can only exist as instructions for functions. They cause the function
+# to return with a specified value.
 
 class Return(Object):
     value = None
@@ -694,6 +722,7 @@ class Return(Object):
 #
 # Comment
 #
+# A comment is a piece of metadata that is generally not compiled
 
 class Comment(Object):
     contents = None
