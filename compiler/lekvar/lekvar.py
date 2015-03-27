@@ -199,7 +199,28 @@ class Module(Scope):
 
 class DependentType(Type):
     def __init__(self):
+        pass
+
+    def verify(self, scope:Scope):
+        pass
+
+    def addChild(self, child):
         raise InternalError("Not Implemented")
+
+    @property
+    def children(self):
+        raise InternalError("Not Implemented")
+
+    @ensure_verified
+    def checkCompatibility(self, other:Type):
+        raise InternalError("Not Implemented")
+
+    @ensure_verified
+    def resolveType(self, scope:Scope):
+        raise InternalError("Not Implemented")
+
+    def __repr__(self):
+        return "{}".format(self.__class__.__name__)
 
 #
 # Function
