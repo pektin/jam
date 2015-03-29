@@ -10,7 +10,7 @@ In order to run the tests for the compiler, Jam requires Python 3 and LLVM 3.6
 
 Ubuntu:
 ```bash
-sudo apt-get install python3 libllvm3.6
+sudo apt-get install python3 llvm-3.6-dev
 ```
 
 For documentation Jam uses Sphinx and thereby requires Python 2.X, Sphinx and make.
