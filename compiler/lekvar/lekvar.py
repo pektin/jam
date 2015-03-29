@@ -199,7 +199,7 @@ class Module(Scope):
 
 class DependentType(Type):
     def __init__(self):
-        pass
+        self.compatibles = []
 
     def verify(self, scope:Scope):
         pass
@@ -212,15 +212,23 @@ class DependentType(Type):
         raise InternalError("Not Implemented")
 
     @ensure_verified
-    def checkCompatibility(self, other:Type):
-        raise InternalError("Not Implemented")
+    def checkCompatibility(self, scope:Scope, other:Type):
+        if isinstance(other, Reference):
+            other = other.value
+
+        for type in self.compatibles:
+            if not type.checkCompatibility(scope, other):
+                return False
+
+        self.compatibles.append(other)
+        return True
 
     @ensure_verified
     def resolveType(self, scope:Scope):
         raise InternalError("Not Implemented")
 
     def __repr__(self):
-        return "{}".format(self.__class__.__name__)
+        return "{}<{}>".format(self.__class__.__name__, self.compatibles)
 
 #
 # Function
@@ -232,6 +240,7 @@ class Function(Scope):
     arguments = None
     instructions = None
     type = None
+    dependent = False
 
     def __init__(self, name:str, arguments:[Variable], instructions:[Object], return_type:Type = None):
         self._children = {}
@@ -242,6 +251,7 @@ class Function(Scope):
         for arg in self.arguments:
             if arg.type is None:
                 arg.type = DependentType()
+                dependent = True
 
         self.type = FunctionType(name, [arg.type for arg in arguments], return_type)
         self.type.parent = self
@@ -359,10 +369,10 @@ class FunctionType(Type):
 
             for self_arg, other_arg in zip(self.arguments, other.arguments):
                 if not self_arg.checkCompatibility(scope, other_arg):
-                    return False
+                    return other.checkCompatibility(scope, self)
 
             return True
-        return False
+        return other.checkCompatibility(scope, self)
 
     def __repr__(self):
         return "{}({}):{}".format(self.__class__.__name__,
