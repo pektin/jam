@@ -66,21 +66,21 @@ lekvar.ScopeObject.llvm_value = None
 lekvar.Function.llvm_return = None
 
 # Extension abstract methods apparently don't work
-"""@abstract
-def Object_emitValue(self, state:State) -> llvm.Value:
-    pass
-lekvar.Object.emitValue = Object_emitValue
+#@abstract
+#def Object_emitValue(self, state:State) -> llvm.Value:
+#    pass
+#lekvar.Object.emitValue = Object_emitValue
 
-@abstract
-def Scope_emit(self, state:State) -> None:
-    pass
-lekvar.Scope.emit = Scope_emit
+#@abstract
+#def Scope_emit(self, state:State) -> None:
+#    pass
+#lekvar.Scope.emit = Scope_emit
 
-@abstract
-def Type_emitType(self, state:State) -> llvm.Type:
-    pass
-lekvar.Type.emitType = Type_emitType
-lekvar.Type.llvm_type = None"""
+#@abstract
+#def Type_emitType(self, state:State) -> llvm.Type:
+#    pass
+#lekvar.Type.emitType = Type_emitType
+#lekvar.Type.llvm_type = None
 
 #
 # Tools
