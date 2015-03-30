@@ -15,9 +15,15 @@ sudo apt-get install python3 llvm-3.6-dev
 
 For documentation Jam uses Sphinx and thereby requires Python 2.X, Sphinx and make.
 
-## Tests
+## Usage
 
-Currently there is no executable compiler, however there are numerous tests that can be performed on the current implementation. The tests use the builtin unittest module for python.
+The compiler is currently built as a python library, however the compiler can also be directly run through the `jam.py` script:
+
+```bash
+./jam.py [-h] [--verbose] [--output OUTPUT] [--run] [--version] FILE
+```
+
+## Tests
 
 To run the tests, execute the "tests" bash script by running:
 
