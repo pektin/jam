@@ -3,7 +3,7 @@ import traceback
 
 from .state import State
 
-_lib = CDLL("libLLVM-3.6.so")
+_lib = CDLL("libLLVM-3.6.so.1")
 
 c_bool = c_int
 

@@ -7,3 +7,16 @@ def reprint(one:String, two:String)
 end
 
 print(reprint("1", "2"))
+
+
+
+#5.385164807
+
+#def distanceFormula(x:Int, y:Int)
+#	dist = (x**2 + y**2)**0.5
+#end
+#
+#print(distanceFormula(2, 5))
+
+
+
