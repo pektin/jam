@@ -38,7 +38,7 @@ for file in getFiles():
             if type == "#":
                 compile(f_in, f_out)
                 f_out.close()
-                self.assertEqual(output, check_output(["lli", build]).decode("UTF-8"))
+                self.assertEqual(output, check_output(["lli-3.6", build]).decode("UTF-8"))
             # Check if the correct exception was thrown
             elif type == "!":
                 with self.assertRaises(getattr(errors, output)):
