@@ -4,7 +4,13 @@ def builtins():
     return Module("builtins", [
         ExternalFunction("print", "puts", [Reference("String")], Reference("Int32")),
         LLVMType("String"),
+        LLVMType("Int8"),
+        LLVMType("Int16"),
         LLVMType("Int32"),
+        LLVMType("Int64"),
+        LLVMType("Float16"),
+        LLVMType("Float32"),
+        LLVMType("Float64"),
     ], Function("main", [], [], None))
 
 #

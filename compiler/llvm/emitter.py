@@ -340,8 +340,13 @@ def LLVMType_emitType(self):
     if LLVM_MAP is None:
         LLVM_MAP = {
             "String": llvm.Pointer.new(llvm.Int.new(8), 0),
-            "Int32": llvm.Int.new(32),
             "Int8": llvm.Int.new(8),
+            "Int16": llvm.Int.new(16),
+            "Int32": llvm.Int.new(32),
+            "Int64": llvm.Int.new(64),
+            "Float16": llvm.Float.half(),
+            "Float32": llvm.Float.float(),
+            "Float64": llvm.Float.double(),
         }
     return LLVM_MAP[self.name]
 LLVMType.emitType = LLVMType_emitType
