@@ -1,4 +1,3 @@
-#Hello World\nHello World
-
+#Hello World\nHello World\n
 print("Hello World")
 print(`Hello World`)
