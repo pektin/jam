@@ -180,7 +180,7 @@ class Module(Scope):
         self.main.parent = self
 
     def copy(self):
-        return Module(self.name, map(copy, self.children.values()), copy(self.main))
+        return Module(self.name, list(map(copy, self.children.values())), copy(self.main))
 
     def verify(self, scope:Scope):
         if self.verified: return
@@ -273,8 +273,7 @@ class Function(Scope):
         self.type.parent = self
 
     def copy(self):
-        fn = Function(self.name, map(copy, self.arguments), map(copy, self.instructions), None)
-        fn.type = copy(self.type)
+        fn = Function(self.name, list(map(copy, self.arguments)), list(map(copy, self.instructions)), self.type.return_type)
         return fn
 
     def verify(self, scope:Scope):
@@ -359,7 +358,7 @@ class FunctionType(Type):
         self.return_type = return_type
 
     def copy(self):
-        return FunctionType(self.name, map(copy, self.arguments), copy(self.return_type))
+        return FunctionType(self.name, list(map(copy, self.arguments)), copy(self.return_type))
 
     def verify(self, scope:Scope):
         if self.verified: return
@@ -422,7 +421,7 @@ class Method(Scope):
             self.addOverload(overload)
 
     def copy(self):
-        return Method(self.name, map(copy, self.overloads))
+        return Method(self.name, list(map(copy, self.overloads)))
 
     def addOverload(self, overload:Function):
         overload.name = str(len(self.overloads))
@@ -629,9 +628,10 @@ class Call(Object):
     def __init__(self, called:Object, values:[Object]):
         self.called = called
         self.values = values
+        self.function = None
 
     def copy(self):
-        return Call(copy(called), copy(values))
+        return Call(copy(self.called), list(map(copy, self.values)))
 
     def verify(self, scope:Scope):
         super().verify(scope)
