@@ -1,14 +1,9 @@
-#two\none\n
+#HelloWorld\n
 
-def funct(str:String)
-	foo = funct2
-	print(foo(str))
-	return foo
+def reprint(one:String)
+    print(one)
 end
 
-def funct2(str:String)
-	print("two")
-	return str
-end
+var = reprint
 
-funct("one")
+print(var("HelloWorld"))
