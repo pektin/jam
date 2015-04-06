@@ -278,7 +278,7 @@ class Function(Scope):
         for arg in self.arguments:
             if arg.type is None:
                 arg.type = DependentType()
-                dependent = True
+                self.dependent = True
 
         self.type = FunctionType(name, [arg.type for arg in arguments], return_type)
         self.type.parent = self
@@ -311,7 +311,16 @@ class Function(Scope):
     def resolveCall(self, scope:Scope, call:FunctionType):
         if not self.resolveType(scope).checkCompatibility(self, call):
             raise TypeError("{} is not compatible with {}".format(call, self.resolveType(scope)))
-        return self
+
+        if not self.dependent:
+            return self
+
+        fn = copy(self)
+        for index, arg in enumerate(fn.arguments):
+            if isinstance(arg.type, DependentType):
+                fn.type.arguments[index] = arg.type.target = call.arguments[index]
+        fn.verify(self)
+        return fn
 
     @property
     def children(self):
@@ -322,11 +331,12 @@ class Function(Scope):
         self._children[child.name] = child
 
     def __repr__(self):
-        return "{}({}):{}{}".format(self.__class__.__name__, self.name, self.type, self.instructions)
+        return "{}<{}>({}):{}{}".format(self.__class__.__name__, self.dependent, self.name, self.type, self.instructions)
 
 class ExternalFunction(Scope):
     external_name = None
     type = None
+    dependent = False
 
     def __init__(self, name:str, external_name:str, arguments:[Type], return_type:Type):
         super().__init__(name)
@@ -470,9 +480,10 @@ class Method(Scope):
         matches = []
 
         for overload in self.overloads:
-            type = overload.resolveType(scope)
-            if type.checkCompatibility(self, call):
-                matches.append(overload)
+            try:
+                matches.append(overload.resolveCall(scope, call))
+            except TypeError:
+                continue
 
         if len(matches) < 1:
             raise TypeError("{} is not compatible with {}".format(call, self))
@@ -580,6 +591,9 @@ class Variable(ScopeObject):
     def resolveType(self, scope:Scope):
         return self.type
 
+    def __repr__(self):
+        return "{}<{}>:{}".format(self.__class__.__name__, self.name, self.type)
+
 #
 # Assignment
 #
@@ -635,6 +649,7 @@ class Assignment(Object):
 class Call(Object):
     called = None
     values = None
+    function = None
 
     def __init__(self, called:Object, values:[Object]):
         self.called = called
@@ -654,16 +669,18 @@ class Call(Object):
             arg_types.append(val.resolveType(scope))
 
         call_type = FunctionType("", arg_types)
-        self.called = self.called.resolveCall(scope, call_type)
+        self.function = self.called.resolveCall(scope, call_type)
 
     def resolveType(self, scope:Scope):
-        return self.called.resolveType(scope).return_type
+        return self.function.resolveType(scope).return_type
 
     def resolveAttribute(self, scope:Scope, reference:str):
         raise InternalError("Not Implemented")
 
     def __repr__(self):
-        return "{}<{}>({})".format(self.__class__.__name__, self.called, self.values)
+        if self.function is None:
+            return "{}<{}>({})".format(self.__class__.__name__, self.called, self.values)
+        return "{}<{}>({})".format(self.__class__.__name__, self.function, self.values)
 
 #
 # Literal

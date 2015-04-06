@@ -36,7 +36,7 @@ class State(State):
         with cls.blockScope(entry):
             for func in cls.main:
                 call = lekvar.Call("", [])
-                call.called = func
+                call.function = func
                 call.emitValue()
 
             return_value = llvm.Value.constInt(llvm.Int.new(32), 0, False)
@@ -57,7 +57,7 @@ class State(State):
 
 def main_call(func:lekvar.Function):
     call = lekvar.Call("", [])
-    call.called = func
+    call.function = func
     return call
 
 # Abstract extensions
@@ -194,7 +194,8 @@ lekvar.Module.emit = Module_emit
 
 def Call_emitValue(self):
     arguments = [val.emitValue() for val in self.values]
-    called = self.called.emitValue()
+    called = self.function.emitValue()
+    if called is None: raise InternalError("Fuck")
     # Get the llvm function type
     function_type = llvm.cast(llvm.cast(called.type, llvm.Pointer).element_type, llvm.Function)
 
@@ -221,10 +222,26 @@ def Return_emitValue(self):
 lekvar.Return.emitValue = Return_emitValue
 
 #
+# class DependentType
+#
+
+lekvar.DependentType.llvm_type = None
+
+def DependentType_emitType(self):
+    if self.llvm_type is None:
+        if self.target is None:
+            raise InternalError("Invalid dependent type target")
+        else:
+            self.llvm_type = self.target.emitType()
+    return self.llvm_type
+lekvar.DependentType.emitType = DependentType_emitType
+
+#
 # class Function
 #
 
 def Function_emit(self):
+    if self.dependent: return
     if self.llvm_value is not None: return
 
     name = resolveName(self)
