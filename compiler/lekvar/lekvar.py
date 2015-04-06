@@ -57,6 +57,11 @@ def ensure_verified(fn):
         return fn(self, *args)
     return func
 
+def copy(obj):
+    if obj is not None:
+        return obj.copy()
+    return None
+
 #
 # Abstract Base Structures
 #
@@ -66,6 +71,10 @@ def ensure_verified(fn):
 class Object(ABC):
     @abstract
     def verify(self, scope:Scope):
+        pass
+
+    @abstract
+    def copy(self):
         pass
 
     @abstract
@@ -170,6 +179,9 @@ class Module(Scope):
         self.main = main
         self.main.parent = self
 
+    def copy(self):
+        return Module(self.name, map(copy, self.children.values()), copy(self.main))
+
     def verify(self, scope:Scope):
         if self.verified: return
         super().verify(scope)
@@ -198,8 +210,12 @@ class Module(Scope):
 # This means that dependent types can be used to implement generics.
 
 class DependentType(Type):
-    def __init__(self):
-        self.compatibles = []
+    def __init__(self, compatibles:[Type] = None):
+        if compatibles is None: compatibles = []
+        self.compatibles = compatibles
+
+    def copy(self):
+        return DependentType(self.compatibles[:])
 
     def verify(self, scope:Scope):
         pass
@@ -256,6 +272,11 @@ class Function(Scope):
         self.type = FunctionType(name, [arg.type for arg in arguments], return_type)
         self.type.parent = self
 
+    def copy(self):
+        fn = Function(self.name, map(copy, self.arguments), map(copy, self.instructions), None)
+        fn.type = copy(self.type)
+        return fn
+
     def verify(self, scope:Scope):
         if self.verified: return
         super().verify(scope)
@@ -303,6 +324,9 @@ class ExternalFunction(Scope):
         self.type = FunctionType(external_name, arguments, return_type)
         self.type.parent = self
 
+    def copy(self):
+        raise InternalError("Not Implemented")
+
     def verify(self, scope:Scope):
         if self.verified: return
         super().verify(scope)
@@ -333,6 +357,9 @@ class FunctionType(Type):
         super().__init__(name)
         self.arguments = arguments
         self.return_type = return_type
+
+    def copy(self):
+        return FunctionType(self.name, map(copy, self.arguments), copy(self.return_type))
 
     def verify(self, scope:Scope):
         if self.verified: return
@@ -393,6 +420,9 @@ class Method(Scope):
 
         for overload in overloads:
             self.addOverload(overload)
+
+    def copy(self):
+        return Method(self.name, map(copy, self.overloads))
 
     def addOverload(self, overload:Function):
         overload.name = str(len(self.overloads))
@@ -469,6 +499,10 @@ class Class(Type):
             self.constructor.overloads[index] = Constructor(overload)
             self.constructor.overloads[index].parent = self.constructor
 
+    def copy(self):
+        return Class(self.name, copy(self.constructor),
+            {name: copy(item) for name, item in self._attributes.items()})
+
     def verify(self, scope:Scope):
         if self.verified: return
         super().verify(scope)
@@ -526,7 +560,7 @@ class Variable(ScopeObject):
         self.type = type
 
     def copy(self):
-        return Variable(self.name, self.type)
+        return Variable(self.name, copy(self.type))
 
     def verify(self, scope:Scope):
         if self.type is not None:
@@ -549,6 +583,9 @@ class Assignment(Object):
     def __init__(self, variable:Variable, value:Object):
         self.variable = variable
         self.value = value
+
+    def copy(self):
+        return Assignment(copy(self.variable), copy(self.value))
 
     def verify(self, scope:Scope):
         self.scope = scope
@@ -593,6 +630,9 @@ class Call(Object):
         self.called = called
         self.values = values
 
+    def copy(self):
+        return Call(copy(called), copy(values))
+
     def verify(self, scope:Scope):
         super().verify(scope)
 
@@ -627,6 +667,9 @@ class Literal(Object):
         self.data = data
         self.type = type
 
+    def copy(self):
+        return self
+
     def verify(self, scope:Scope):
         super().verify(scope)
 
@@ -650,6 +693,9 @@ class Reference(Type):
 
     def __init__(self, reference:str):
         self.reference = reference
+
+    def copy(self):
+        return Reference(self.reference)
 
     def verify(self, scope:Scope):
         if self.verified: return
@@ -688,6 +734,9 @@ class Attribute(Type):
     def __init__(self, value:Object, reference:str):
         self.value = value
         self.reference = reference
+
+    def copy(self):
+        return Attribute(copy(value), self.reference)
 
     def verify(self, scope:Scope):
         if self.verified: return
@@ -734,6 +783,9 @@ class Return(Object):
     def __init__(self, value:Object = None):
         self.value = value
 
+    def copy(self):
+        return Return(copy(self.value))
+
     def verify(self, scope:Scope):
         self.value.verify(scope)
 
@@ -760,6 +812,9 @@ class Comment(Object):
 
     def __init__(self, contents):
         self.contents = contents
+
+    def copy(self):
+        return Comment(self.contents)
 
     def verify(self, scope:Scope):
         pass
