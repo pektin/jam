@@ -152,7 +152,7 @@ class Type(Scope):
 
     @abstract
     @ensure_verified
-    def checkCompatibility(self, other:Type) -> bool:
+    def checkCompatibility(self, scope:Scope, other:Type) -> bool:
         pass
 
 #
@@ -493,7 +493,7 @@ class Class(Type):
         self._attributes[child.name] = child
 
     @ensure_verified
-    def checkCompatibility(self, other:Type) -> bool:
+    def checkCompatibility(self, scope:Scope, other:Type) -> bool:
         if isinstance(other, Reference):
             other = other.value
 
