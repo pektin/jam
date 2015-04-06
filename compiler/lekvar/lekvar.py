@@ -210,6 +210,9 @@ class Module(Scope):
 # This means that dependent types can be used to implement generics.
 
 class DependentType(Type):
+    compatibles = None
+    target = None
+
     def __init__(self, compatibles:[Type] = None):
         if compatibles is None: compatibles = []
         self.compatibles = compatibles
@@ -229,6 +232,9 @@ class DependentType(Type):
 
     @ensure_verified
     def checkCompatibility(self, scope:Scope, other:Type):
+        if self.target is not None:
+            return self.target.checkCompatibility(scope, other)
+
         if isinstance(other, Reference):
             other = other.value
 
@@ -236,7 +242,9 @@ class DependentType(Type):
             if not type.checkCompatibility(scope, other):
                 return False
 
-        self.compatibles.append(other)
+        if other not in self.compatibles:
+            self.compatibles.append(other)
+
         return True
 
     @ensure_verified
@@ -244,7 +252,10 @@ class DependentType(Type):
         raise InternalError("Not Implemented")
 
     def __repr__(self):
-        return "{}<{}>".format(self.__class__.__name__, self.compatibles)
+        if self.target is None:
+            return "{}<{}>".format(self.__class__.__name__, self.compatibles)
+        else:
+            return "{} as {}".format(self.__class__.__name__, self.target)
 
 #
 # Function
