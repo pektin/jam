@@ -23,7 +23,8 @@ Tokens = Enum("Tokens", [
 #
 
 COMMENT_CHAR = "#"
-STRING_CHAR = "\""
+FORMAT_STRING_CHAR = "\""
+WYSIWYG_STRING_CHAR = "`"
 WHITESPACE = set(" \t")
 WORD_CHARACTERS = set(string.ascii_letters + "_")
 WORD_CHARACTERS_AFTER = WORD_CHARACTERS | set(string.digits)
@@ -81,7 +82,7 @@ class Lexer:
             return self.comment()
         elif self.current in WORD_CHARACTERS:
             return self.identifier()
-        elif self.current == STRING_CHAR:
+        elif self.current in [FORMAT_STRING_CHAR, WYSIWYG_STRING_CHAR]:
             return self.string()
         elif self.current in DIRECT_MAP:
             pos = self.pos
@@ -125,14 +126,15 @@ class Lexer:
 
     def string(self):
         start = self.pos - 1
+        quote = self.current
         self.next()
 
         contents = ""
-        while self.current != STRING_CHAR:
+        while self.current != quote:
             contents += self.current
             self.next()
             if not self.current:
-                raise SyntaxError("Expected '"' before EOF')
+                raise SyntaxError("Expected '{}' before EOF").format(quote)
         self.next()
 
         contents = contents.encode("UTF-8").decode("unicode-escape")
