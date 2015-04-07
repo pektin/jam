@@ -6,14 +6,32 @@ Currently the compiler is being written in python in the form of a library. The 
 
 ## Requirements
 
-In order to run the tests for the compiler, Jam requires Python 3 and LLVM 3.6
+### Compiler
+
+The compiler currently requires python3 and the llvm-3.6 shared library
 
 Ubuntu:
 ```bash
 sudo apt-get install python3 llvm-3.6-dev
 ```
 
-For documentation Jam uses Sphinx and thereby requires Python 2.X, Sphinx and make.
+### Tests
+
+In order to run the automated tests for the compiler, the py.test framework is required.
+
+Ubuntu:
+```bash
+sudo apt-get install python3-pytest
+```
+
+### Documentation
+
+For documentation Jam uses Sphinx and thereby requires Sphinx.
+
+Ubuntu:
+```bash
+sudo apt-get install python3-sphinx
+```
 
 ## Usage
 
