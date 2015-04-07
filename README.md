@@ -38,13 +38,20 @@ sudo apt-get install python3-sphinx
 The compiler is currently built as a python library, however the compiler can also be directly run through the `jam.py` script:
 
 ```bash
-./jam.py [-h] [--verbose] [--output OUTPUT] [--run] [--version] FILE
+./jam.py FILE
+```
+
+For further help run:
+
+```bash
+./jam.py --help
 ```
 
 ## Tests
 
-To run the tests, execute the "tests" bash script by running:
+To run the tests, simply execute py.test
 
+Ubuntu:
 ```bash
-./tests
+py.test-3
 ```
