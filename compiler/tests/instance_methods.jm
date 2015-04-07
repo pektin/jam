@@ -1,0 +1,16 @@
+#foo bar\n
+
+class Person
+    name:String
+
+    def new(n:String)
+        name = n
+    end
+
+    def display()
+        print(name)
+    end
+end
+
+v = Person("foo bar")
+v.display()
