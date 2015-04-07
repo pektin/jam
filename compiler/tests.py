@@ -1,5 +1,5 @@
 import os
-import unittest
+import pytest
 from subprocess import check_output
 
 from . import errors
@@ -8,27 +8,21 @@ from .jam.compiler import compile, compileRun
 TESTS_PATH = os.path.join("compiler", "tests")
 BUILD_PATH = os.path.join("build", "tests")
 
-def getFiles():
-    paths = os.listdir(TESTS_PATH)
-    names = (os.path.splitext(path)[0] for path in paths)
-    test_paths = (os.path.join(TESTS_PATH, path) for path in paths)
-    build_paths = (os.path.join(BUILD_PATH, path + ".ll") for path in paths)
-    return zip(names, test_paths, build_paths)
+for file in os.listdir(TESTS_PATH):
+    file = os.path.join(TESTS_PATH, file)
 
-class CompilerTests(unittest.TestCase):
-    pass
-
-for file in getFiles():
-    name, path, build = file
     # Ignore non-jam files
-    if os.path.splitext(path)[1] != ".jm": continue
+    if os.path.splitext(file)[1] != ".jm": continue
 
-    def test(self, path=path, build=build):
+    def test(file=file):
+        # Get the path to the built file
+        build = os.path.join(BUILD_PATH, os.path.basename(file).replace(".jm", ".ll"))
+
         # Make the testing directories, if needed
         os.makedirs(BUILD_PATH, exist_ok=True)
 
         # Get output data
-        with open(path, "r") as f_in, open(build, "w") as f_out:
+        with open(file, "r") as f_in, open(build, "w") as f_out:
             # The first line is the output
             first_line = f_in.readline()
             type = first_line[0]
@@ -38,12 +32,14 @@ for file in getFiles():
             if type == "#":
                 compile(f_in, f_out)
                 f_out.close()
-                self.assertEqual(output, check_output(["lli-3.6", build]).decode("UTF-8"))
+                assert output == check_output(["lli-3.6", build]).decode("UTF-8")
             # Check if the correct exception was thrown
             elif type == "!":
-                with self.assertRaises(getattr(errors, output)):
+                with pytest.raises(getattr(errors, output)):
                     compile(f_in, f_out)
             else:
                 raise errors.InternalError("Invalid Test Output Type: {}".format(type))
 
-    setattr(CompilerTests, "test_" + name, test)
+    # "add" test
+    globals()["test_" + file] = test
+del test
