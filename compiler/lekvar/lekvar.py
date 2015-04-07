@@ -825,7 +825,7 @@ class Return(Object):
         if self.function.type.return_type is None:
             self.function.type.return_type = self.value.resolveType(scope)
         else:
-            self.function.type.return_type.resolveCompatibility(self.value.resolveType(scope))
+            self.function.type.return_type.checkCompatibility(scope, self.value.resolveType(scope))
 
     def resolveType(self, scope:Scope):
         return None
