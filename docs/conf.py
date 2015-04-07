@@ -3,7 +3,11 @@ import os
 
 sys.path.append(os.getcwd())
 
-from .highlighting import JamLexer
+# Import the Jam pygments lexer
+try:
+    from .highlighting import JamLexer
+except KeyError:
+    from highlighting import JamLexer
 
 extensions = [
     'sphinx.ext.todo',
