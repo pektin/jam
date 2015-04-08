@@ -90,7 +90,7 @@ class TypeError(SemanticError):
 class ValueError(SemanticError):
     pass
 
-class AmbiguetyError(SemanticError):
+class AmbiguityError(SemanticError):
     pass
 
 class MissingReferenceError(SemanticError):

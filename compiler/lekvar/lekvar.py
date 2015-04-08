@@ -46,7 +46,7 @@ def resolveReference(scope:Scope, reference:str):
     if len(found) < 1:
         raise MissingReferenceError("No reference to {}".format(reference))
     elif len(found) > 1:
-        raise AmbiguetyError("Ambiguous reference to {}".format(reference))
+        raise AmbiguityError("Ambiguous reference to {}".format(reference))
 
     return found[0]
 
