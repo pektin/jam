@@ -4,6 +4,10 @@ from io import IOBase
 
 from ..errors import *
 
+#
+# Constants
+#
+
 Tokens = Enum("Tokens", [
     "comment",
     "identifier",
@@ -18,10 +22,6 @@ Tokens = Enum("Tokens", [
     "equal"
 ])
 
-#
-# Constants
-#
-
 COMMENT_CHAR = "#"
 FORMAT_STRING_CHAR = "\""
 WYSIWYG_STRING_CHAR = "`"
@@ -35,6 +35,7 @@ KEYWORDS = {
     "class",
 }
 DIRECT_MAP = {
+    "\n": Tokens.newline,
     "(": Tokens.group_start,
     ")": Tokens.group_end,
     ":": Tokens.typeof,
@@ -42,6 +43,10 @@ DIRECT_MAP = {
     "=": Tokens.equal,
     ".": Tokens.dot,
 }
+
+#
+# Lexer
+#
 
 class Token:
     def __init__(self, type:Tokens, start:int, end:int, data:str = None):
@@ -51,91 +56,109 @@ class Token:
         self.data = data
 
     def __repr__(self):
-        return "<{}: {}>".format(self.type, self.data)
+        if self.data is None:
+            return str(self.type)
+        return "{}({})".format(self.type, self.data)
 
 class Lexer:
     source = None
+    current = None
 
     def __init__(self, source:IOBase):
         self.source = source
         self.next()
 
+    # Read the next character into current
+    def next(self):
+        self.current = self.source.read(1)
+
+    # Returns the current position in source
     @property
     def pos(self):
         return self.source.tell()
-
-    current = None
-
-    def next(self):
-        self.current = self.source.read(1)
 
     #
     # Lexing Methods
     #
 
+    # Lex a single token
     def lex(self):
         # Ignore whitespace
         while self.current in WHITESPACE:
             self.next()
 
+        # Identify the kind of token
         if self.current == COMMENT_CHAR:
             return self.comment()
+
         elif self.current in WORD_CHARACTERS:
             return self.identifier()
+
         elif self.current in [FORMAT_STRING_CHAR, WYSIWYG_STRING_CHAR]:
             return self.string()
+        # Directly map a single character to a token
         elif self.current in DIRECT_MAP:
             pos = self.pos
             cu = self.current
             self.next()
             return Token(DIRECT_MAP[cu], pos - 1, pos)
-        elif self.current == "\n":
-            pos = self.pos
-            self.next()
-            return Token(Tokens.newline, pos - 1, pos)
+
         elif self.current == "":
             return None
+
         else:
             raise SyntaxError("Unexpected Character '{}'".format(self.current))
 
+    # Lex a comment
     def comment(self):
         start = self.pos - 1
 
-        self.next()
-        comment = self.current
+        # Continue until the end of the line
+        comment = ""
         while self.current != "\n":
             comment += self.current
             self.next()
 
-
         return Token(Tokens.comment, start, self.pos, comment)
 
+    # Lex an identifier
     def identifier(self):
         start = self.pos - 1
-        name = self.current
 
-        self.next()
+        # Continue until a non-word character is encountered
+        name = ""
         while self.current in WORD_CHARACTERS_AFTER:
             name += self.current
             self.next()
 
+        # Return specific keyword tokens if the identifier matches a keyword
         if name in KEYWORDS:
             return Token(Tokens.keyword, start, self.pos, name)
         else:
             return Token(Tokens.identifier, start, self.pos, name)
 
+    # Lex a string
     def string(self):
         start = self.pos - 1
+
+        # Get the string type
         quote = self.current
         self.next()
 
+        # Continue until the end quote
         contents = ""
         while self.current != quote:
             contents += self.current
             self.next()
+
+            # Enforce that strings end before EOF
             if not self.current:
                 raise SyntaxError("Expected '{}' before EOF").format(quote)
+
+        # Ignore the last quote
         self.next()
 
+        # Evaluate string escapes
         contents = contents.encode("UTF-8").decode("unicode-escape")
+
         return Token(Tokens.string, start, self.pos, contents)
