@@ -26,22 +26,25 @@ class Parser:
         self.tokens = []
         self.logger = logger.getChild("Parser")
 
+    # Return the next token and move forward by one token
     def next(self):
         if len(self.tokens) == 0:
             return self.lexer.lex()
         else:
             return self.tokens.pop(0)
 
+    # Look ahead of the current token by num tokens
     def lookAhead(self, num = 1):
         while len(self.tokens) < num:
             self.tokens.append(self.lexer.lex())
         return self.tokens[num - 1]
 
+    # Throw an unexpected token error
     def _unexpected(self, token):
         raise SyntaxError("Unexpected {}: '{}'".format(token.type, token.data), [token])
 
+    # Strip all tokens of a type, returning one lookAhead or None
     def strip(self, types:[Tokens] = [Tokens.newline]):
-        # Strip all tokens of a type, returning one lookAhead or None
         token = self.lookAhead()
         if token is None: return None
 
@@ -52,8 +55,8 @@ class Parser:
 
         return token
 
+    # Parse for an expected token, returning it's data
     def expect(self, type:Tokens = Tokens.identifier):
-        # Parse for an expected token, returning it's data
         token = self.next()
         if token.type != type:
             self._unexpected(token)
@@ -265,32 +268,28 @@ class Parser:
 
         return lekvar.Class(name, constructor, attributes)
 
-
+    # Parse a variable, with optional type signature
     def parseVariable(self):
-        # Parse a variable, with optional type signature
-
         name = self.expect()
         type = self.parseTypeSig()
 
         return lekvar.Variable(name, type)
 
+    # Parse an optional type signature
     def parseTypeSig(self):
-        # Parse an optional type signature
         if self.lookAhead().type != Tokens.typeof:
             return None
         self.next()
 
         return self.parseType()
 
+    # Parse an expected type
     def parseType(self):
-        # Parse an expected type
-
         name = self.expect()
         return lekvar.Reference(name)
 
+    # Parse a function call
     def parseCall(self, called):
-        # Parse a function call
-
         assert self.next().type == Tokens.group_start
 
         arguments = []
@@ -312,9 +311,8 @@ class Parser:
 
         return lekvar.Call(called, arguments)
 
+    # Parse a return statement
     def parseReturn(self):
-        # Parse a return statement
-
         # return keyword is expected to be parsed
         self.next()
 
@@ -325,9 +323,8 @@ class Parser:
 
         return lekvar.Return(value)
 
+    # Parse a assignment
     def parseAssignment(self):
-        # Parse a assignment
-
         variable = self.parseVariable()
 
         assert self.next().type == Tokens.equal
