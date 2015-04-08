@@ -17,11 +17,11 @@ Type = None
 # Infrastructure
 #
 
-def verify(module:Module, builtin:Module, logger:logging.Logger = None):
+def verify(module:Module, builtin:Module, logger = logging.getLogger()):
     State.builtins = builtin
-    State.logger = logger or logging.getLogger()
+    State.logger = logger.getChild("lekvar")
 
-    logger.info(module)
+    State.logger.info(module)
     module.verify(None)
 
 class State:

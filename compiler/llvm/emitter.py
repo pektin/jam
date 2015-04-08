@@ -6,20 +6,20 @@ from abc import abstractmethod as abstract
 from ..lekvar import lekvar
 from ..errors import *
 
-from .state import State
 from . import bindings as llvm
 from .builtins import LLVMType
 
-def emit(module:lekvar.Module, logger:logging.Logger = None):
-    State.logger = logger or logging.getLogger()
+def emit(module:lekvar.Module, logger = logging.getLogger()):
+    State.logger = logger.getChild("llvm")
+    llvm.State.logger = State.logger.getChild("bindings")
 
     with State.begin("main", logger):
         module.emit()
-    logger.debug("LLVM output: ", State.module.verify(llvm.FailureAction.PrintMessageAction, None))
 
+    State.logger.info("LLVM output: {}".format(State.module.verify(llvm.FailureAction.PrintMessageAction, None)))
     return State.module.toString()
 
-class State(State):
+class State:
     @classmethod
     @contextmanager
     def begin(cls, name:str, logger:logging.Logger):

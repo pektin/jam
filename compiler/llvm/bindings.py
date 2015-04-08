@@ -1,7 +1,6 @@
 from ctypes import *
 import traceback
-
-from .state import State
+import logging
 
 _lib = CDLL("libLLVM-3.6.so.1")
 
@@ -9,6 +8,9 @@ c_bool = c_int
 
 class NullException(Exception):
     pass
+
+class State:
+    logger = None
 
 #
 # Wrapping tools
@@ -50,13 +52,16 @@ def convertArgs(args):
 
 def debuggable(cls_name, name, check_null = True):
     def debuggable(func):
-        def f(cls, *args):
+        def f(self, *args):
             # Log the call, if possible
-            if State.logger is not None:
-                State.logger.debug("{}.{} calling {}{}".format(cls.__class__.__name__, cls_name, name, args))
+            if State.logger:
+                if isinstance(self, type):
+                    State.logger.debug("{}.{} calling {}{}".format(self.__name__, cls_name, name, args))
+                else:
+                    State.logger.debug("{}.{} calling {}{}".format(self.__class__.__name__, cls_name, name, args))
 
             # Perform the call
-            ret = func(cls, *args)
+            ret = func(self, *args)
 
             # Check for invalid output
             if check_null and ret is None:

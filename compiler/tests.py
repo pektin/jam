@@ -1,5 +1,6 @@
-import os
+import os, sys
 import pytest
+import logging
 from subprocess import check_output
 
 from . import errors
@@ -14,7 +15,9 @@ for file in os.listdir(TESTS_PATH):
     # Ignore non-jam files
     if os.path.splitext(file)[1] != ".jm": continue
 
-    def test(file=file):
+    def test(verbosity, file=file):
+        logging.basicConfig(level=logging.WARNING - verbosity*10, stream=sys.stdout)
+
         # Get the path to the built file
         build = os.path.join(BUILD_PATH, os.path.basename(file).replace(".jm", ".ll"))
 
