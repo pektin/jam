@@ -51,7 +51,13 @@ For further help run:
 
 To run the tests, simply execute py.test
 
-Ubuntu:
 ```bash
 py.test-3
 ```
+
+By default the tests are run with a logging level set at `WARNING`. The logging level is bound to the verbosity option. Simply passing in a verbosity of 1 (`-v`) enables `INFO` and 2 (`-vv`) enables `DEBUG`.
+
+```bash
+py.test-3 -vv
+```
+
