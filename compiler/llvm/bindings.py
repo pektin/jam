@@ -16,18 +16,13 @@ class State:
 # Wrapping tools
 #
 
+# Set the calling convention of a function in _lib
 def setTypes(name:str, args:[], ret):
     func = getattr(_lib, name)
     func.argtypes = args
     func.restype = ret
 
-def check(func):
-    def f(*args):
-        res = func(*args)
-        if not res:
-            raise Exception("{} failed with {}".format(func, res))
-    return f
-
+# Convert a list of python argument types to a list of C argument types
 def convertArgtypes(types):
     arguments = []
     for type in types:
@@ -38,6 +33,7 @@ def convertArgtypes(types):
             arguments.append(type)
     return arguments
 
+# Convert python arguments to C arguments. Matches convertArgtypes conversion
 def convertArgs(args):
     arguments = []
     for arg in args:
@@ -50,15 +46,16 @@ def convertArgs(args):
             arguments.append(arg)
     return arguments
 
-def debuggable(cls_name, name, check_null = True):
-    def debuggable(func):
+# Decorator for wrapped C functions that logs any call
+def logged(cls_name, name, check_null = True):
+    def logged(func):
         def f(self, *args):
             # Log the call, if possible
             if State.logger:
                 if isinstance(self, type):
                     State.logger.debug("{}.{} calling {}{}".format(self.__name__, cls_name, name, args))
                 else:
-                    State.logger.debug("{}.{} calling {}{}".format(self.__class__.__name__, cls_name, name, args))
+                    State.logger.debug("{}.{} calling {}{}".format(self.__class__.__name__, cls_name, name, tuple([self] + list(args))))
 
             # Perform the call
             ret = func(self, *args)
@@ -69,18 +66,18 @@ def debuggable(cls_name, name, check_null = True):
 
             return ret
         return f
-    return debuggable
+    return logged
 
 class Wrappable:
     @classmethod
     def wrapInstanceFunc(cls, cls_name:str, name:str, args:[] = [], ret = None):
         setTypes(name, convertArgtypes([cls] + args), ret)
         if ret is None:
-            @debuggable(cls_name, name, False)
+            @logged(cls_name, name, False)
             def func(self, *args):
                 getattr(_lib, name)(self, *convertArgs(args))
         else:
-            @debuggable(cls_name, name)
+            @logged(cls_name, name)
             def func(self, *args):
                 return getattr(_lib, name)(self, *convertArgs(args))
         setattr(cls, cls_name, func)
@@ -89,13 +86,13 @@ class Wrappable:
     def wrapInstanceProp(cls, cls_name:str, get_name:str, set_name:str, type):
         setTypes(get_name, [cls], type)
         @property
-        @debuggable(cls_name, get_name)
+        @logged(cls_name, get_name)
         def get(self):
             return getattr(_lib, get_name)(self)
         if set_name:
             setTypes(set_name, [cls, type], None)
             @get.setter
-            @debuggable(cls_name, set_name, False)
+            @logged(cls_name, set_name, False)
             def set(self, val:type):
                 getattr(_lib, set_name)(self, val)
         setattr(cls, cls_name, get)
@@ -109,7 +106,7 @@ class Wrappable:
     def wrapConstructor(cls, cls_name:str, name:str, args:[] = []):
         setTypes(name, convertArgtypes(args), cls)
         @classmethod
-        @debuggable(cls_name, name)
+        @logged(cls_name, name)
         def make(cls, *args):
             return getattr(_lib, name)(*convertArgs(args))
         setattr(cls, cls_name, make)
