@@ -29,25 +29,29 @@ def verify(module:Module, builtin:Module, logger = logging.getLogger()):
 
     module.verify()
 
+# The global state for the verifier
 class State:
     builtins = None
     logger = None
 
+# Resolves a reference inside of a given scope.
 def resolveReference(scope:Scope, reference:str):
     found = []
 
-    # If the object is a scope, resolve up the tree
-    while scope is not None:
+    # Collect all objects with a name matching reference up the tree of scopes
+    while True:
         attr = scope.resolveReference(scope, reference)
 
         if attr is not None:
             found.append(attr)
 
+        # Go to builtins once the top of the tree is reached, otherwise move up
         if scope is State.builtins:
             break
         else:
             scope = scope.parent if (scope.parent is not None) else State.builtins
 
+    # Only a single found object is valid
     if len(found) < 1:
         raise MissingReferenceError("No reference to {}".format(reference))
     elif len(found) > 1:
@@ -55,6 +59,7 @@ def resolveReference(scope:Scope, reference:str):
 
     return found[0]
 
+# Decorator that ensures the object is verified before the function can be called
 def ensure_verified(fn):
     def func(self, *args):
         if not self.verified:
@@ -62,6 +67,7 @@ def ensure_verified(fn):
         return fn(self, *args)
     return func
 
+# More general copy function which handles None
 def copy(obj):
     if obj is not None:
         return obj.copy()
@@ -74,14 +80,18 @@ def copy(obj):
 # needed to implement higher level features.
 
 class Object(ABC):
+    # The main verification function. Should raise a CompilerError on failure
     @abstract
     def verify(self, scope:Scope):
         pass
 
+    # Should return a unverified deep copy of the object
     @abstract
     def copy(self):
         pass
 
+    # Should return an instance of Type representing the type of the object
+    # Returns None for instructions
     @abstract
     def resolveType(self, scope:Scope):
         pass
@@ -485,16 +495,19 @@ class Method(Scope):
     def resolveCall(self, scope:Scope, call:FunctionType):
         matches = []
 
+        # Collect overloads which match the call type
         for overload in self.overloads:
             try:
                 matches.append(overload.resolveCall(scope, call))
             except TypeError:
                 continue
 
+        # Allow only one match
         if len(matches) < 1:
             raise TypeError("{} is not compatible with {}".format(call, self))
         elif len(matches) > 1:
             raise TypeError("Ambiguous overloads: {}".format(matches))
+
         return matches[0]
 
     def __repr__(self):
@@ -520,6 +533,8 @@ class Class(Type):
         self._attributes = {}
         super().__init__(name, attributes)
 
+        # Convert constructor method of functions to method of constructors
+        #TODO: Eliminate the need for this
         self.constructor = constructor
         self.constructor.parent = self
         for index, overload in enumerate(self.constructor.overloads):
@@ -620,11 +635,14 @@ class Assignment(Object):
     def verify(self, scope:Scope):
         self.scope = scope
 
+        # Try resolving the reference. If resolution fails, add a new variable
+        # to the scope.
         try:
             variable = resolveReference(scope, self.variable.name)
         except MissingReferenceError:
             scope.addChild(self.variable)
         else:
+            # Verify variable type
             if variable.type is None:
                 variable.type = self.variable.type
             elif self.variable.type is not None:
@@ -633,12 +651,13 @@ class Assignment(Object):
             self.variable = variable
 
         self.value.verify(scope)
+
         value_type = self.value.resolveType(scope)
+        # Infer or verify the variable type
         if self.variable.type is None:
             self.variable.type = value_type
         elif not self.variable.type.checkCompatibility(scope, value_type):
-            raise TypeError("Cannot assign {} of type {} to variable {} of type {}".format(
-                self.value, value_type, self.variable, self.variable.type))
+            raise TypeError("Cannot assign {} of type {} to variable {} of type {}".format(self.value, value_type, self.variable, self.variable.type))
 
     def resolveType(self, scope:Scope):
         return None
@@ -669,12 +688,15 @@ class Call(Object):
         super().verify(scope)
 
         self.called.verify(scope)
+
+        # Verify arguments and create the function type of the call
         arg_types = []
         for val in self.values:
             val.verify(scope)
             arg_types.append(val.resolveType(scope))
-
         call_type = FunctionType("", arg_types)
+
+        # Resolve the call
         self.function = self.called.resolveCall(scope, call_type)
 
     def resolveType(self, scope:Scope):
@@ -735,6 +757,7 @@ class Reference(Type):
         if self.verified: return
         self.verified = True
 
+        # Resolve the reference using general reference resolution
         self.value = resolveReference(scope, self.reference)
         self.value.verify(scope)
 
@@ -777,6 +800,7 @@ class Attribute(Type):
         self.verified = True
 
         self.value.verify(scope)
+        # Resolve the attribute using the values attribute resolution
         self.attribute = self.value.resolveAttribute(scope, self.reference)
 
         if self.attribute is None:
