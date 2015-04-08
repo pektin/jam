@@ -1,3 +1,4 @@
+import logging
 from io import IOBase
 
 from .. errors import *
@@ -8,8 +9,8 @@ from .lexer import Lexer, Tokens
 # Tools
 #
 
-def parseFile(source:IOBase):
-    return Parser(Lexer(source)).parseModule()
+def parseFile(source:IOBase, logger=logging.getLogger()):
+    return Parser(Lexer(source), logger).parseModule()
 
 #
 # Parser
@@ -18,10 +19,12 @@ def parseFile(source:IOBase):
 class Parser:
     lexer = None
     tokens = None
+    logger = None
 
-    def __init__(self, lexer):
+    def __init__(self, lexer, logger):
         self.lexer = lexer
         self.tokens = []
+        self.logger = logger.getChild("Parser")
 
     def next(self):
         if len(self.tokens) == 0:
