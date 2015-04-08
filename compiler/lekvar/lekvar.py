@@ -4,6 +4,9 @@ from abc import abstractmethod as abstract, ABC, abstractproperty
 from ..errors import *
 
 # Python predefines
+# Because most function arguments are declared with types before those types
+# are defined, we just set them to null here. This makes the type declaration
+# purely syntactic
 Object = None
 Scope = None
 Variable = None
@@ -18,11 +21,13 @@ Type = None
 #
 
 def verify(module:Module, builtin:Module, logger = logging.getLogger()):
+    # Set up the initial state before verifying
     State.builtins = builtin
     State.logger = logger.getChild("lekvar")
 
     State.logger.info(module)
-    module.verify(None)
+
+    module.verify()
 
 class State:
     builtins = None
@@ -176,13 +181,14 @@ class Module(Scope):
     def __init__(self, name:str, children:[ScopeObject], main:Function):
         self._children = {}
         super().__init__(name, children)
+
         self.main = main
         self.main.parent = self
 
     def copy(self):
         return Module(self.name, list(map(copy, self.children.values())), copy(self.main))
 
-    def verify(self, scope:Scope):
+    def verify(self, scope:Scope = None):
         if self.verified: return
         super().verify(scope)
         self.main.verify(self)
