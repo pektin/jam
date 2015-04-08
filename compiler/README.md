@@ -1,13 +1,5 @@
 # The Compiler
 
-This folder contains the current implementations of the jam lexer, the jam parser, lekvar, the lekvar verifier and the lekvar llvm emitter. It also contains a set of tests these modules need to pass.
+This folder contains the current implementations of the jam lexer, the jam parser, lekvar, the lekvar verifier and the lekvar llvm emitter. It also contains a set of automated tests for each module.
 
-## Design
-
-Since each component is supposed to be separable, the following would be the ideal way to run each component:
-
-```
-lekvar_ir = jam.compile(source)
-lekvar_ir.verify()
-llvm_ir = lekvar_ir.emit(llvm)
-```
+The current implementation is written in python3. This is primarily due to the fact that python has a level of abstraction that is closer to Jam than C or other lower level languages. This means that bootstrapping the compiler later on will require less work. The downside to using python of course being the execution speed.
