@@ -72,11 +72,6 @@ lekvar.Function.llvm_return = None
 #lekvar.Object.emitValue = Object_emitValue
 
 #@abstract
-#def Scope_emit(self, state:State) -> None:
-#    pass
-#lekvar.Scope.emit = Scope_emit
-
-#@abstract
 #def Type_emitType(self, state:State) -> llvm.Type:
 #    pass
 #lekvar.Type.emitType = Type_emitType
@@ -86,12 +81,12 @@ lekvar.Function.llvm_return = None
 # Tools
 #
 
-def resolveName(scope:lekvar.Scope):
+def resolveName(scope:lekvar.BoundObject):
     # Resolves the name of a scope, starting with a extraneous .
     name = ""
-    while scope.parent is not None:
+    while scope.bound_context is not None:
         name = "." + scope.name + name
-        scope = scope.parent
+        scope = scope.bound_context.scope
     return "lekvar" + name
 
 # Implements
@@ -123,7 +118,7 @@ lekvar.Reference.emitType = Reference_emitType
 
 def Attribute_emitValue(self):
     if isinstance(self.attribute, lekvar.Variable):
-        self.attribute.parent.emit()
+        self.attribute.bound_context.scope.emit()
         pointer = State.builder.structGEP(self.value.emit(), self.attribute.llvm_value, State.getTempName())
         return State.builder.load(pointer, State.getTempName())
     else:
@@ -167,7 +162,7 @@ lekvar.Variable.emitValue = Variable_emitValue
 
 def Assignment_emitValue(self):
     value = self.value.emitValue()
-    if isinstance(self.variable.parent, lekvar.Class):
+    if isinstance(self.variable.bound_context.scope, lekvar.Class):
         variable = State.builder.structGEP(self.scope.llvm_return, self.variable.llvm_value, State.getTempName())
     else:
         variable = self.variable.emit()
@@ -184,7 +179,7 @@ def Module_emit(self):
     self.llvm_value = self.main.emitValue()
     State.main.append(self.main)
 
-    for child in self.children.values():
+    for child in self.context.children.values():
         child.emit()
 lekvar.Module.emit = Module_emit
 
@@ -333,7 +328,7 @@ def Class_emit(self):
     if self.llvm_type is not None: return
 
     var_types = []
-    for child in self.children.values():
+    for child in self.instance_context.children.values():
         if isinstance(child, lekvar.Variable):
             child.llvm_value = len(var_types)
             var_types.append(child.type.emitType())

@@ -8,14 +8,15 @@ from ..errors import *
 # Because most function arguments are declared with types before those types
 # are defined, we just set them to null here. This makes the type declaration
 # purely syntactic
+Context = None
 Object = None
-Scope = None
+BoundObject = None
+Type = None
 Variable = None
 Module = None
 Function = None
 FunctionType = None
 Method = None
-Type = None
 
 #
 # Infrastructure
@@ -37,16 +38,16 @@ def resolveReference(reference:str):
     # Collect all objects with a name matching reference up the tree of scopes
     scope = State.scope
     while True:
-        attr = scope.resolveReference(reference)
+        context = scope.local_context
 
-        if attr is not None:
-            found.append(attr)
+        if context is not None and reference in context.children:
+            found.append(context.children[reference])
 
         # Go to builtins once the top of the tree is reached, otherwise move up
         if scope is State.builtins:
             break
         else:
-            scope = scope.parent if (scope.parent is not None) else State.builtins
+            scope = scope.bound_context.scope if (scope.bound_context is not None) else State.builtins
 
     # Only a single found object is valid
     if len(found) < 1:
@@ -55,14 +56,6 @@ def resolveReference(reference:str):
         raise AmbiguityError("Ambiguous reference to {}".format(reference))
 
     return found[0]
-
-# Decorator that ensures the object is verified before the function can be called
-def ensure_verified(fn):
-    def func(self, *args):
-        if not self.verified:
-            self.verify()
-        return fn(self, *args)
-    return func
 
 # More general copy function which handles None
 def copy(obj):
@@ -78,7 +71,7 @@ class State:
 
     @classmethod
     @contextmanager
-    def scoped(cls, scope:Scope):
+    def scoped(cls, scope:BoundObject):
         previous = cls.scope
         cls.scope = scope
         yield
@@ -90,105 +83,108 @@ class State:
 # These structures form the basis of Lekvar. They provide the base functionality
 # needed to implement higher level features.
 
-class Object(ABC):
-    # The main verification function. Should raise a CompilerError on failure
-    @abstract
-    def verify(self):
-        pass
+class Context:
+    scope = None
+    children = None
 
+    def __init__(self, scope:BoundObject, children:[BoundObject]):
+        self.scope = scope
+
+        self.children = {}
+        for child in children:
+            self.addChild(child)
+
+    def copy(self):
+        return list(map(copy, self.children.values()))
+
+    def verify(self):
+        for child in self.children.values():
+            child.verify()
+
+    def addChild(self, child):
+        self.children[child.name] = child
+        self.fakeChild(child)
+
+    def fakeChild(self, child):
+        child.bound_context = self
+
+    def __add__(self, other:Context):
+        for child in self.children.values():
+            if child.name in other.children:
+                raise AmbiguityError()
+
+        return Context(None, self.children.values() + other.children.values())
+
+    def __repr__(self):
+        return "{}<{}>".format(self.__class__.__name__, ", ".join(map(str, self.children.values())))
+
+class Object(ABC):
     # Should return a unverified deep copy of the object
     @abstract
     def copy(self):
         pass
 
+    # The main verification function. Should raise a CompilerError on failure
+    @abstract
+    def verify(self):
+        pass
+
     # Should return an instance of Type representing the type of the object
     # Returns None for instructions
     @abstract
-    def resolveType(self):
+    def resolveType(self) -> Context:
         pass
 
-    def resolveAttribute(self, reference:str) -> Object:
-        return self.resolveType().resolveReference(reference)
+    # Should either return None or a context accessible from the global scope
+    @property
+    def global_context(self) -> Context:
+        return None
 
+    # Should either return None or a context accessibly from the local scope
+    @property
+    def local_context(self):
+        return None
+
+    # Should return a function object that matches a function signature
     def resolveCall(self, call:FunctionType) -> Function:
         raise TypeError("{} object is not callable".format(self))
+
+    # Resolves an attribute
+    # final
+    def resolveAttribute(self, reference:str):
+        instance_context = self.resolveType().instance_context
+
+        if instance_context is not None:
+            if self.global_context is not None:
+                context = instance_context + self.global_context
+            else:
+                context = instance_context
+        else:
+            context = self.global_context
+
+        if context is not None and reference in context.children:
+            return context.children[reference]
+        raise MissingReferenceError("{} does not have an attribute {}".format(self, reference))
 
     def __repr__(self):
         return "{}".format(self.__class__.__name__)
 
 class BoundObject(Object):
     name = None
-    parent = None
-    verified = False
+    bound_context = None
 
     def __init__(self, name):
         self.name = name
 
-    @abstract
-    def verify(self):
-        self.verified = True
-
-    @abstract
-    @ensure_verified
-    def resolveType(self):
-        pass
-
-    @ensure_verified
-    def resolveAttribute(self, reference:str):
-        return super().resolveAttribute(reference)
-
     def __repr__(self):
         return "{}({})".format(self.__class__.__name__, self.name)
 
-class Scope(BoundObject):
-    def __init__(self, name, children:[BoundObject] = []):
-        super().__init__(name)
-
-        for child in children:
-            self.addChild(child)
-
-    def verify(self):
-        if self.verified: return
-
-        with State.scoped(self):
-            super().verify()
-
-            for child in self.children.values():
-                child.verify()
-
-    @ensure_verified
-    def resolveAttribute(self, reference:str):
-        if reference in self.children:
-            return self.children[reference]
-        return None
-
-    @ensure_verified
-    def resolveReference(self, reference:str):
-        if reference in self.children:
-            return self.children[reference]
-        return None
-
-    @abstractproperty
-    def children(self) -> {str: BoundObject}:
-        pass
+class Type(BoundObject):
+    @property
+    def instance_context(self):
+        None
 
     @abstract
-    def addChild(self, child:BoundObject):
-        child.parent = self
-
-    def __repr__(self):
-        return "{}({}){}".format(self.__class__.__name__, self.name, self.children)
-
-class Type(Scope):
-    def __init__(self, name, attributes:[BoundObject] = []):
-        super().__init__(name, attributes)
-
-    @ensure_verified
-    def resolveAttribute(self, reference:str):
-        return BoundObject.resolveAttribute(self, reference)
-
-    @abstract
-    @ensure_verified
     def checkCompatibility(self, other:Type) -> bool:
         pass
 
@@ -197,41 +193,43 @@ class Type(Scope):
 #
 # A module represents a simple namespace container scope.
 
-class Module(Scope):
+class Module(BoundObject):
+    context = None
     main = None
-    _children = None
+    verified = False
 
-    def __init__(self, name:str, children:[BoundObject], main:Function):
-        self._children = {}
-        super().__init__(name, children)
+    def __init__(self, name:str, children:[BoundObject], main:Function = None):
+        super().__init__(name)
+
+        self.context = Context(self, children)
 
         self.main = main
-        self.main.parent = self
+        self.context.fakeChild(self.main)
 
     def copy(self):
-        return Module(self.name, list(map(copy, self.children.values())), copy(self.main))
+        return Module(self.name, copy(self.context))
 
     def verify(self):
         if self.verified: return
-        super().verify()
+        verified = True
 
         with State.scoped(self):
             self.main.verify()
+            self.context.verify()
 
-    @ensure_verified
     def resolveType(self):
         raise InternalError("Not Implemented")
 
     @property
-    def children(self):
-        return self._children
+    def local_context(self):
+        return self.context
 
-    def addChild(self, child:BoundObject):
-        super().addChild(child)
-        self._children[child.name] = child
+    @property
+    def global_context(self):
+        return self.context
 
     def __repr__(self):
-        return "{}({})<{}>{}".format(self.__class__.__name__, self.name, self.main, self.children)
+        return "{}({})<{}>[{}]".format(self.__class__.__name__, self.name, self.main, self.context)
 
 #
 # Dependent Type
@@ -254,21 +252,12 @@ class DependentType(Type):
     def verify(self):
         pass
 
-    def addChild(self, child):
-        raise InternalError("Not Implemented")
-
-    @property
-    def children(self):
-        raise InternalError("Not Implemented")
-
-    @ensure_verified
     def checkCompatibility(self, other:Type):
+        # If dependent type is targeted, only check for the target type
         if self.target is not None:
             return self.target.checkCompatibility(other)
 
-        if isinstance(other, Reference):
-            other = other.value
-
+        # Check with all compatible types
         for type in self.compatibles:
             if not type.checkCompatibility(other):
                 return False
@@ -278,7 +267,6 @@ class DependentType(Type):
 
         return True
 
-    @ensure_verified
     def resolveType(self):
         raise InternalError("Not Implemented")
 
@@ -293,16 +281,21 @@ class DependentType(Type):
 #
 # Functions are a basic container for instructions.
 
-class Function(Scope):
-    _children = None
+class Function(BoundObject):
+    local_context = None
+
     arguments = None
     instructions = None
+
     type = None
     dependent = False
+    verified = False
 
     def __init__(self, name:str, arguments:[Variable], instructions:[Object], return_type:Type = None):
-        self._children = {}
-        super().__init__(name, arguments)
+        super().__init__(name)
+
+        self.local_context = Context(self, arguments)
+
         self.arguments = arguments
         self.instructions = instructions
 
@@ -312,7 +305,6 @@ class Function(Scope):
                 self.dependent = True
 
         self.type = FunctionType(name, [arg.type for arg in arguments], return_type)
-        self.type.parent = self
 
     def copy(self):
         fn = Function(self.name, list(map(copy, self.arguments)), list(map(copy, self.instructions)), self.type.return_type)
@@ -320,7 +312,7 @@ class Function(Scope):
 
     def verify(self):
         if self.verified: return
-        super().verify()
+        verified = True
 
         with State.scoped(self):
             self.type.verify()
@@ -328,6 +320,7 @@ class Function(Scope):
             for instruction in self.instructions:
                 instruction.verify()
 
+            # Further, analytical verification
             self.verifySelf()
 
     def verifySelf(self):
@@ -335,11 +328,9 @@ class Function(Scope):
         if not any(isinstance(inst, Return) for inst in self.instructions) and self.type.return_type is not None:
             raise SemanticError("All code paths must return")
 
-    @ensure_verified
     def resolveType(self):
         return self.type
 
-    @ensure_verified
     def resolveCall(self, call:FunctionType):
         if not self.resolveType().checkCompatibility(call):
             raise TypeError("{} is not compatible with {}".format(call, self.resolveType()))
@@ -354,45 +345,36 @@ class Function(Scope):
         fn.verify()
         return fn
 
-    @property
-    def children(self):
-        return self._children
-
-    def addChild(self, child:BoundObject):
-        super().addChild(child)
-        self._children[child.name] = child
-
     def __repr__(self):
         return "{}<{}>({}):{}{}".format(self.__class__.__name__, self.dependent, self.name, self.type, self.instructions)
 
-class ExternalFunction(Scope):
+class ExternalFunction(BoundObject):
     external_name = None
     type = None
+
     dependent = False
+    verified = False
 
     def __init__(self, name:str, external_name:str, arguments:[Type], return_type:Type):
         super().__init__(name)
         self.external_name = external_name
         self.type = FunctionType(external_name, arguments, return_type)
-        self.type.parent = self
 
     def copy(self):
         raise InternalError("Not Implemented")
 
     def verify(self):
         if self.verified: return
-        super().verify()
+        self.verified = True
 
         with State.scoped(self):
             self.type.verify()
 
-    @ensure_verified
     def resolveType(self):
         return self.type
 
     resolveCall = Function.resolveCall
 
-    @property
     def children(self):
         return {}
 
@@ -406,6 +388,8 @@ class FunctionType(Type):
     arguments = None
     return_type = None
 
+    verified = False
+
     def __init__(self, name:str, arguments:[Type], return_type:Type = None):
         super().__init__(name)
         self.arguments = arguments
@@ -416,7 +400,7 @@ class FunctionType(Type):
 
     def verify(self):
         if self.verified: return
-        super().verify()
+        self.verified = True
 
         with State.scoped(self):
             for arg in self.arguments:
@@ -424,22 +408,9 @@ class FunctionType(Type):
             if self.return_type is not None:
                 self.return_type.verify()
 
-    @ensure_verified
     def resolveType(self):
         raise InternalError("Not Implemented")
 
-    @ensure_verified
-    def resolveAttribute(self, reference:str):
-        return None
-
-    @property
-    def children(self):
-        return {}
-
-    def addChild(self, child):
-        raise InternalError("Not Implemented")
-
-    @ensure_verified
     def checkCompatibility(self, other:Type):
         if isinstance(other, Reference):
             other = other.value
@@ -465,8 +436,9 @@ class FunctionType(Type):
 # A method is a generic container for functions. It implements the functionality
 # for function overloading.
 
-class Method(Scope):
+class Method(BoundObject):
     overloads = None
+    verified = False
 
     def __init__(self, name:str, overloads:[Function]):
         self.overloads = []
@@ -480,37 +452,23 @@ class Method(Scope):
 
     def addOverload(self, overload:Function):
         overload.name = str(len(self.overloads))
-        overload.parent = self
         self.overloads.append(overload)
 
     def assimilate(self, other:Method):
         for overload in other.overloads:
             self.addOverload(overload)
 
-    @property
-    def children(self):
-        return {}
-
-    def addChild(self, child:BoundObject):
-        raise InternalError("Not Implemented")
-
     def verify(self):
         if self.verified: return
-        super().verify()
+        self.verified = True
 
         with State.scoped(self):
             for overload in self.overloads:
                 overload.verify()
 
-    @ensure_verified
-    def resolveAttribute(self, reference:str):
-        return None
-
-    @ensure_verified
     def resolveType(self):
         return MethodType(self.name, [fn.resolveType() for fn in self.overloads])
 
-    @ensure_verified
     def resolveCall(self, call:FunctionType):
         matches = []
 
@@ -546,19 +504,20 @@ class MethodType(Type):
 
 class Class(Type):
     constructor = None
-    _attributes = None
+    instance_context = None
 
-    def __init__(self, name:str, constructor:Method, attributes:{str: BoundObject}):
-        self._attributes = {}
-        super().__init__(name, attributes)
+    verified = False
+
+    def __init__(self, name:str, constructor:Method, attributes:[BoundObject]):
+        super().__init__(name)
+
+        self.instance_context = Context(self, attributes)
 
         # Convert constructor method of functions to method of constructors
         #TODO: Eliminate the need for this
         self.constructor = constructor
-        self.constructor.parent = self
         for index, overload in enumerate(self.constructor.overloads):
-            self.constructor.overloads[index] = Constructor(overload)
-            self.constructor.overloads[index].parent = self.constructor
+            self.constructor.overloads[index] = Constructor(overload, self)
 
     def copy(self):
         return Class(self.name, copy(self.constructor),
@@ -566,30 +525,20 @@ class Class(Type):
 
     def verify(self):
         if self.verified: return
-        super().verify()
+        verified = True
 
         with State.scoped(self):
             self.constructor.verify()
+            self.instance_context.verify()
 
-    @ensure_verified
     def resolveCall(self, call:FunctionType):
         function = self.constructor.resolveCall(call)
         function.type.return_type = self
         return function
 
-    @ensure_verified
     def resolveType(self):
         raise InternalError("Not Implemented")
 
-    @property
-    def children(self):
-        return self._attributes
-
-    def addChild(self, child:BoundObject):
-        super().addChild(child)
-        self._attributes[child.name] = child
-
-    @ensure_verified
     def checkCompatibility(self, other:Type) -> bool:
         if isinstance(other, Reference):
             other = other.value
@@ -597,12 +546,12 @@ class Class(Type):
         return other is self
 
 class Constructor(Function):
-    def __init__(self, function:Function):
+    def __init__(self, function:Function, constructing:Type):
         super().__init__(function.name, function.arguments, function.instructions, function.type.return_type)
 
         if function.type.return_type is not None:
             raise TypeError("Constructors must return nothing")
-        function.type.return_type = self.parent
+        function.type.return_type = constructing
 
     def verifySelf(self):
         for instruction in self.instructions:
@@ -629,7 +578,6 @@ class Variable(BoundObject):
         if self.type is not None:
             self.type.verify()
 
-    @ensure_verified
     def resolveType(self):
         return self.type
 
@@ -661,7 +609,7 @@ class Assignment(Object):
         try:
             variable = resolveReference(self.variable.name)
         except MissingReferenceError:
-            State.scope.addChild(self.variable)
+            State.scope.local_context.addChild(self.variable)
         else:
             # Verify variable type
             if variable.type is None:
@@ -723,9 +671,6 @@ class Call(Object):
     def resolveType(self):
         return self.function.resolveType().return_type
 
-    def resolveAttribute(self, reference:str):
-        raise InternalError("Not Implemented")
-
     def __repr__(self):
         if self.function is None:
             return "{}<{}>({})".format(self.__class__.__name__, self.called, self.values)
@@ -768,6 +713,8 @@ class Reference(Type):
     reference = None
     value = None
 
+    verified = False
+
     def __init__(self, reference:str):
         self.reference = reference
 
@@ -782,23 +729,23 @@ class Reference(Type):
         self.value = resolveReference(self.reference)
         self.value.verify()
 
-    @ensure_verified
     def resolveType(self):
         return self.value.resolveType()
 
-    @ensure_verified
+    @property
+    def local_context(self):
+        return self.value.local_context
+
+    @property
+    def global_context(self):
+        return self.value.global_context
+
     def resolveCall(self, call:FunctionType):
         return self.value.resolveCall(call)
 
-    @property
-    def children(self):
-        return self.value.children
-
-    def addChild(self, child:BoundObject):
-        self.value.addChild(child)
-
-    @ensure_verified
     def checkCompatibility(self, other:Type):
+        print(self)
+        print(State.scope)
         return self.value.checkCompatibility(other)
 
     def __repr__(self):
@@ -808,6 +755,8 @@ class Attribute(Type):
     value = None
     reference = None
     attribute = None
+
+    verified = False
 
     def __init__(self, value:Object, reference:str):
         self.value = value
@@ -827,22 +776,12 @@ class Attribute(Type):
         if self.attribute is None:
             raise MissingReferenceError("{} does not have an attribute {}".format(self.value, self.reference))
 
-    @ensure_verified
     def resolveType(self):
         return self.attribute.resolveType()
 
-    @ensure_verified
     def resolveCall(self, call:FunctionType):
         return self.attribute.resolveCall(call)
 
-    @property
-    def children(self):
-        return self.attribute.children
-
-    def addChild(self, child:BoundObject):
-        self.attribute.addChild(child)
-
-    @ensure_verified
     def checkCompatibility(self, other:Type):
         return self.attribute.checkCompatibility(other)
 
@@ -898,7 +837,7 @@ class Comment(Object):
     def verify(self):
         pass
 
-    def resolveType(self, scope:Scope):
+    def resolveType(self):
         return None
 
     def __repr__(self):
