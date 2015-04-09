@@ -24,10 +24,10 @@ class LLVMType(Type):
     def copy(self):
         raise InternalError("Cannot copy LLVMType")
 
-    def verify(self, scope:Scope):
+    def verify(self):
         pass
 
-    def resolveType(self, scope:Scope):
+    def resolveType(self):
         raise InternalError("Not Implemented")
 
     @property
@@ -37,7 +37,7 @@ class LLVMType(Type):
     def addChild(self, child):
         raise InternalError("Not Implemented")
 
-    def checkCompatibility(self, scope:Scope, other:Type):
+    def checkCompatibility(self, other:Type):
         if isinstance(other, Reference):
             other = other.value
 

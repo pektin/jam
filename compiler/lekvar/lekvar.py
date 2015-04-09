@@ -1,4 +1,5 @@
 import logging
+from contextlib import contextmanager
 from abc import abstractmethod as abstract, ABC, abstractproperty
 
 from ..errors import *
@@ -29,18 +30,14 @@ def verify(module:Module, builtin:Module, logger = logging.getLogger()):
 
     module.verify()
 
-# The global state for the verifier
-class State:
-    builtins = None
-    logger = None
-
 # Resolves a reference inside of a given scope.
-def resolveReference(scope:Scope, reference:str):
+def resolveReference(reference:str):
     found = []
 
     # Collect all objects with a name matching reference up the tree of scopes
+    scope = State.scope
     while True:
-        attr = scope.resolveReference(scope, reference)
+        attr = scope.resolveReference(reference)
 
         if attr is not None:
             found.append(attr)
@@ -63,7 +60,7 @@ def resolveReference(scope:Scope, reference:str):
 def ensure_verified(fn):
     def func(self, *args):
         if not self.verified:
-            self.verify(args[0])
+            self.verify()
         return fn(self, *args)
     return func
 
@@ -72,6 +69,20 @@ def copy(obj):
     if obj is not None:
         return obj.copy()
     return None
+
+# The global state for the verifier
+class State:
+    builtins = None
+    logger = None
+    scope = None
+
+    @classmethod
+    @contextmanager
+    def scoped(cls, scope:Scope):
+        previous = cls.scope
+        cls.scope = scope
+        yield
+        cls.scope = previous
 
 #
 # Abstract Base Structures
@@ -82,7 +93,7 @@ def copy(obj):
 class Object(ABC):
     # The main verification function. Should raise a CompilerError on failure
     @abstract
-    def verify(self, scope:Scope):
+    def verify(self):
         pass
 
     # Should return a unverified deep copy of the object
@@ -93,13 +104,13 @@ class Object(ABC):
     # Should return an instance of Type representing the type of the object
     # Returns None for instructions
     @abstract
-    def resolveType(self, scope:Scope):
+    def resolveType(self):
         pass
 
-    def resolveAttribute(self, scope:Scope, reference:str) -> Object:
-        return self.resolveType(scope).resolveReference(scope, reference)
+    def resolveAttribute(self, reference:str) -> Object:
+        return self.resolveType().resolveReference(reference)
 
-    def resolveCall(self, scope:Scope, call:FunctionType) -> Function:
+    def resolveCall(self, call:FunctionType) -> Function:
         raise TypeError("{} object is not callable".format(self))
 
     def __repr__(self):
@@ -114,17 +125,17 @@ class ScopeObject(Object):
         self.name = name
 
     @abstract
-    def verify(self, scope:Scope):
+    def verify(self):
         self.verified = True
 
     @abstract
     @ensure_verified
-    def resolveType(self, scope:Scope):
+    def resolveType(self):
         pass
 
     @ensure_verified
-    def resolveAttribute(self, scope:Scope, reference:str):
-        return super().resolveAttribute(scope, reference)
+    def resolveAttribute(self, reference:str):
+        return super().resolveAttribute(reference)
 
     def __repr__(self):
         return "{}({})".format(self.__class__.__name__, self.name)
@@ -136,21 +147,23 @@ class Scope(ScopeObject):
         for child in children:
             self.addChild(child)
 
-    def verify(self, scope:Scope):
+    def verify(self):
         if self.verified: return
-        super().verify(scope)
 
-        for child in self.children.values():
-            child.verify(self)
+        with State.scoped(self):
+            super().verify()
+
+            for child in self.children.values():
+                child.verify()
 
     @ensure_verified
-    def resolveAttribute(self, scope:Scope, reference:str):
+    def resolveAttribute(self, reference:str):
         if reference in self.children:
             return self.children[reference]
         return None
 
     @ensure_verified
-    def resolveReference(self, scope:Scope, reference:str):
+    def resolveReference(self, reference:str):
         if reference in self.children:
             return self.children[reference]
         return None
@@ -171,12 +184,12 @@ class Type(Scope):
         super().__init__(name, attributes)
 
     @ensure_verified
-    def resolveAttribute(self, scope:Scope, reference:str):
-        return ScopeObject.resolveAttribute(self, scope, reference)
+    def resolveAttribute(self, reference:str):
+        return ScopeObject.resolveAttribute(self, reference)
 
     @abstract
     @ensure_verified
-    def checkCompatibility(self, scope:Scope, other:Type) -> bool:
+    def checkCompatibility(self, other:Type) -> bool:
         pass
 
 #
@@ -198,13 +211,15 @@ class Module(Scope):
     def copy(self):
         return Module(self.name, list(map(copy, self.children.values())), copy(self.main))
 
-    def verify(self, scope:Scope = None):
+    def verify(self):
         if self.verified: return
-        super().verify(scope)
-        self.main.verify(self)
+        super().verify()
+
+        with State.scoped(self):
+            self.main.verify()
 
     @ensure_verified
-    def resolveType(self, scope:Scope):
+    def resolveType(self):
         raise InternalError("Not Implemented")
 
     @property
@@ -236,7 +251,7 @@ class DependentType(Type):
     def copy(self):
         return DependentType(self.compatibles[:])
 
-    def verify(self, scope:Scope):
+    def verify(self):
         pass
 
     def addChild(self, child):
@@ -247,15 +262,15 @@ class DependentType(Type):
         raise InternalError("Not Implemented")
 
     @ensure_verified
-    def checkCompatibility(self, scope:Scope, other:Type):
+    def checkCompatibility(self, other:Type):
         if self.target is not None:
-            return self.target.checkCompatibility(scope, other)
+            return self.target.checkCompatibility(other)
 
         if isinstance(other, Reference):
             other = other.value
 
         for type in self.compatibles:
-            if not type.checkCompatibility(scope, other):
+            if not type.checkCompatibility(other):
                 return False
 
         if other not in self.compatibles:
@@ -264,7 +279,7 @@ class DependentType(Type):
         return True
 
     @ensure_verified
-    def resolveType(self, scope:Scope):
+    def resolveType(self):
         raise InternalError("Not Implemented")
 
     def __repr__(self):
@@ -303,16 +318,17 @@ class Function(Scope):
         fn = Function(self.name, list(map(copy, self.arguments)), list(map(copy, self.instructions)), self.type.return_type)
         return fn
 
-    def verify(self, scope:Scope):
+    def verify(self):
         if self.verified: return
-        super().verify(scope)
+        super().verify()
 
-        self.type.verify(self)
+        with State.scoped(self):
+            self.type.verify()
 
-        for instruction in self.instructions:
-            instruction.verify(self)
+            for instruction in self.instructions:
+                instruction.verify()
 
-        self.verifySelf()
+            self.verifySelf()
 
     def verifySelf(self):
         # Ensure non-void functions return
@@ -320,13 +336,13 @@ class Function(Scope):
             raise SemanticError("All code paths must return")
 
     @ensure_verified
-    def resolveType(self, scope:Scope):
+    def resolveType(self):
         return self.type
 
     @ensure_verified
-    def resolveCall(self, scope:Scope, call:FunctionType):
-        if not self.resolveType(scope).checkCompatibility(self, call):
-            raise TypeError("{} is not compatible with {}".format(call, self.resolveType(scope)))
+    def resolveCall(self, call:FunctionType):
+        if not self.resolveType().checkCompatibility(call):
+            raise TypeError("{} is not compatible with {}".format(call, self.resolveType()))
 
         if not self.dependent:
             return self
@@ -335,7 +351,7 @@ class Function(Scope):
         for index, arg in enumerate(fn.arguments):
             if isinstance(arg.type, DependentType):
                 fn.type.arguments[index] = arg.type.target = call.arguments[index]
-        fn.verify(self)
+        fn.verify()
         return fn
 
     @property
@@ -363,14 +379,15 @@ class ExternalFunction(Scope):
     def copy(self):
         raise InternalError("Not Implemented")
 
-    def verify(self, scope:Scope):
+    def verify(self):
         if self.verified: return
-        super().verify(scope)
+        super().verify()
 
-        self.type.verify(self)
+        with State.scoped(self):
+            self.type.verify()
 
     @ensure_verified
-    def resolveType(self, scope:Scope):
+    def resolveType(self):
         return self.type
 
     resolveCall = Function.resolveCall
@@ -397,21 +414,22 @@ class FunctionType(Type):
     def copy(self):
         return FunctionType(self.name, list(map(copy, self.arguments)), copy(self.return_type))
 
-    def verify(self, scope:Scope):
+    def verify(self):
         if self.verified: return
-        super().verify(scope)
+        super().verify()
 
-        for arg in self.arguments:
-            arg.verify(self)
-        if self.return_type is not None:
-            self.return_type.verify(self)
+        with State.scoped(self):
+            for arg in self.arguments:
+                arg.verify()
+            if self.return_type is not None:
+                self.return_type.verify()
 
     @ensure_verified
-    def resolveType(self, scope:Scope):
+    def resolveType(self):
         raise InternalError("Not Implemented")
 
     @ensure_verified
-    def resolveAttribute(self, scope:Scope, reference:str):
+    def resolveAttribute(self, reference:str):
         return None
 
     @property
@@ -422,7 +440,7 @@ class FunctionType(Type):
         raise InternalError("Not Implemented")
 
     @ensure_verified
-    def checkCompatibility(self, scope:Scope, other:Type):
+    def checkCompatibility(self, other:Type):
         if isinstance(other, Reference):
             other = other.value
 
@@ -431,11 +449,11 @@ class FunctionType(Type):
                 return False
 
             for self_arg, other_arg in zip(self.arguments, other.arguments):
-                if not self_arg.checkCompatibility(scope, other_arg):
-                    return other.checkCompatibility(scope, self)
+                if not self_arg.checkCompatibility(other_arg):
+                    return other.checkCompatibility(self)
 
             return True
-        return other.checkCompatibility(scope, self)
+        return other.checkCompatibility(self)
 
     def __repr__(self):
         return "{}({}):{}".format(self.__class__.__name__,
@@ -476,29 +494,30 @@ class Method(Scope):
     def addChild(self, child:ScopeObject):
         raise InternalError("Not Implemented")
 
-    def verify(self, scope:Scope):
+    def verify(self):
         if self.verified: return
-        super().verify(self)
+        super().verify()
 
-        for overload in self.overloads:
-            overload.verify(self)
+        with State.scoped(self):
+            for overload in self.overloads:
+                overload.verify()
 
     @ensure_verified
-    def resolveAttribute(self, scope:Scope, reference:str):
+    def resolveAttribute(self, reference:str):
         return None
 
     @ensure_verified
-    def resolveType(self, scope:Scope):
-        return MethodType(self.name, [fn.resolveType(scope) for fn in self.overloads])
+    def resolveType(self):
+        return MethodType(self.name, [fn.resolveType() for fn in self.overloads])
 
     @ensure_verified
-    def resolveCall(self, scope:Scope, call:FunctionType):
+    def resolveCall(self, call:FunctionType):
         matches = []
 
         # Collect overloads which match the call type
         for overload in self.overloads:
             try:
-                matches.append(overload.resolveCall(scope, call))
+                matches.append(overload.resolveCall(call))
             except TypeError:
                 continue
 
@@ -545,19 +564,21 @@ class Class(Type):
         return Class(self.name, copy(self.constructor),
             {name: copy(item) for name, item in self._attributes.items()})
 
-    def verify(self, scope:Scope):
+    def verify(self):
         if self.verified: return
-        super().verify(scope)
-        self.constructor.verify(scope)
+        super().verify()
+
+        with State.scoped(self):
+            self.constructor.verify()
 
     @ensure_verified
-    def resolveCall(self, scope:Scope, call:FunctionType):
-        function = self.constructor.resolveCall(scope, call)
+    def resolveCall(self, call:FunctionType):
+        function = self.constructor.resolveCall(call)
         function.type.return_type = self
         return function
 
     @ensure_verified
-    def resolveType(self, scope:Scope):
+    def resolveType(self):
         raise InternalError("Not Implemented")
 
     @property
@@ -569,7 +590,7 @@ class Class(Type):
         self._attributes[child.name] = child
 
     @ensure_verified
-    def checkCompatibility(self, scope:Scope, other:Type) -> bool:
+    def checkCompatibility(self, other:Type) -> bool:
         if isinstance(other, Reference):
             other = other.value
 
@@ -604,12 +625,12 @@ class Variable(ScopeObject):
     def copy(self):
         return Variable(self.name, copy(self.type))
 
-    def verify(self, scope:Scope):
+    def verify(self):
         if self.type is not None:
-            self.type.verify(scope)
+            self.type.verify()
 
     @ensure_verified
-    def resolveType(self, scope:Scope):
+    def resolveType(self):
         return self.type
 
     def __repr__(self):
@@ -632,15 +653,15 @@ class Assignment(Object):
     def copy(self):
         return Assignment(copy(self.variable), copy(self.value))
 
-    def verify(self, scope:Scope):
-        self.scope = scope
+    def verify(self):
+        self.scope = State.scope
 
         # Try resolving the reference. If resolution fails, add a new variable
         # to the scope.
         try:
-            variable = resolveReference(scope, self.variable.name)
+            variable = resolveReference(self.variable.name)
         except MissingReferenceError:
-            scope.addChild(self.variable)
+            State.scope.addChild(self.variable)
         else:
             # Verify variable type
             if variable.type is None:
@@ -650,16 +671,16 @@ class Assignment(Object):
 
             self.variable = variable
 
-        self.value.verify(scope)
+        self.value.verify()
 
-        value_type = self.value.resolveType(scope)
+        value_type = self.value.resolveType()
         # Infer or verify the variable type
         if self.variable.type is None:
             self.variable.type = value_type
-        elif not self.variable.type.checkCompatibility(scope, value_type):
+        elif not self.variable.type.checkCompatibility(value_type):
             raise TypeError("Cannot assign {} of type {} to variable {} of type {}".format(self.value, value_type, self.variable, self.variable.type))
 
-    def resolveType(self, scope:Scope):
+    def resolveType(self):
         return None
 
     def __repr__(self):
@@ -684,25 +705,25 @@ class Call(Object):
     def copy(self):
         return Call(copy(self.called), list(map(copy, self.values)))
 
-    def verify(self, scope:Scope):
-        super().verify(scope)
+    def verify(self):
+        super().verify()
 
-        self.called.verify(scope)
+        self.called.verify()
 
         # Verify arguments and create the function type of the call
         arg_types = []
         for val in self.values:
-            val.verify(scope)
-            arg_types.append(val.resolveType(scope))
+            val.verify()
+            arg_types.append(val.resolveType())
         call_type = FunctionType("", arg_types)
 
         # Resolve the call
-        self.function = self.called.resolveCall(scope, call_type)
+        self.function = self.called.resolveCall(call_type)
 
-    def resolveType(self, scope:Scope):
-        return self.function.resolveType(scope).return_type
+    def resolveType(self):
+        return self.function.resolveType().return_type
 
-    def resolveAttribute(self, scope:Scope, reference:str):
+    def resolveAttribute(self, reference:str):
         raise InternalError("Not Implemented")
 
     def __repr__(self):
@@ -726,12 +747,12 @@ class Literal(Object):
     def copy(self):
         return self
 
-    def verify(self, scope:Scope):
-        super().verify(scope)
+    def verify(self):
+        super().verify()
 
-        self.type.verify(scope)
+        self.type.verify()
 
-    def resolveType(self, scope:Scope):
+    def resolveType(self):
         return self.type
 
     def __repr__(self):
@@ -753,21 +774,21 @@ class Reference(Type):
     def copy(self):
         return Reference(self.reference)
 
-    def verify(self, scope:Scope):
+    def verify(self):
         if self.verified: return
         self.verified = True
 
         # Resolve the reference using general reference resolution
-        self.value = resolveReference(scope, self.reference)
-        self.value.verify(scope)
+        self.value = resolveReference(self.reference)
+        self.value.verify()
 
     @ensure_verified
-    def resolveType(self, scope:Scope):
-        return self.value.resolveType(scope)
+    def resolveType(self):
+        return self.value.resolveType()
 
     @ensure_verified
-    def resolveCall(self, scope:Scope, call:FunctionType):
-        return self.value.resolveCall(scope, call)
+    def resolveCall(self, call:FunctionType):
+        return self.value.resolveCall(call)
 
     @property
     def children(self):
@@ -777,8 +798,8 @@ class Reference(Type):
         self.value.addChild(child)
 
     @ensure_verified
-    def checkCompatibility(self, scope:Scope, other:Type):
-        return self.value.checkCompatibility(scope, other)
+    def checkCompatibility(self, other:Type):
+        return self.value.checkCompatibility(other)
 
     def __repr__(self):
         return "{}({})<{}>".format(self.__class__.__name__, self.reference, self.value)
@@ -795,24 +816,24 @@ class Attribute(Type):
     def copy(self):
         return Attribute(copy(value), self.reference)
 
-    def verify(self, scope:Scope):
+    def verify(self):
         if self.verified: return
         self.verified = True
 
-        self.value.verify(scope)
+        self.value.verify()
         # Resolve the attribute using the values attribute resolution
-        self.attribute = self.value.resolveAttribute(scope, self.reference)
+        self.attribute = self.value.resolveAttribute(self.reference)
 
         if self.attribute is None:
             raise MissingReferenceError("{} does not have an attribute {}".format(self.value, self.reference))
 
     @ensure_verified
-    def resolveType(self, scope:Scope):
-        return self.attribute.resolveType(scope)
+    def resolveType(self):
+        return self.attribute.resolveType()
 
     @ensure_verified
-    def resolveCall(self, scope:Scope, call:FunctionType):
-        return self.attribute.resolveCall(scope, call)
+    def resolveCall(self, call:FunctionType):
+        return self.attribute.resolveCall(call)
 
     @property
     def children(self):
@@ -822,8 +843,8 @@ class Attribute(Type):
         self.attribute.addChild(child)
 
     @ensure_verified
-    def checkCompatibility(self, scope:Scope, other:Type):
-        return self.attribute.checkCompatibility(scope, other)
+    def checkCompatibility(self, other:Type):
+        return self.attribute.checkCompatibility(other)
 
     def __repr__(self):
         return "{}({}).{}<{}>".format(self.__class__.__name__, self.value, self.reference, self.attribute)
@@ -844,20 +865,20 @@ class Return(Object):
     def copy(self):
         return Return(copy(self.value))
 
-    def verify(self, scope:Scope):
-        self.value.verify(scope)
+    def verify(self):
+        self.value.verify()
 
-        if not isinstance(scope, Function):
+        if not isinstance(State.scope, Function):
             raise SyntaxError("Cannot return outside of a method")
-        self.function = scope
+        self.function = State.scope
 
         # Infer function types
         if self.function.type.return_type is None:
-            self.function.type.return_type = self.value.resolveType(scope)
+            self.function.type.return_type = self.value.resolveType()
         else:
-            self.function.type.return_type.checkCompatibility(scope, self.value.resolveType(scope))
+            self.function.type.return_type.checkCompatibility(self.value.resolveType())
 
-    def resolveType(self, scope:Scope):
+    def resolveType(self):
         return None
 
 #
@@ -874,7 +895,7 @@ class Comment(Object):
     def copy(self):
         return Comment(self.contents)
 
-    def verify(self, scope:Scope):
+    def verify(self):
         pass
 
     def resolveType(self, scope:Scope):

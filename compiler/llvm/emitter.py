@@ -245,7 +245,7 @@ def Function_emit(self):
     if self.llvm_value is not None: return
 
     name = resolveName(self)
-    func_type = self.resolveType(self).emitType()
+    func_type = self.resolveType().emitType()
     self.llvm_value = State.module.addFunction(name, func_type)
 
     entry = self.llvm_value.appendBlock("entry")
