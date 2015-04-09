@@ -25,6 +25,7 @@ class State:
     def begin(cls, name:str, logger:logging.Logger):
         cls.logger = logger
 
+        cls.self = None
         cls.builder = llvm.Builder.new()
         cls.module = llvm.Module.fromName(name)
         cls.main = []
@@ -49,6 +50,14 @@ class State:
         cls.builder.positionAtEnd(block)
         yield
         cls.builder.positionAtEnd(previous_block)
+
+    @classmethod
+    @contextmanager
+    def selfScope(cls, self:llvm.Value):
+        previous_self = cls.self
+        cls.self = self
+        yield
+        cls.self = previous_self
 
     @classmethod
     def getTempName(self):
@@ -117,12 +126,8 @@ lekvar.Reference.emitType = Reference_emitType
 #
 
 def Attribute_emitValue(self):
-    if isinstance(self.attribute, lekvar.Variable):
-        self.attribute.bound_context.scope.emit()
-        pointer = State.builder.structGEP(self.value.emit(), self.attribute.llvm_value, State.getTempName())
-        return State.builder.load(pointer, State.getTempName())
-    else:
-        raise InternalError("Not Implemented")
+    self.attribute.bound_context.scope.emit()
+    return self.attribute.emitValue(self.value.emit())
 lekvar.Attribute.emitValue = Attribute_emitValue
 
 #
@@ -151,8 +156,11 @@ def Variable_emit(self):
     return self.llvm_value
 lekvar.Variable.emit = Variable_emit
 
-def Variable_emitValue(self):
+def Variable_emitValue(self, value:llvm.Value = None):
     self.emit()
+
+    if value:
+        return State.builder.load(State.builder.structGEP(value, self.llvm_value, State.getTempName()), State.getTempName())
     return State.builder.load(self.llvm_value, State.getTempName())
 lekvar.Variable.emitValue = Variable_emitValue
 
@@ -162,6 +170,7 @@ lekvar.Variable.emitValue = Variable_emitValue
 
 def Assignment_emitValue(self):
     value = self.value.emitValue()
+
     if isinstance(self.variable.bound_context.scope, lekvar.Class):
         variable = State.builder.structGEP(self.scope.llvm_return, self.variable.llvm_value, State.getTempName())
     else:
@@ -314,7 +323,7 @@ lekvar.ExternalFunction.emitValue = ExternalFunction_emitValue
 def Method_emit(self):
     if self.llvm_value is not None: return
 
-    for overload in self.overloads:
+    for overload in self.overload_context.children.values():
         overload.emit()
 lekvar.Method.emit = Method_emit
 

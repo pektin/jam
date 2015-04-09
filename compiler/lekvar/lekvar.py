@@ -437,25 +437,25 @@ class FunctionType(Type):
 # for function overloading.
 
 class Method(BoundObject):
-    overloads = None
+    overload_context = None
     verified = False
 
     def __init__(self, name:str, overloads:[Function]):
-        self.overloads = []
         super().__init__(name)
 
+        self.overload_context = Context(self, [])
         for overload in overloads:
             self.addOverload(overload)
 
     def copy(self):
-        return Method(self.name, list(map(copy, self.overloads)))
+        return Method(self.name, list(map(copy, self.overload_context.children.values())))
 
     def addOverload(self, overload:Function):
-        overload.name = str(len(self.overloads))
-        self.overloads.append(overload)
+        overload.name = str(len(self.overload_context.children))
+        self.overload_context.addChild(overload)
 
     def assimilate(self, other:Method):
-        for overload in other.overloads:
+        for overload in other.overload_context.children.values():
             self.addOverload(overload)
 
     def verify(self):
@@ -463,7 +463,7 @@ class Method(BoundObject):
         self.verified = True
 
         with State.scoped(self):
-            for overload in self.overloads:
+            for overload in self.overload_context.children.values():
                 overload.verify()
 
     def resolveType(self):
@@ -473,7 +473,7 @@ class Method(BoundObject):
         matches = []
 
         # Collect overloads which match the call type
-        for overload in self.overloads:
+        for overload in self.overload_context.children.values():
             try:
                 matches.append(overload.resolveCall(call))
             except TypeError:
@@ -488,7 +488,7 @@ class Method(BoundObject):
         return matches[0]
 
     def __repr__(self):
-        return "{}({}){}".format(self.__class__.__name__, self.name, self.overloads)
+        return "{}({}){}".format(self.__class__.__name__, self.name, self.overload_context.children.values())
 
 class MethodType(Type):
     overloads = None
@@ -516,12 +516,13 @@ class Class(Type):
         # Convert constructor method of functions to method of constructors
         #TODO: Eliminate the need for this
         self.constructor = constructor
-        for index, overload in enumerate(self.constructor.overloads):
-            self.constructor.overloads[index] = Constructor(overload, self)
+        for name, overload in self.constructor.overload_context.children.items():
+            self.constructor.overload_context.children[name] = Constructor(overload, self)
+            self.constructor.overload_context.children[name].bound_context = self.constructor.overload_context
+        self.instance_context.fakeChild(self.constructor)
 
     def copy(self):
-        return Class(self.name, copy(self.constructor),
-            {name: copy(item) for name, item in self._attributes.items()})
+        return Class(self.name, copy(self.constructor), list(map(copy, self.constructor.overload_context.children.values())))
 
     def verify(self):
         if self.verified: return
@@ -538,6 +539,10 @@ class Class(Type):
 
     def resolveType(self):
         raise InternalError("Not Implemented")
+
+    @property
+    def local_context(self):
+        return self.instance_context
 
     def checkCompatibility(self, other:Type) -> bool:
         if isinstance(other, Reference):
@@ -620,6 +625,7 @@ class Assignment(Object):
             self.variable = variable
 
         self.value.verify()
+        self.variable.verify()
 
         value_type = self.value.resolveType()
         # Infer or verify the variable type
@@ -744,8 +750,6 @@ class Reference(Type):
         return self.value.resolveCall(call)
 
     def checkCompatibility(self, other:Type):
-        print(self)
-        print(State.scope)
         return self.value.checkCompatibility(other)
 
     def __repr__(self):
