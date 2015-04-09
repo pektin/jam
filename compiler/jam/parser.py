@@ -72,7 +72,7 @@ class Parser:
             # EOF escape
             if value is None: break
 
-            if isinstance(value, lekvar.ScopeObject):
+            if isinstance(value, lekvar.BoundObject):
                 # Scopes are automatically added as children
                 name = value.name
 

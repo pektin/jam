@@ -62,7 +62,7 @@ def main_call(func:lekvar.Function):
 
 # Abstract extensions
 
-lekvar.ScopeObject.llvm_value = None
+lekvar.BoundObject.llvm_value = None
 lekvar.Function.llvm_return = None
 
 # Extension abstract methods apparently don't work

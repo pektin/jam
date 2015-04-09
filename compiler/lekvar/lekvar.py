@@ -116,7 +116,7 @@ class Object(ABC):
     def __repr__(self):
         return "{}".format(self.__class__.__name__)
 
-class ScopeObject(Object):
+class BoundObject(Object):
     name = None
     parent = None
     verified = False
@@ -140,8 +140,8 @@ class ScopeObject(Object):
     def __repr__(self):
         return "{}({})".format(self.__class__.__name__, self.name)
 
-class Scope(ScopeObject):
-    def __init__(self, name, children:[ScopeObject] = []):
+class Scope(BoundObject):
+    def __init__(self, name, children:[BoundObject] = []):
         super().__init__(name)
 
         for child in children:
@@ -169,23 +169,23 @@ class Scope(ScopeObject):
         return None
 
     @abstractproperty
-    def children(self) -> {str: ScopeObject}:
+    def children(self) -> {str: BoundObject}:
         pass
 
     @abstract
-    def addChild(self, child:ScopeObject):
+    def addChild(self, child:BoundObject):
         child.parent = self
 
     def __repr__(self):
         return "{}({}){}".format(self.__class__.__name__, self.name, self.children)
 
 class Type(Scope):
-    def __init__(self, name, attributes:[ScopeObject] = []):
+    def __init__(self, name, attributes:[BoundObject] = []):
         super().__init__(name, attributes)
 
     @ensure_verified
     def resolveAttribute(self, reference:str):
-        return ScopeObject.resolveAttribute(self, reference)
+        return BoundObject.resolveAttribute(self, reference)
 
     @abstract
     @ensure_verified
@@ -201,7 +201,7 @@ class Module(Scope):
     main = None
     _children = None
 
-    def __init__(self, name:str, children:[ScopeObject], main:Function):
+    def __init__(self, name:str, children:[BoundObject], main:Function):
         self._children = {}
         super().__init__(name, children)
 
@@ -226,7 +226,7 @@ class Module(Scope):
     def children(self):
         return self._children
 
-    def addChild(self, child:ScopeObject):
+    def addChild(self, child:BoundObject):
         super().addChild(child)
         self._children[child.name] = child
 
@@ -358,7 +358,7 @@ class Function(Scope):
     def children(self):
         return self._children
 
-    def addChild(self, child:ScopeObject):
+    def addChild(self, child:BoundObject):
         super().addChild(child)
         self._children[child.name] = child
 
@@ -396,7 +396,7 @@ class ExternalFunction(Scope):
     def children(self):
         return {}
 
-    def addChild(self, child:ScopeObject):
+    def addChild(self, child:BoundObject):
         raise InternalError("Not Implemented")
 
     def __repr__(self):
@@ -491,7 +491,7 @@ class Method(Scope):
     def children(self):
         return {}
 
-    def addChild(self, child:ScopeObject):
+    def addChild(self, child:BoundObject):
         raise InternalError("Not Implemented")
 
     def verify(self):
@@ -548,7 +548,7 @@ class Class(Type):
     constructor = None
     _attributes = None
 
-    def __init__(self, name:str, constructor:Method, attributes:{str: ScopeObject}):
+    def __init__(self, name:str, constructor:Method, attributes:{str: BoundObject}):
         self._attributes = {}
         super().__init__(name, attributes)
 
@@ -585,7 +585,7 @@ class Class(Type):
     def children(self):
         return self._attributes
 
-    def addChild(self, child:ScopeObject):
+    def addChild(self, child:BoundObject):
         super().addChild(child)
         self._attributes[child.name] = child
 
@@ -615,7 +615,7 @@ class Constructor(Function):
 # A variable is a simple container for a value. The scope object may be used
 # in conjunction with assignments and values for advanced functionality.
 
-class Variable(ScopeObject):
+class Variable(BoundObject):
     type = None
 
     def __init__(self, name:str, type:Type = None):
@@ -794,7 +794,7 @@ class Reference(Type):
     def children(self):
         return self.value.children
 
-    def addChild(self, child:ScopeObject):
+    def addChild(self, child:BoundObject):
         self.value.addChild(child)
 
     @ensure_verified
@@ -839,7 +839,7 @@ class Attribute(Type):
     def children(self):
         return self.attribute.children
 
-    def addChild(self, child:ScopeObject):
+    def addChild(self, child:BoundObject):
         self.attribute.addChild(child)
 
     @ensure_verified
