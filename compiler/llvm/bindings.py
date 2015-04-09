@@ -53,9 +53,9 @@ def logged(cls_name, name, check_null = True):
             # Log the call, if possible
             if State.logger:
                 if isinstance(self, type):
-                    State.logger.debug("{}.{} calling {}{}".format(self.__name__, cls_name, name, args))
+                    State.logger.debug("{}.{} calling {}{}".format(self.__name__, cls_name, name, args), stack_info=True)
                 else:
-                    State.logger.debug("{}.{} calling {}{}".format(self.__class__.__name__, cls_name, name, tuple([self] + list(args))))
+                    State.logger.debug("{}.{} calling {}{}".format(self.__class__.__name__, cls_name, name, tuple([self] + list(args))), stack_info=True)
 
             # Perform the call
             ret = func(self, *args)
