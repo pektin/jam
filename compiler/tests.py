@@ -26,10 +26,14 @@ for file in os.listdir(TESTS_PATH):
 
         # Get output data
         with open(file, "r") as f_in, open(build, "w") as f_out:
+            # The first character is the test type
+            type = f_in.read(1)
+            # Or specific test attributes (ignore for now)
+            if type == "?":
+                type = f_in.read(1)
+
             # The first line is the output
-            first_line = f_in.readline()
-            type = first_line[0]
-            output = first_line[1:-1].encode("UTF-8").decode("unicode-escape")
+            output = f_in.readline()[:-1].encode("UTF-8").decode("unicode-escape")
 
             # Check if the output was correct
             if type == "#":
@@ -42,6 +46,11 @@ for file in os.listdir(TESTS_PATH):
                     compile(f_in, f_out)
             else:
                 raise errors.InternalError("Invalid Test Output Type: {}".format(type))
+
+    # get test attributes
+    with open(file, "r") as f:
+        if f.read(1) == "?":
+            test = pytest.mark.xfail(test)
 
     # "add" test
     globals()["test_" + file] = test
