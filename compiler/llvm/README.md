@@ -1,10 +1,17 @@
 # LLVM
 
-LLVM is used as a target for the jam compiler. This contains the emitter used to convert Lekvar to llvm-ir.
+LLVM is used as a target for the jam compiler. This contains the emitter used to
+convert Lekvar to llvm-ir.
 
 ## Approach
 
-The current approach uses a ctypes binding to the LLVM C bindings. Each lekvar class is extended to include a ``emitValue`` function, which should return a ``llvm.Value`` (``LLVMValueRef``) instance. ``lekvar.ScopeObject`` classes are extended to also include a ``emit`` function, which creates the lekvar object, without returning a value. ``lekvar.Type`` classes are extended to further include a ``emitType`` function, which should return a ``llvm.Type`` (``LLVMTypeRef``) instance.
+The current approach uses a ctypes binding to the LLVM C bindings. Each lekvar
+class is extended to include a ``emitValue`` function, which should return a
+``llvm.Value`` (``LLVMValueRef``) instance. ``lekvar.ScopeObject`` classes are
+extended to also include a ``emit`` function, which creates the lekvar object,
+without returning a value. ``lekvar.Type`` classes are extended to further
+include a ``emitType`` function, which should return a ``llvm.Type``
+(``LLVMTypeRef``) instance.
 
 ## Example
 
