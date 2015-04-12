@@ -17,15 +17,15 @@ compiler become part of the standard library.
 
 ## Compiler
 
-The compiler currently requires python3 and the llvm-3.6 shared library
+The compiler currently requires python3 and the llvm-3.4 shared library
 
 ### Ubuntu:
 
 See http://llvm.org/apt/ for instructions on how to set up your system to fetch
-the 3.6 packages.
+the 3.4 packages.
 
 ``` bash
-sudo apt-get install python3 llvm-3.6-dev python3-sphinx
+sudo apt-get install python3 llvm-3.4-dev python3-sphinx
 ```
 
 ## Usage
