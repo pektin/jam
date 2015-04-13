@@ -72,14 +72,18 @@ class Wrappable:
     @classmethod
     def wrapInstanceFunc(cls, cls_name:str, name:str, args:[] = [], ret = None):
         setTypes(name, convertArgtypes([cls] + args), ret)
-        if ret is None:
-            @logged(cls_name, name, False)
-            def func(self, *args):
-                getattr(_lib, name)(self, *convertArgs(args))
-        else:
-            @logged(cls_name, name)
-            def func(self, *args):
-                return getattr(_lib, name)(self, *convertArgs(args))
+
+        @logged(cls_name, name, ret is not None)
+        def func(self, *args):
+            value = getattr(_lib, name)(self, *convertArgs(args))
+
+            # Set debug attributes
+            if isinstance(value, Wrappable):
+                value.constructor_name = repr(self) + "." + cls_name
+                value.constructor_args = args
+
+            return value
+
         setattr(cls, cls_name, func)
 
     @classmethod
@@ -88,7 +92,14 @@ class Wrappable:
         @property
         @logged(cls_name, get_name)
         def get(self):
-            return getattr(_lib, get_name)(self)
+            value = getattr(_lib, get_name)(self)
+
+            # Set debug attributes
+            if isinstance(value, Wrappable):
+                value.constructor_name = repr(self) + "." + cls_name
+
+            return value
+
         if set_name:
             setTypes(set_name, [cls, type], None)
             @get.setter
@@ -108,8 +119,22 @@ class Wrappable:
         @classmethod
         @logged(cls_name, name)
         def make(cls, *args):
-            return getattr(_lib, name)(*convertArgs(args))
+            obj = getattr(_lib, name)(*convertArgs(args))
+            # Set debug attributes
+            obj.constructor_name = cls.__name__ + "." + cls_name
+            obj.constructor_args = args
+
+            return obj
         setattr(cls, cls_name, make)
+
+    # Debugging
+    constructor_name = None
+    constructor_args = tuple()
+    def __repr__(self):
+        if self.constructor_name is not None:
+            return "{}{}".format(self.constructor_name, self.constructor_args)
+        else:
+            return super().__repr__()
 
 #
 # The Actual LLVM bindings
