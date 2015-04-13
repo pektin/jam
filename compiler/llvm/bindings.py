@@ -263,6 +263,10 @@ Builder.wrapInstanceFunc("globalString", "LLVMBuildGlobalStringPtr", [c_char_p, 
 Type.wrapConstructor("void", "LLVMVoidType")
 Type.wrapConstructor("label", "LLVMLabelType")
 
+def Type_void_p(space = 0):
+    return Pointer.new(Int.new(8), space)
+Type.void_p = Type_void_p
+
 Type.wrapInstanceProp("context", "LLVMGetTypeContext", None, Context)
 Type.wrapInstanceProp("isSized", "LLVMTypeIsSized", None, c_bool)
 Type.wrapInstanceProp("kind", "LLVMGetTypeKind", None, c_uint)
@@ -339,6 +343,7 @@ Block.wrapInstanceProp("function", "LLVMGetBasicBlockParent", None, FunctionValu
 #
 
 Value.wrapConstructor("constInt", "LLVMConstInt", [Type, c_ulonglong, c_bool])
+Value.wrapConstructor("null", "LLVMConstNull", [Type])
 
 Value.wrapInstanceProp("type", "LLVMTypeOf", None, Type)
 Value.wrapInstanceFunc("dump", "LLVMDumpValue")
@@ -348,3 +353,4 @@ FunctionValue.wrapInstanceFunc("getLastBlock", "LLVMGetLastBasicBlock", [], Bloc
 FunctionValue.wrapInstanceFunc("getParam", "LLVMGetParam", [c_uint], Value)
 
 FunctionValue.wrapInstanceProp("type", "LLVMTypeOf", None, Function)
+
