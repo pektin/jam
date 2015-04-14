@@ -138,13 +138,17 @@ def Reference_emitType(self):
     return self.value.emitType()
 lekvar.Reference.emitType = Reference_emitType
 
+def Reference_emitAssignment(self):
+    return self.value.emitAssignment()
+lekvar.Reference.emitAssignment = Reference_emitAssignment
+
 #
 # class Attribute
 #
 
 def Attribute_emitValue(self):
     self.attribute.bound_context.scope.emit()
-    return self.attribute.emitValue(self.value.emit())
+    return self.attribute.emitValue(self.value.emitAssignment())
 lekvar.Attribute.emitValue = Attribute_emitValue
 
 #
@@ -164,22 +168,43 @@ lekvar.Literal.emitValue = Literal_emitValue
 # class Variable
 #
 
-def Variable_emit(self):
-    if self.llvm_value is not None: return self.llvm_value
+lekvar.Variable.llvm_context_index = -1
 
-    type = self.type.emitType()
-    name = resolveName(self)
-    self.llvm_value = State.builder.alloca(type, name)
-    return self.llvm_value
+def Variable_emit(self):
+    if self.llvm_value is not None or self.llvm_context_index >= 0: return
+
+    if isinstance(self.bound_context.scope, lekvar.Class):
+        self.bound_context.scope.emit()
+    else:
+        type = self.type.emitType()
+        name = resolveName(self)
+        self.llvm_value = State.builder.alloca(type, name)
 lekvar.Variable.emit = Variable_emit
 
-def Variable_emitValue(self, value:llvm.Value = None):
+def Variable_emitValue(self, value=None):
     self.emit()
 
-    if value:
-        return State.builder.load(State.builder.structGEP(value, self.llvm_value, State.getTempName()), State.getTempName())
-    return State.builder.load(self.llvm_value, State.getTempName())
+    if self.llvm_context_index >= 0:
+        print(self.name)
+        if value is None:
+            value = State.builder.structGEP(State.self, 0, State.getTempName())
+        return State.builder.load(State.builder.structGEP(value, self.llvm_context_index, State.getTempName()), State.getTempName())
+    elif self.llvm_value is not None:
+        return State.builder.load(self.llvm_value, State.getTempName())
+    else:
+        raise InternalError()
 lekvar.Variable.emitValue = Variable_emitValue
+
+def Variable_emitAssignment(self):
+    self.emit()
+
+    if self.llvm_value is not None:
+        return self.llvm_value
+
+    #context = State.builder.load(State.self, State.getTempName())
+    self_value = State.builder.structGEP(State.self, 0, State.getTempName())
+    return State.builder.structGEP(self_value, self.llvm_context_index, State.getTempName())
+lekvar.Variable.emitAssignment = Variable_emitAssignment
 
 #
 # class Assignment
@@ -188,10 +213,7 @@ lekvar.Variable.emitValue = Variable_emitValue
 def Assignment_emitValue(self):
     value = self.value.emitValue()
 
-    if isinstance(self.variable.bound_context.scope, lekvar.Class):
-        variable = State.builder.structGEP(self.scope.llvm_return, self.variable.llvm_value, State.getTempName())
-    else:
-        variable = self.variable.emit()
+    variable = self.variable.emitAssignment()
     State.builder.store(value, variable)
 lekvar.Assignment.emitValue = Assignment_emitValue
 
@@ -214,9 +236,18 @@ lekvar.Module.emit = Module_emit
 #
 
 def Call_emitValue(self):
-    arguments = [val.emitValue() for val in self.values]
     called = self.function.emitValue()
-    if called is None: raise InternalError("Fuck")
+
+    if isinstance(self.function, lekvar.Function):
+        if len(self.function.closed_context.children):
+            arguments = [self.function.emitContext()]
+        else:
+            context_type = self.function.llvm_closure_type or llvm.Int.new(8)
+            arguments = [llvm.Value.null(context_type)]
+    else:
+        arguments = []
+    arguments += [val.emitValue() for val in self.values]
+
     # Get the llvm function type
     function_type = llvm.cast(llvm.cast(called.type, llvm.Pointer).element_type, llvm.Function)
 
@@ -243,6 +274,25 @@ def Return_emitValue(self):
 lekvar.Return.emitValue = Return_emitValue
 
 #
+# class Context
+#
+
+lekvar.Context.llvm_type = None
+
+def Context_emitType(self):
+    if self.llvm_type is not None: return self.llvm_type
+
+    types = []
+    for index, child in self.children.items():
+        child.llvm_context_index = index
+        types.append(child.resolveType().emitType())
+
+    self.llvm_type = llvm.Struct.new(types, False)
+
+    return self.llvm_type
+lekvar.Context.emitType = Context_emitType
+
+#
 # class DependentType
 #
 
@@ -261,12 +311,22 @@ lekvar.DependentType.emitType = DependentType_emitType
 # class Function
 #
 
+lekvar.Function.llvm_closure_type = None
+lekvar.Function.llvm_context = None
+
 def Function_emit(self):
     if self.dependent: return
     if self.llvm_value is not None: return
 
+    if len(self.closed_context.children) > 0:
+        self.llvm_value = 0 # Temporarily set llvm_value to something so this function isn't emitted twice
+        self.bound_context.scope.emit()
+        self.llvm_closure_type = self.closed_context.emitType()
+    else:
+        self.llvm_closure_type = llvm.Type.void_p()
+
     name = resolveName(self)
-    func_type = self.resolveType().emitType()
+    func_type = self.resolveType().emitType(self.llvm_closure_type)
     self.llvm_value = State.module.addFunction(name, func_type)
 
     entry = self.llvm_value.appendBlock("entry")
@@ -277,39 +337,95 @@ def Function_emit(self):
         State.builder.br(exit)
 
     with State.blockScope(exit):
-        if self.llvm_return is not None:
-            val = State.builder.load(self.llvm_return, State.getTempName())
-            State.builder.ret(val)
-        else:
-            State.builder.retVoid()
+        self.emitReturn()
+
 lekvar.Function.emit = Function_emit
 
 def Function_emitBody(self):
-    # Allocate Arguments
-    for index, arg in enumerate(self.arguments):
-        val = self.llvm_value.getParam(index)
-        arg.llvm_value = State.builder.alloca(arg.type.emitType(), resolveName(arg))
-        State.builder.store(val, arg.llvm_value)
+    # Allocate context
+    self.llvm_context = State.builder.alloca(self.llvm_closure_type, "context")
+    State.builder.store(self.llvm_value.getParam(0), self.llvm_context)
+    self.emitPreContext()
+    with State.selfScope(self.llvm_context):
 
+        # Allocate Arguments
+        for index, arg in enumerate(self.arguments):
+            val = self.llvm_value.getParam(index + 1)
+            arg.llvm_value = State.builder.alloca(arg.type.emitType(), resolveName(arg))
+            State.builder.store(val, arg.llvm_value)
+
+        self.emitPostContext()
+
+        # Emit instructions
+        for instruction in self.instructions:
+            instruction.emitValue()
+lekvar.Function.emitBody = Function_emitBody
+
+def Function_emitPostContext(self):
     # Allocate Return Variable
     if self.type.return_type is not None:
         self.llvm_return = State.builder.alloca(self.type.return_type.emitType(), "return")
+lekvar.Function.emitPostContext = Function_emitPostContext
 
-    for instruction in self.instructions:
-        instruction.emitValue()
-lekvar.Function.emitBody = Function_emitBody
+def Function_emitReturn(self):
+    if self.llvm_return is not None:
+        val = State.builder.load(self.llvm_return, State.getTempName())
+        State.builder.ret(val)
+    else:
+        State.builder.retVoid()
+lekvar.Function.emitReturn = Function_emitReturn
 
 def Function_emitValue(self):
     self.emit()
     return self.llvm_value
 lekvar.Function.emitValue = Function_emitValue
 
+def Function_emitPreContext(self):
+    pass
+lekvar.Function.emitPreContext = Function_emitPreContext
+
+def Function_emitContext(self):
+    pass
+lekvar.Function.emitContext = Function_emitContext
+
+#
+# Contructor
+#
+
+def Constructor_emitPreContext(self):
+    #context = State.builder.load(context, State.getTempName())
+    self_var = State.builder.structGEP(self.llvm_context, 0, State.getTempName())
+    self_val = State.builder.load(State.builder.alloca(self.bound_context.scope.bound_context.scope.emitType(), State.getTempName()), State.getTempName())
+    State.builder.store(self_val, self_var)
+lekvar.Constructor.emitPreContext = Constructor_emitPreContext
+
+def Constructor_emitPostContext(self):
+    pass
+lekvar.Constructor.emitPostContext = Constructor_emitPostContext
+
+def Constructor_emitReturn(self):
+    context = State.builder.structGEP(self.llvm_context, 0, State.getTempName())
+    value = State.builder.load(context, State.getTempName())
+    State.builder.ret(value)
+lekvar.Constructor.emitReturn = Constructor_emitReturn
+
+def Constructor_emitContext(self):
+    self.emit()
+    return llvm.Value.null(self.llvm_closure_type)
+lekvar.Constructor.emitContext = Constructor_emitContext
+
 #
 # class FunctionType
 #
 
-def FunctionType_emitType(self):
-    arguments = [type.emitType() for type in self.arguments]
+def FunctionType_emitType(self, context_type = None):
+    if context_type is None:
+        arguments = []
+    else:
+        arguments = [context_type]
+
+    arguments += [type.emitType() for type in self.arguments]
+
     if self.return_type is not None:
         return_type = self.return_type.emitType()
     else:
@@ -320,6 +436,8 @@ lekvar.FunctionType.emitType = FunctionType_emitType
 #
 # class ExternalFunction
 #
+
+lekvar.ExternalFunction.llvm_closure_type = None
 
 def ExternalFunction_emit(self):
     if self.llvm_value is not None: return
@@ -340,6 +458,10 @@ lekvar.ExternalFunction.emitValue = ExternalFunction_emitValue
 def Method_emit(self):
     if self.llvm_value is not None: return
 
+    if isinstance(self.bound_context.scope, lekvar.Class):
+        self.bound_context.scope.emit()
+    self.llvm_value = 0
+
     for overload in self.overload_context.children.values():
         overload.emit()
 lekvar.Method.emit = Method_emit
@@ -356,10 +478,14 @@ def Class_emit(self):
     var_types = []
     for child in self.instance_context.children.values():
         if isinstance(child, lekvar.Variable):
-            child.llvm_value = len(var_types)
+            child.llvm_context_index = len(var_types)
             var_types.append(child.type.emitType())
 
     self.llvm_type = llvm.Struct.new(var_types, False)
+
+    for child in self.instance_context.children.values():
+        child.emit()
+
 lekvar.Class.emit = Class_emit
 
 def Class_emitType(self):

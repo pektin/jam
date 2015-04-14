@@ -283,6 +283,7 @@ class DependentType(Type):
 
 class Function(BoundObject):
     local_context = None
+    closed_context = None
 
     arguments = None
     instructions = None
@@ -295,6 +296,7 @@ class Function(BoundObject):
         super().__init__(name)
 
         self.local_context = Context(self, arguments)
+        self.closed_context = Context(self, [])
 
         self.arguments = arguments
         self.instructions = instructions
@@ -467,7 +469,7 @@ class Method(BoundObject):
                 overload.verify()
 
     def resolveType(self):
-        return MethodType(self.name, [fn.resolveType() for fn in self.overloads])
+        return MethodType(self.name, [fn.resolveType() for fn in self.overload])
 
     def resolveCall(self, call:FunctionType):
         matches = []
@@ -519,7 +521,13 @@ class Class(Type):
         for name, overload in self.constructor.overload_context.children.items():
             self.constructor.overload_context.children[name] = Constructor(overload, self)
             self.constructor.overload_context.children[name].bound_context = self.constructor.overload_context
+            self.constructor.overload_context.children[name].closed_context.addChild(Variable("self", self))
         self.instance_context.fakeChild(self.constructor)
+
+        for child in self.instance_context.children.values():
+            if isinstance(child, Method):
+                for overload in child.overload_context.children.values():
+                    overload.closed_context.addChild(Variable("self", self))
 
     def copy(self):
         return Class(self.name, copy(self.constructor), list(map(copy, self.constructor.overload_context.children.values())))
