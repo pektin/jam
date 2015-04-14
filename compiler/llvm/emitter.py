@@ -385,7 +385,7 @@ def Function_emitPreContext(self):
 lekvar.Function.emitPreContext = Function_emitPreContext
 
 def Function_emitContext(self):
-    pass
+    raise InternalError("Not Implemented")
 lekvar.Function.emitContext = Function_emitContext
 
 #
