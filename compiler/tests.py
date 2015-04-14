@@ -37,9 +37,7 @@ for file in os.listdir(TESTS_PATH):
 
             # Check if the output was correct
             if type == "#":
-                compile(f_in, f_out)
-                f_out.close()
-                assert output == check_output(["lli", build]).decode("UTF-8")
+                assert output == compileRun(f_in, f_out)
             # Check if the correct exception was thrown
             elif type == "!":
                 with pytest.raises(getattr(errors, output)):

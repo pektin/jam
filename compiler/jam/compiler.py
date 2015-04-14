@@ -1,6 +1,5 @@
 import logging
 from io import IOBase
-from subprocess import check_output
 
 from . import parser
 from ..lekvar import lekvar
@@ -8,24 +7,34 @@ from ..llvm import emitter as llvm
 from ..llvm.builtins import builtins
 from ..errors import CompilerError
 
-def compileRun(path:str, target:str, logger = logging.getLogger()):
-    compileFile(path, target, logger)
-    return check_output(["lli", target])
+def _compileFunc(func):
+    def f(input, *args):
+        try:
+            return func(input, *args)
+        except CompilerError as err:
+            # Format the error and re-raise
+            input.seek(0)
+            err.format(input.read())
+            raise err
+    return f
 
-def compileFile(path:str, target:str, logger = logging.getLogger()):
-    with open(path, "r") as input, open(target, "w") as output:
-        compile(input, output)
+def _compile(input:IOBase, logger):
+    # Produce lekvar
+    ir = parser.parseFile(input)
+    lekvar.verify(ir, builtins(), logger)
+    # Emit LLVM
+    return llvm.emit(ir, logger)
 
+@_compileFunc
+def compileRun(input:IOBase, output:IOBase = None, logger = logging.getLogger()):
+    module = _compile(input, logger)
+    if output is not None:
+        print(llvm.compile(module))
+        output.write(llvm.compile(module).decode("UTF-8"))
+    return llvm.run(module).decode("UTF-8")
+
+@_compileFunc
 def compile(input:IOBase, output:IOBase, logger = logging.getLogger()):
-    try:
-        # Produce lekvar
-        ir = parser.parseFile(input)
-        lekvar.verify(ir, builtins(), logger)
-        # Emit LLVM
-        output.write(llvm.emit(ir, logger).decode("UTF-8"))
-    except CompilerError as err:
-        # Format the error and re-raise
-        input.seek(0)
-        err.format(input.read())
-        raise err
+    output.write(llvm.compile(_compile(input, logger)).decode("UTF-8"))
+
 

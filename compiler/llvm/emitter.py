@@ -1,7 +1,10 @@
+import os
 import logging
+import tempfile
 from contextlib import contextmanager
 from functools import partial
 from abc import abstractmethod as abstract
+from subprocess import check_output
 
 from ..lekvar import lekvar
 from ..errors import *
@@ -17,7 +20,21 @@ def emit(module:lekvar.Module, logger = logging.getLogger()):
         module.emit()
 
     State.logger.info("LLVM output: {}".format(State.module.verify(llvm.FailureAction.PrintMessageAction, None)))
-    return State.module.toString()
+    return State.module
+
+def compile(module:llvm.Module):
+    return module.toString()
+
+def run(module:llvm.Module):
+    #TODO: Do this properly
+    with tempfile.NamedTemporaryFile("wb", delete=False) as f:
+        f.write(compile(module))
+        f.flush()
+
+    try:
+        return check_output(["lli", f.name])
+    finally:
+        os.remove(f.name)
 
 class State:
     @classmethod
