@@ -50,7 +50,7 @@ def main():
     logging.basicConfig(level=logging.WARNING - args.verbose*10, stream=sys.stdout)
 
     with args.input, output:
-        print(compile(args.input, output))
+        print(compile(args.input, output), end="")
 
 if __name__ == "__main__":
     main()
