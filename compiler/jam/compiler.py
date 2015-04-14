@@ -29,7 +29,6 @@ def _compile(input:IOBase, logger):
 def compileRun(input:IOBase, output:IOBase = None, logger = logging.getLogger()):
     module = _compile(input, logger)
     if output is not None:
-        print(llvm.compile(module))
         output.write(llvm.compile(module).decode("UTF-8"))
     return llvm.run(module).decode("UTF-8")
 

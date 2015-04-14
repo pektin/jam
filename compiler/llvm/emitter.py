@@ -185,7 +185,6 @@ def Variable_emitValue(self, value=None):
     self.emit()
 
     if self.llvm_context_index >= 0:
-        print(self.name)
         if value is None:
             value = State.builder.structGEP(State.self, 0, State.getTempName())
         return State.builder.load(State.builder.structGEP(value, self.llvm_context_index, State.getTempName()), State.getTempName())
