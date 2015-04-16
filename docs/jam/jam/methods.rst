@@ -13,6 +13,10 @@ arguments. Input to a method must match exactly one overload.
 A method may be defined with a name or anonymously. To overload a method the
 same name must be used for each definition in the same scope.
 
+Unlike most other compiled languages, Jam allows you to leave out the type of
+arguments. Where no argument type is defined, any parameter with a type that
+matches the unspecified type's usage is valid.
+
 At any point in the method a return statement may be made to cause the method
 to complete and take the given value as the output of the method call. When
 the return value of a method is explicitly defined, all possible execution paths
