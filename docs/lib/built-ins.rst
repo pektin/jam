@@ -46,15 +46,23 @@ Types
 Integer Types
 -------------
 
-Types specifically used to represent integer numbers.
+Types specifically used to represent integer numbers. Each type supports the
+standard set of operations, excluding normal division.
+
+In general, every integer can be implicitly cast to another, if said integer's
+maximum and minimum value has a possible representation in the other type. For
+instance, a Int8 can be implicitly cast to an Int16,  but a UInt8 cannot.
 
 `class Int`
     Generic integer class that dynamically expands to larger sizes when needed.
-    This class is slower, but in return has no limit in size.
+    This class is less performant, but in return has no limit in size. Use this
+    class when performance is non-critical and/or the size of the integer is
+    indeterminate at compile time.
 
 `class UInt`
     Generic unsigned integer class that dynamically expands to larger sizes
-    when needed. This class is slower, but in return has not limit in size.
+    when needed. This class is less performant, but in return has not limit in
+    size. Use this class when performance is non-critical and/or the size of the integer is indeterminate at compile time.
 
 `class Int8`
     A 8 bit integer class. Has a range of −128 to 127.
@@ -93,12 +101,15 @@ Types specifically used to represent integer numbers.
 
 `class Size`
     A unsigned integer class, whose maximal value is always larger or equal to
-    the maximal memory address of the running system.
+    the maximal memory address of the running system. On 32bit operating
+    systems this is identical to UInt32, while on 64bit it is identical to
+    UInt64.
 
 Real Types
 ----------
 
-Types specifically used to represent real numbers.
+Types specifically used to represent real numbers. These classes support all
+standard operations except for integer division.
 
 `class Real`
     Generic real number class with arbitrary precision.
@@ -110,15 +121,12 @@ Types specifically used to represent real numbers.
     A 32 bit IEEE floating point value.
 
 `class Float64`
-    A 32 bit IEEe floating point value.
+    A 64 bit IEEE floating point value.
 
 Character Types
 ---------------
 
 Types specifically used to represent characters in memory.
-
-`class Char`
-    A single 8 bit character.
 
 `class String`
     A array of characters in a specific format. Supported formats are ASCII,
