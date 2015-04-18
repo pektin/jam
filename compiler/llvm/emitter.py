@@ -53,7 +53,7 @@ class State:
         entry = main.appendBlock("entry")
         with cls.blockScope(entry):
             for func in cls.main:
-                call = lekvar.Call("", [])
+                call = lekvar.Call(func, [])
                 call.function = func
                 call.emitValue()
 
@@ -82,7 +82,7 @@ class State:
 
 
 def main_call(func:lekvar.Function):
-    call = lekvar.Call("", [])
+    call = lekvar.Call(func, [])
     call.function = func
     return call
 
@@ -102,6 +102,10 @@ lekvar.Function.llvm_return = None
 #    pass
 #lekvar.Type.emitType = Type_emitType
 #lekvar.Type.llvm_type = None
+
+def Object_emitContext(self):
+    return None
+lekvar.Object.emitContext = Object_emitContext
 
 #
 # Tools
@@ -150,6 +154,10 @@ def Attribute_emitValue(self):
     self.attribute.bound_context.scope.emit()
     return self.attribute.emitValue(self.value.emitAssignment())
 lekvar.Attribute.emitValue = Attribute_emitValue
+
+def Attribute_emitContext(self):
+    return self.value.emitValue()
+lekvar.Attribute.emitContext = Attribute_emitContext
 
 #
 # class Literal
@@ -236,13 +244,11 @@ lekvar.Module.emit = Module_emit
 
 def Call_emitValue(self):
     called = self.function.emitValue()
+    context = self.called.emitContext() or self.function.emitContext()
 
-    if isinstance(self.function, lekvar.Function):
-        if len(self.function.closed_context.children):
-            arguments = [self.function.emitContext()]
-        else:
-            context_type = self.function.llvm_closure_type or llvm.Int.new(8)
-            arguments = [llvm.Value.null(context_type)]
+    if context is not None:
+        context = self.function.emitContext(context)
+        arguments = [context]
     else:
         arguments = []
     arguments += [val.emitValue() for val in self.values]
@@ -255,6 +261,7 @@ def Call_emitValue(self):
         name = ""
     else:
         name = State.getTempName()
+
     return State.builder.call(called, arguments, name)
 lekvar.Call.emitValue = Call_emitValue
 
@@ -383,8 +390,13 @@ def Function_emitPreContext(self):
     pass
 lekvar.Function.emitPreContext = Function_emitPreContext
 
-def Function_emitContext(self):
-    raise InternalError("Not Implemented")
+def Function_emitContext(self, self_value = None):
+    if self_value is not None and len(self.closed_context.children) > 0:
+        context = State.builder.alloca(self.llvm_closure_type, State.getTempName())
+        self_ptr = State.builder.structGEP(context, 0, State.getTempName())
+        State.builder.store(self_value, self_ptr)
+        return State.builder.load(context, State.getTempName())
+    return llvm.Value.null(self.llvm_closure_type)
 lekvar.Function.emitContext = Function_emitContext
 
 #
@@ -408,8 +420,7 @@ def Constructor_emitReturn(self):
     State.builder.ret(value)
 lekvar.Constructor.emitReturn = Constructor_emitReturn
 
-def Constructor_emitContext(self):
-    self.emit()
+def Constructor_emitContext(self, self_value = None):
     return llvm.Value.null(self.llvm_closure_type)
 lekvar.Constructor.emitContext = Constructor_emitContext
 
