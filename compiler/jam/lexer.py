@@ -10,7 +10,13 @@ from ..errors import *
 
 Tokens = Enum("Tokens", [
     "comment",
+
     "identifier",
+    "def_kwd",
+    "end_kwd",
+    "return_kwd",
+    "class_kwd",
+
     "string",
     "newline",
     "group_start",
@@ -19,10 +25,9 @@ Tokens = Enum("Tokens", [
     "dot",
     "comma",
     "equal",
-    "def_kwd",
-    "end_kwd",
-    "return_kwd",
-    "class_kwd",
+
+    "plus",
+    "minus",
 ])
 
 COMMENT_CHAR = "#"
@@ -39,6 +44,10 @@ DIRECT_MAP = {
     ",": Tokens.comma,
     "=": Tokens.equal,
     ".": Tokens.dot,
+
+    "+": Tokens.plus,
+    "-": Tokens.minus,
+
     "def": Tokens.def_kwd,
     "end": Tokens.end_kwd,
     "return": Tokens.return_kwd,

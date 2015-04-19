@@ -5,7 +5,7 @@ from . import lexer
 def test_lekxer():
     test = """# def:end )=
 def :def_end=  (=return()     #
-defend end"""
+defend+_- end"""
     # Expected output token types
     expected = [
         lexer.Tokens.comment,
@@ -24,6 +24,9 @@ defend end"""
         lexer.Tokens.newline,
 
         lexer.Tokens.identifier,
+        lexer.Tokens.plus,
+        lexer.Tokens.identifier,
+        lexer.Tokens.minus,
         lexer.Tokens.end_kwd,
     ]
     with StringIO(test) as input:
