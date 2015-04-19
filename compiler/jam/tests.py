@@ -11,24 +11,24 @@ defend end"""
         lexer.Tokens.comment,
         lexer.Tokens.newline,
 
-        lexer.Tokens.keyword,
+        lexer.Tokens.def_kwd,
         lexer.Tokens.typeof,
         lexer.Tokens.identifier,
         lexer.Tokens.equal,
         lexer.Tokens.group_start,
         lexer.Tokens.equal,
-        lexer.Tokens.keyword,
+        lexer.Tokens.return_kwd,
         lexer.Tokens.group_start,
         lexer.Tokens.group_end,
         lexer.Tokens.comment,
         lexer.Tokens.newline,
 
         lexer.Tokens.identifier,
-        lexer.Tokens.keyword,
+        lexer.Tokens.end_kwd,
     ]
     with StringIO(test) as input:
         lex = lexer.Lexer(input).lex
-
         # Check if the lexed output equals the expected
         for output in expected:
+            print(1)
             assert lex().type == output

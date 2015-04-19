@@ -11,7 +11,6 @@ from ..errors import *
 Tokens = Enum("Tokens", [
     "comment",
     "identifier",
-    "keyword",
     "string",
     "newline",
     "group_start",
@@ -19,7 +18,11 @@ Tokens = Enum("Tokens", [
     "typeof",
     "dot",
     "comma",
-    "equal"
+    "equal",
+    "def_kwd",
+    "end_kwd",
+    "return_kwd",
+    "class_kwd",
 ])
 
 COMMENT_CHAR = "#"
@@ -28,12 +31,6 @@ WYSIWYG_STRING_CHAR = "`"
 WHITESPACE = set(" \t")
 WORD_CHARACTERS = set(string.ascii_letters + "_")
 WORD_CHARACTERS_AFTER = WORD_CHARACTERS | set(string.digits)
-KEYWORDS = {
-    "def",
-    "end",
-    "return",
-    "class",
-}
 DIRECT_MAP = {
     "\n": Tokens.newline,
     "(": Tokens.group_start,
@@ -42,6 +39,10 @@ DIRECT_MAP = {
     ",": Tokens.comma,
     "=": Tokens.equal,
     ".": Tokens.dot,
+    "def": Tokens.def_kwd,
+    "end": Tokens.end_kwd,
+    "return": Tokens.return_kwd,
+    "class": Tokens.class_kwd,
 }
 
 #
@@ -132,8 +133,8 @@ class Lexer:
             self.next()
 
         # Return specific keyword tokens if the identifier matches a keyword
-        if name in KEYWORDS:
-            return Token(Tokens.keyword, start, self.pos, name)
+        if name in DIRECT_MAP:
+            return Token(DIRECT_MAP[name], start, self.pos)
         else:
             return Token(Tokens.identifier, start, self.pos, name)
 

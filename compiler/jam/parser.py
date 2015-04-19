@@ -100,9 +100,8 @@ class Parser:
 
         if token.type == Tokens.comment:
             return lekvar.Comment(self.next().data)
-        elif token.type == Tokens.keyword:
-            if token.data == "return":
-                return self.parseReturn()
+        elif token.type == Tokens.return_kwd:
+            return self.parseReturn()
         elif token.type == Tokens.identifier:
             if self.lookAhead(2).type == Tokens.equal:
                 return self.parseAssignment()
@@ -135,11 +134,10 @@ class Parser:
             raise SyntaxError("Expected value before EOF")
 
         # Identify the kind of value
-        if token.type == Tokens.keyword:
-            if token.data == "def":
-                return self.parseMethod()
-            elif token.data == "class":
-                return self.parseClass()
+        if token.type == Tokens.def_kwd:
+            return self.parseMethod()
+        elif token.type == Tokens.class_kwd:
+            return self.parseClass()
         elif token.type == Tokens.identifier:
             return lekvar.Reference(self.next().data)
         elif token.type == Tokens.string:
@@ -150,7 +148,7 @@ class Parser:
 
     def parseMethod(self):
         # "def" should have already been identified
-        assert self.next().data == "def"
+        assert self.next().type == Tokens.def_kwd
 
         name = self.expect()
 
@@ -202,10 +200,9 @@ class Parser:
             if token is None:
                 raise SyntaxError("Expected 'end' before EOF")
 
-            if token.type == Tokens.keyword:
-                if token.data == "end":
-                    self.next()
-                    break
+            if token.type == Tokens.end_kwd:
+                self.next()
+                break
             instructions.append(self.parseLine())
 
         # Create method with default arguments
@@ -240,7 +237,7 @@ class Parser:
 
     def parseClass(self):
         # class should have already been identified
-        assert self.next().data == "class"
+        assert self.next().type == Tokens.class_kwd
 
         name = self.expect()
 
@@ -251,16 +248,15 @@ class Parser:
             token = self.strip()
             if token is None:
                 raise SyntaxError("Expected 'end' before EOF")
-            elif token.type == Tokens.keyword:
-                if token.data == "end":
-                    self.next()
-                    break
-                elif token.data == "def":
-                    meth = self.parseMethod()
-                    if meth.name == "new":
-                        constructor = meth
-                    else:
-                        attributes.append(meth)
+            elif token.type == Tokens.end_kwd:
+                self.next()
+                break
+            elif token.type == Tokens.def_kwd:
+                meth = self.parseMethod()
+                if meth.name == "new":
+                    constructor = meth
+                else:
+                    attributes.append(meth)
             elif token.type == Tokens.identifier:
                 attributes.append(self.parseVariable())
             else:
