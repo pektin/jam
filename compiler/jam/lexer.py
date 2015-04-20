@@ -17,6 +17,7 @@ Tokens = Enum("Tokens", [
     "return_kwd",
     "class_kwd",
     "as_kwd",
+    "module_kwd",
 
     "string",
     "newline",
@@ -54,6 +55,7 @@ DIRECT_MAP = {
     "return": Tokens.return_kwd,
     "class": Tokens.class_kwd,
     "as": Tokens.as_kwd,
+    "module": Tokens.module_kwd,
 }
 
 #

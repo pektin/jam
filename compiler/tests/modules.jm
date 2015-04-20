@@ -1,0 +1,18 @@
+?#foo\nbar\nfoo\n
+
+module foo
+    module bar
+        def puts()
+            foo.puts()
+            print("bar")
+        end
+    end
+
+    def puts()
+        print("foo")
+    end
+end
+
+foo.bar.puts()
+foo.puts()
+

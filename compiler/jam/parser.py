@@ -10,7 +10,7 @@ from .lexer import Lexer, Tokens
 #
 
 def parseFile(source:IOBase, logger=logging.getLogger()):
-    return Parser(Lexer(source), logger).parseModule()
+    return Parser(Lexer(source), logger).parseModule(False)
 
 #
 # Parser
@@ -62,11 +62,27 @@ class Parser:
             self._unexpected(token)
         return token.data
 
-    def parseModule(self):
+    def parseModule(self, inline = True):
+
+        if inline:
+            assert self.next().type == Tokens.module_kwd
+
+            module_name = self.expect()
+        else:
+            module_name = "main"
+
         children = {}
         instructions = []
 
         while True:
+            # Check for end_kwd
+            if inline:
+                token = self.strip()
+                if token is None: break
+                elif token.type == Tokens.end_kwd:
+                    self.next()
+                    break
+
             value = self.parseLine()
 
             # EOF escape
@@ -88,8 +104,8 @@ class Parser:
                 # Other values are added as instructions
                 instructions.append(value)
 
-        return lekvar.Module("main", list(children.values()),
-               lekvar.Function("main", [], instructions, None))
+        return lekvar.Module(module_name, list(children.values()),
+               lekvar.Function("", [], instructions, None))
 
     def parseLine(self):
         # Parse a line. The line may not exist
@@ -138,6 +154,8 @@ class Parser:
             return self.parseMethod()
         elif token.type == Tokens.class_kwd:
             return self.parseClass()
+        elif token.type == Tokens.module_kwd:
+            return self.parseModule()
         elif token.type == Tokens.identifier:
             return lekvar.Reference(self.next().data)
         elif token.type == Tokens.string:
