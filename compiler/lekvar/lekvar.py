@@ -377,12 +377,6 @@ class ExternalFunction(BoundObject):
 
     resolveCall = Function.resolveCall
 
-    def children(self):
-        return {}
-
-    def addChild(self, child:BoundObject):
-        raise InternalError("Not Implemented")
-
     def __repr__(self):
         return "{}({}->{}):{}".format(self.__class__.__name__, self.name, self.external_name, self.type)
 
