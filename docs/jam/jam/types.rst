@@ -42,11 +42,13 @@ Syntax
 
 .. productionlist::
     Type: (`Identifier` | `ArrayType` | `DictType` | `Class`)["?"]
-    ArrayType: `Type` "[" ( [`Integer`] "," )* [`Integer`] "]"
-    DictType: "{" `Type` "->" `Type` "}"
+    ArrayType: "[" `Type` [ ";" `Integer` ] "]"
+    DictType: "{" [`Type`] "->" [`Type`] "}"
     InstanceVariable: `Variable` ["=" `Value`]
-    ClassConstructor:
-    ClassInstructionSet: (`InstanceVariable` | `Assignment` | `Method` | `TypeCastDef` | `TemplateInclude`
+    ClassConstructor: "new" [`Identifier`] "(" [ [`Argument` ","]* `Argument` ] ")"
+                    :     `InstructionSet`
+                    : "end"
+    ClassInstructionSet: (`ClassConstructor` | `InstanceVariable` | `Assignment` | `Method` | `TypeCastDef` | `TemplateInclude`
                        : )*
     Class: "class" `Identifier` ["?"] [ "(" `Identifier` ")" ]
          :     `ClassInstructionSet`
