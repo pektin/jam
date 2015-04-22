@@ -11,4 +11,4 @@ Values may be used as input for instructions or other values. Values may have
 side effects.
 
 .. productionlist::
-    Value: `Identifier` | `Literal` | `Method` | `Class` | `TypeCast` | `Attribute` | `Operation` | `Template`
+    Value: `Identifier` | `Literal` | `Method` | `Class` | `TypeCast` | `Attribute` | `Operation` | `Template` | `ArrayValue`

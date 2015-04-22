@@ -42,7 +42,6 @@ Syntax
 
 .. productionlist::
     Type: (`Identifier` | `ArrayType` | `DictType` | `Class`)["?"]
-    ArrayType: "[" `Type` [ ";" `Integer` ] "]"
     DictType: "{" [`Type`] "->" [`Type`] "}"
     InstanceVariable: `Variable` ["=" `Value`]
     ClassConstructor: "new" [`Identifier`] "(" [ [`Argument` ","]* `Argument` ] ")"

@@ -23,6 +23,7 @@ The Jam Language Reference describes the syntax, grammar and compilation of Jam.
     jam/methods
     jam/types
     jam/type-casting
+    jam/arrays
     jam/templates
     jam/unittests
 
