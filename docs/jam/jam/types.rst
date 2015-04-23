@@ -48,7 +48,7 @@ Syntax
                     : "end"
     ClassInstructionSet: (`ClassConstructor` | `InstanceVariable` | `Assignment` | `Method` | `TypeCastDef` | `TemplateInclude`
                        : )*
-    Class: "class" `Identifier` ["?"] [ "(" `Identifier` ")" ]
+    Class: [`Visibility`] "class" `Identifier` ["?"] [ "(" `Identifier` ")" ]
          :     `ClassInstructionSet`
          : "end"
 

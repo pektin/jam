@@ -11,4 +11,4 @@ Syntax
 ======
 
 .. productionlist::
-    Variable: `Identifier` ":" `Type`
+    Variable: [`Visibility`] `Identifier` [":" `Type`]

@@ -29,7 +29,7 @@ Syntax
     MethodInstructionSet: `InstructionSet` | ("return" [`Value`]
                         : )
     Argument: `Variable` ["=" `Value`]
-    Method: "def" `Identifier` "(" [ [`Argument` ","]* `Argument` ] ")" [ ":" `Type` ]
+    Method: [`Visibility`] "def" `Identifier` "(" [ [`Argument` ","]* `Argument` ] ")" [ ":" `Type` ]
           :     `InstructionSet`
           : "end"
 
