@@ -1,0 +1,13 @@
+?#foo\n
+
+class Addable
+    def new()
+    end
+
+    def self + other:String
+        print(other)
+    end
+end
+
+a = Addable()
+a + "foo"
