@@ -782,6 +782,18 @@ class Attribute(Type):
         if self.attribute is None:
             raise MissingReferenceError("{} does not have an attribute {}".format(self.value, self.reference))
 
+    @property
+    def local_context(self):
+        return self.attribute.local_context
+
+    @property
+    def global_context(self):
+        return self.attribute.global_context
+
+    @property
+    def instance_context(self):
+        return self.attribute.instance_context
+
     def resolveType(self):
         return self.attribute.resolveType()
 
