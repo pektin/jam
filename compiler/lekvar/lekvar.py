@@ -218,7 +218,7 @@ class Module(BoundObject):
             self.context.verify()
 
     def resolveType(self):
-        raise InternalError("Not Implemented")
+        return ModuleType(self)
 
     @property
     def local_context(self):
@@ -230,6 +230,24 @@ class Module(BoundObject):
 
     def __repr__(self):
         return "{}({})<{}>[{}]".format(self.__class__.__name__, self.name, self.main, self.context)
+
+class ModuleType(Type):
+    module = None
+
+    def __init__(self, module:Module):
+        self.module = module
+
+    def copy(self):
+        return ModuleType(copy(self.module))
+
+    def verify(self):
+        self.module.verify()
+
+    def resolveType(self):
+        raise InternalError("Not Implemented")
+
+    def checkCompatibility(self, other:Type):
+        return other.module is self.module
 
 #
 # Dependent Type
