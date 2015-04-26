@@ -29,7 +29,7 @@ Syntax
     MethodInstructionSet: `InstructionSet` | ("return" [`Value`]
                         : )
     Argument: `Variable` ["=" `Value`]
-    Method: [`Visibility`] "def" `Identifier` "(" [ [`Argument` ","]* `Argument` ] ")" [ ":" `Type` ]
+    Method: [`Visibility`] "def" `Identifier` "(" [ [`Argument` ","]* `Argument` ] ")" [ "->" `Type` ]
           :     `InstructionSet`
           : "end"
 
@@ -39,7 +39,11 @@ Examples
 
 ::
 
-    def double(x)
+    def double(x:Float) -> Float
+        return x * 2
+    end
+
+    def double(x) -> Int
         return x * 2
     end
 
