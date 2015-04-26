@@ -133,7 +133,7 @@ class Lexer:
             comment += self.current
             self.next()
 
-        return Token(Tokens.comment, start, self.pos, comment)
+        return Token(Tokens.comment, start, self.pos - 1, comment)
 
     # Lex an identifier
     def identifier(self):
@@ -147,9 +147,9 @@ class Lexer:
 
         # Return specific keyword tokens if the identifier matches a keyword
         if name in DIRECT_MAP:
-            return Token(DIRECT_MAP[name], start, self.pos)
+            return Token(DIRECT_MAP[name], start, self.pos - 1)
         else:
-            return Token(Tokens.identifier, start, self.pos, name)
+            return Token(Tokens.identifier, start, self.pos - 1, name)
 
     # Lex a string
     def string(self):
@@ -175,4 +175,4 @@ class Lexer:
         # Evaluate string escapes
         contents = contents.encode("UTF-8").decode("unicode-escape")
 
-        return Token(Tokens.string, start, self.pos, contents)
+        return Token(Tokens.string, start, self.pos - 1, contents)
