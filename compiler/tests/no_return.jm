@@ -1,6 +1,6 @@
 !SemanticError
 
-def noReturn():String
+def noReturn() -> String
 end
 
 print(noReturn())

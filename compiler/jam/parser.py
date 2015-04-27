@@ -206,7 +206,7 @@ class Parser:
             else:
                 self.next()
 
-        return_type = self.parseTypeSig()
+        return_type = self.parseTypeSig(Tokens.returns)
 
 
         # Parse instructions
@@ -290,8 +290,8 @@ class Parser:
         return lekvar.Variable(name, type)
 
     # Parse an optional type signature
-    def parseTypeSig(self):
-        if self.lookAhead().type != Tokens.typeof:
+    def parseTypeSig(self, typeof = Tokens.typeof):
+        if self.lookAhead().type != typeof:
             return None
         self.next()
 

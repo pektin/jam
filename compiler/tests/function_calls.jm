@@ -1,6 +1,6 @@
 #1\n2\n
 
-def reprint(one:String, two:String)
+def reprint(one:String, two:String) -> String
     print(one)
     return two
     print("3")

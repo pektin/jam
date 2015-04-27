@@ -1,6 +1,6 @@
 ?#HelloWorld\n
 
-def reprint(one:String):String
+def reprint(one:String) -> String
     return one
 end
 
