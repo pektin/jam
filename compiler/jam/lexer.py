@@ -130,6 +130,9 @@ for value, token_type in DIRECT_MAP:
     node.token_type = token_type
 
 # Identifiers
+WORD_CHARACTERS = set(string.ascii_letters + "_")
+WORD_CHARACTERS_AFTER = WORD_CHARACTERS | set(string.digits)
+
 node = Node(token_type=Tokens.identifier)
 TREE.links.append((node, lambda c: c in WORD_CHARACTERS))
 end_node = Node(token_type=Tokens.identifier)
