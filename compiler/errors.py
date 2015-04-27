@@ -5,7 +5,7 @@ class CompilerError(Exception):
     # A compiler error takes a single error message and a list of tokens.
     # When displayed, the error will contain the specified message along with
     # nicely formatted source code extracts, highlighting the specified tokens
-    def __init__(self, err, tokens = []):
+    def __init__(self, err = "", tokens = []):
         super().__init__(err)
         self.tokens = tokens
 
