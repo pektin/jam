@@ -8,6 +8,36 @@ from ..errors import *
 # Constants
 #
 
+Node = None
+class Node:
+    links = None
+    token_type = None
+    verify = None
+
+    def __init__(self, links:[(Node, "func"),] = None, token_type = None, verify = None):
+        links = links or []
+        self.links = links
+        self.token_type = token_type
+        self.verify = verify
+
+    def evaluate(self, character):
+        out = []
+        for target, condition in self.links:
+            if condition(character):
+                out.append(target)
+        return out
+
+    def getToken(self, start, stop, value):
+        if self.verify is not None:
+            value = self.verify(value)
+
+        if self.token_type is not None:
+            return Token(self.token_type, start, stop, value)
+        return None
+
+    def __repr__(self):
+        return "Node(token:{})".format(self.token_type, self.links)
+
 Tokens = Enum("Tokens", [
     "comment",
 
@@ -25,6 +55,7 @@ Tokens = Enum("Tokens", [
     "group_start",
     "group_end",
     "typeof",
+    "returns",
     "dot",
     "comma",
     "equal",
@@ -33,32 +64,77 @@ Tokens = Enum("Tokens", [
     "minus",
 ])
 
-COMMENT_CHAR = "#"
-FORMAT_STRING_CHAR = "\""
-WYSIWYG_STRING_CHAR = "`"
+TREE = Node()
+NEWLINE_CHAR = "\n"
+
+# Ignore whitespace
 WHITESPACE = set(" \t")
-WORD_CHARACTERS = set(string.ascii_letters + "_")
-WORD_CHARACTERS_AFTER = WORD_CHARACTERS | set(string.digits)
-DIRECT_MAP = {
-    "\n": Tokens.newline,
-    "(": Tokens.group_start,
-    ")": Tokens.group_end,
-    ":": Tokens.typeof,
-    ",": Tokens.comma,
-    "=": Tokens.equal,
-    ".": Tokens.dot,
 
-    "+": Tokens.plus,
-    "-": Tokens.minus,
+TREE.links.append((TREE, lambda c: c in WHITESPACE))
 
-    "def": Tokens.def_kwd,
-    "end": Tokens.end_kwd,
-    "return": Tokens.return_kwd,
-    "class": Tokens.class_kwd,
-    "as": Tokens.as_kwd,
-    "module": Tokens.module_kwd,
-    "self": Tokens.self_kwd,
-}
+# Comments
+COMMENT_CHAR = "#"
+
+node = Node(token_type=Tokens.comment)
+TREE.links.append((node, lambda c: c == COMMENT_CHAR))
+node.links.append((node, lambda c: c != NEWLINE_CHAR))
+
+# Strings
+FORMAT_STRING_CHAR = "\""
+
+node = Node()
+TREE.links.append((node, lambda c: c == FORMAT_STRING_CHAR))
+node.links.append((node, lambda c: c != FORMAT_STRING_CHAR))
+end_node = Node(token_type=Tokens.string, verify=lambda s: s[1:-1])
+node.links.append((end_node, lambda c: c == FORMAT_STRING_CHAR))
+
+# WYSIWYG Strings
+WYSIWYG_STRING_CHAR = "`"
+
+node = Node()
+TREE.links.append((node, lambda c: c == WYSIWYG_STRING_CHAR))
+node.links.append((node, lambda c: c != WYSIWYG_STRING_CHAR))
+end_node = Node(token_type=Tokens.string, verify=lambda s: s[1:-1])
+node.links.append((end_node, lambda c: c == WYSIWYG_STRING_CHAR))
+
+# Direct maps
+# Must be ordered by length for duplicated characters
+DIRECT_MAP = [
+    ("+", Tokens.plus),
+    ("-", Tokens.minus),
+
+    ("\n", Tokens.newline),
+    ("(", Tokens.group_start),
+    (")", Tokens.group_end),
+    (":", Tokens.typeof),
+    ("->", Tokens.returns),
+    (",", Tokens.comma),
+    ("=", Tokens.equal),
+    (".", Tokens.dot),
+
+    ("def", Tokens.def_kwd),
+    ("end", Tokens.end_kwd),
+    ("return", Tokens.return_kwd),
+    ("class", Tokens.class_kwd),
+    ("as", Tokens.as_kwd),
+    ("module", Tokens.module_kwd),
+    ("self", Tokens.self_kwd),
+]
+
+for value, token_type in DIRECT_MAP:
+    node = TREE
+    for char in value:
+        next_node = Node()
+        node.links.append((next_node, lambda c, char=char: c == char))
+        node = next_node
+    node.token_type = token_type
+
+# Identifiers
+node = Node(token_type=Tokens.identifier)
+TREE.links.append((node, lambda c: c in WORD_CHARACTERS))
+end_node = Node(token_type=Tokens.identifier)
+node.links.append((end_node, lambda c: c in WORD_CHARACTERS_AFTER))
+end_node.links.append((end_node, lambda c: c in WORD_CHARACTERS_AFTER))
 
 #
 # Lexer
@@ -97,84 +173,47 @@ class Lexer:
     # Lexing Methods
     #
 
-    # Lex a single token
     def lex(self):
-        # Ignore whitespace
-        while self.current in WHITESPACE:
+        l = self._lex()
+        print(l)
+        return l
+
+    # Lex a single token
+    def _lex(self):
+        token_start = self.pos
+        token_data = ""
+        current_nodes = [TREE]
+
+        while True:
+            if self.current is not None:
+                next_nodes = []
+                for node in current_nodes:
+                    next_nodes += node.evaluate(self.current)
+            else:
+                next_nodes = []
+
+            print(repr(self.current), next_nodes)
+
+            if len(next_nodes) == 0:
+                if len(current_nodes) > 0:
+                    return self.outputNode(current_nodes[0], token_start, token_data)
+                raise InternalError()
+            elif len(next_nodes) == 1 and next_nodes[0] is TREE:
+                # Restart
+                token_start = self.pos
+                token_data = ""
+                current_nodes = [TREE]
+            else:
+                token_data += self.current
             self.next()
 
-        # Identify the kind of token
-        if self.current == COMMENT_CHAR:
-            return self.comment()
+            current_nodes = next_nodes
+        return None
 
-        elif self.current in WORD_CHARACTERS:
-            return self.identifier()
-
-        elif self.current in [FORMAT_STRING_CHAR, WYSIWYG_STRING_CHAR]:
-            return self.string()
-        # Directly map a single character to a token
-        elif self.current in DIRECT_MAP:
-            pos = self.pos
-            cu = self.current
-            self.next()
-            return Token(DIRECT_MAP[cu], pos - 1, pos)
-
-        elif self.current == "":
+    def outputNode(self, node, start, data):
+        if node.token_type is not None:
+            return node.getToken(start, self.pos - 1, data)
+        elif node is TREE and not self.current:
             return None
-
         else:
             raise SyntaxError("Unexpected Character '{}'".format(self.current))
-
-    # Lex a comment
-    def comment(self):
-        start = self.pos - 1
-
-        # Continue until the end of the line
-        comment = ""
-        while self.current != "\n":
-            comment += self.current
-            self.next()
-
-        return Token(Tokens.comment, start, self.pos - 1, comment)
-
-    # Lex an identifier
-    def identifier(self):
-        start = self.pos - 1
-
-        # Continue until a non-word character is encountered
-        name = ""
-        while self.current in WORD_CHARACTERS_AFTER:
-            name += self.current
-            self.next()
-
-        # Return specific keyword tokens if the identifier matches a keyword
-        if name in DIRECT_MAP:
-            return Token(DIRECT_MAP[name], start, self.pos - 1)
-        else:
-            return Token(Tokens.identifier, start, self.pos - 1, name)
-
-    # Lex a string
-    def string(self):
-        start = self.pos - 1
-
-        # Get the string type
-        quote = self.current
-        self.next()
-
-        # Continue until the end quote
-        contents = ""
-        while self.current != quote:
-            contents += self.current
-            self.next()
-
-            # Enforce that strings end before EOF
-            if not self.current:
-                raise SyntaxError("Expected '{}' before EOF").format(quote)
-
-        # Ignore the last quote
-        self.next()
-
-        # Evaluate string escapes
-        contents = contents.encode("UTF-8").decode("unicode-escape")
-
-        return Token(Tokens.string, start, self.pos - 1, contents)
