@@ -192,7 +192,8 @@ class Lexer:
             if len(next_nodes) == 0:
                 if len(current_nodes) > 0:
                     return self.outputNode(current_nodes[0], token_start, token_data)
-                raise InternalError()
+                raise InternalError("Zero current nodes in lex tree.")
+
             elif len(next_nodes) == 1 and next_nodes[0] is TREE:
                 # Restart
                 token_start = self.pos
@@ -211,4 +212,4 @@ class Lexer:
         elif node is TREE and not self.current:
             return None
         else:
-            raise SyntaxError("Unexpected Character '{}'".format(self.current))
+            raise SyntaxError("Unexpected Character '{}'".format(self.current), [Token(None, self.pos - 1, self.pos, self.current)])
