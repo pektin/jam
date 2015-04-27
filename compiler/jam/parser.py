@@ -16,6 +16,11 @@ def parseFile(source:IOBase, logger=logging.getLogger()):
 # Parser
 #
 
+OPERATION_TOKENS = {
+    Tokens.plus,
+    Tokens.minus,
+}
+
 class Parser:
     lexer = None
     tokens = None
@@ -136,6 +141,8 @@ class Parser:
                 value = self.parseCall(value)
             elif token.type == Tokens.dot:
                 value = self.parseAttribute(value)
+            elif token.type in OPERATION_TOKENS:
+                value = self.parseOperation(value)
             else:
                 break
 
@@ -164,47 +171,33 @@ class Parser:
 
         self._unexpected(token)
 
+    def parseOperation(self, value):
+        token = self.next()
+        assert token.type in OPERATION_TOKENS
+        operator = token.data
+
+        other = self.parseValue()
+
+        return lekvar.Call(lekvar.Attribute(value, operator), [other])
+
     def parseMethod(self):
         # "def" should have already been identified
         assert self.next().type == Tokens.def_kwd
 
-        name = self.expect()
+        # Check for operation definitions
+        if self.lookAhead().type == Tokens.self_kwd:
+            self.next()
 
-        arguments = []
-        default_values = []
-
-        token = self.lookAhead()
-        if token.type != Tokens.newline and token.type != Tokens.typeof: # Allow for no arguments
             token = self.next()
+            if token.type not in OPERATION_TOKENS:
+                raise SyntaxError("{} is not a valid operation".format(token), [token])
+            name = token.data
 
-            # Arguments start with "("
-            if token.type != Tokens.group_start:
-                self._unexpected(token)
-
-            if self.lookAhead().type != Tokens.group_end: # Allow for no arguments
-
-                # Parse arguments
-                while True:
-                    arguments.append(self.parseVariable())
-
-                    # Parse default arguments
-                    token = self.next()
-                    if token.type == Tokens.equal:
-                        default_values.append(self.parseValue())
-                        token = self.next()
-                    else:
-                        default_values.append(None)
-
-                    # Arguments separated by comma
-                    if token.type == Tokens.comma:
-                        continue
-                    # Arguments end with ")"
-                    elif token.type == Tokens.group_end:
-                        break
-                    else:
-                        self._unexpected(token)
-            else:
-                self.next()
+            arguments = [self.parseVariable()]
+            default_values = [None]
+        else:
+            name = self.expect()
+            arguments, default_values = self.parseMethodArguments()
 
         return_type = self.parseTypeSig(Tokens.returns)
 
@@ -252,6 +245,44 @@ class Parser:
                     raise SyntaxError("Cannot have non-defaulted arguments after defaulted ones")
 
         return lekvar.Method(name, overloads)
+
+    def parseMethodArguments(self):
+        arguments, default_values = [], []
+
+        token = self.lookAhead()
+        if token.type != Tokens.newline and token.type != Tokens.typeof: # Allow for no arguments
+            token = self.next()
+
+            # Arguments start with "("
+            if token.type != Tokens.group_start:
+                self._unexpected(token)
+
+            if self.lookAhead().type != Tokens.group_end: # Allow for no arguments
+
+                # Parse arguments
+                while True:
+                    arguments.append(self.parseVariable())
+
+                    # Parse default arguments
+                    token = self.next()
+                    if token.type == Tokens.equal:
+                        default_values.append(self.parseValue())
+                        token = self.next()
+                    else:
+                        default_values.append(None)
+
+                    # Arguments separated by comma
+                    if token.type == Tokens.comma:
+                        continue
+                    # Arguments end with ")"
+                    elif token.type == Tokens.group_end:
+                        break
+                    else:
+                        self._unexpected(token)
+            else:
+                self.next()
+
+        return arguments, default_values
 
     def parseClass(self):
         # class should have already been identified
