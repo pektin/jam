@@ -33,4 +33,6 @@ defend+_- end"""
         lex = lexer.Lexer(input).lex
         # Check if the lexed output equals the expected
         for output in expected:
-            assert lex().type == output
+            token = lex()
+            assert token is not None
+            assert token.type == output
