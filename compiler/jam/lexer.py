@@ -100,9 +100,6 @@ node.links.append((end_node, lambda c: c == WYSIWYG_STRING_CHAR))
 # Direct maps
 # Must be ordered by length for duplicated characters
 DIRECT_MAP = [
-    ("+", Tokens.plus),
-    ("-", Tokens.minus),
-
     ("\n", Tokens.newline),
     ("(", Tokens.group_start),
     (")", Tokens.group_end),
@@ -111,6 +108,9 @@ DIRECT_MAP = [
     (",", Tokens.comma),
     ("=", Tokens.equal),
     (".", Tokens.dot),
+
+    ("+", Tokens.plus),
+    ("-", Tokens.minus),
 
     ("def", Tokens.def_kwd),
     ("end", Tokens.end_kwd),
@@ -191,7 +191,7 @@ class Lexer:
 
             if len(next_nodes) == 0:
                 if len(current_nodes) > 0:
-                    return self.outputNode(current_nodes[0], token_start, token_data)
+                    return self.outputNode(current_nodes, token_start, token_data)
                 raise InternalError("Zero current nodes in lex tree.")
 
             elif len(next_nodes) == 1 and next_nodes[0] is TREE:
@@ -206,10 +206,10 @@ class Lexer:
             current_nodes = next_nodes
         return None
 
-    def outputNode(self, node, start, data):
-        if node.token_type is not None:
-            return node.getToken(start, self.pos - 1, data)
-        elif node is TREE and not self.current:
-            return None
-        else:
-            raise SyntaxError("Unexpected Character '{}'".format(self.current), [Token(None, self.pos - 1, self.pos, self.current)])
+    def outputNode(self, nodes, start, data):
+        for node in nodes:
+            if node.token_type is not None:
+                return node.getToken(start, self.pos - 1, data)
+            elif node is TREE and not self.current:
+                return None
+        raise SyntaxError("Unexpected Character '{}'".format(self.current), [Token(None, self.pos - 1, self.pos, self.current)])

@@ -4,7 +4,7 @@ from . import lexer
 
 def test_lexer():
     test = """# def:end )=
-def :def_end=  (=return()     #
+def :def_end=  (=return(a)     #
 defend+_- end"""
     # Expected output token types
     expected = [
@@ -19,6 +19,7 @@ defend+_- end"""
         lexer.Tokens.equal,
         lexer.Tokens.return_kwd,
         lexer.Tokens.group_start,
+        lexer.Tokens.identifier,
         lexer.Tokens.group_end,
         lexer.Tokens.comment,
         lexer.Tokens.newline,
