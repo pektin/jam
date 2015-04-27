@@ -176,23 +176,18 @@ class Lexer:
     # Lexing Methods
     #
 
-    def lex(self):
-        l = self._lex()
-        return l
-
     # Lex a single token
-    def _lex(self):
+    def lex(self):
         token_start = self.pos
         token_data = ""
         current_nodes = [TREE]
 
         while True:
+            next_nodes = []
+
             if self.current is not None:
-                next_nodes = []
                 for node in current_nodes:
                     next_nodes += node.evaluate(self.current)
-            else:
-                next_nodes = []
 
             if len(next_nodes) == 0:
                 if len(current_nodes) > 0:
