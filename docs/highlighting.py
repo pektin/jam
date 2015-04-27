@@ -13,9 +13,8 @@ class JamLexer(RegexLexer):
         'root': [
             ("#.*?$", Comment),
             include('keywords'),
-            ("true", Name.Builtin),
-            ("false", Name.Builtin),
-            ("null", Name.Builtin),
+            include('builtins'),
+            include('constants'),
             (INTEGER_REGEX, Literal.Number),
             ("{0}\.({0})?".format(INTEGER_REGEX), Literal.Number),
             ("({0})?\.{0}".format(INTEGER_REGEX), Literal.Number),
@@ -39,6 +38,17 @@ class JamLexer(RegexLexer):
             "for",
             "in",
             "as",
+            "import",
+        ]],
+
+        'constants': [(i, Keyword.Constant) for i in [
+            "true",
+            "false",
+            "null",
+        ]],
+
+        'builtins': [(i, Name.Builtin) for i in [
+            "print",
         ]],
 
         'operators': [(i, Operator) for i in [
