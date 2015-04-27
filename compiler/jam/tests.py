@@ -2,7 +2,7 @@ from io import StringIO
 
 from . import lexer
 
-def test_lekxer():
+def test_lexer():
     test = """# def:end )=
 def :def_end=  (=return()     #
 defend+_- end"""
