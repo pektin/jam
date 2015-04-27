@@ -178,7 +178,6 @@ class Lexer:
 
     def lex(self):
         l = self._lex()
-        print(l)
         return l
 
     # Lex a single token
@@ -194,8 +193,6 @@ class Lexer:
                     next_nodes += node.evaluate(self.current)
             else:
                 next_nodes = []
-
-            print(repr(self.current), next_nodes)
 
             if len(next_nodes) == 0:
                 if len(current_nodes) > 0:
