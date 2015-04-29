@@ -30,8 +30,8 @@ sudo apt-get install python3 llvm-3.4-dev python3-sphinx
 
 ## Usage
 
-The compiler is currently built as a python library, however the compiler can
-also be directly run through the `jam.py` script:
+The compiler is currently built as a python library, however it can also be
+directly run through the `jam.py` script:
 
 ``` bash
 ./jam.py FILE
@@ -42,7 +42,6 @@ For further help run:
 ``` bash
 ./jam.py --help
 ```
-
 
 ## Development
 
