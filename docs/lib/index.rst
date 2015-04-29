@@ -5,7 +5,7 @@ Library Reference
 #################
 
 .. toctree::
-    :numbered:
+    :numbered: 3
     :titlesonly:
 
-    built-ins
+    builtins
