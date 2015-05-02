@@ -251,6 +251,20 @@ Builder.wrapInstanceFunc("insertValue", "LLVMBuildInsertValue", [Value, Value, c
 
 Builder.wrapInstanceFunc("call", "LLVMBuildCall", [FunctionValue, [Value], c_char_p], Value)
 
+Builder.wrapInstanceFunc("iAdd", "LLVMBuildAdd", [Value, Value, c_char_p], Value)
+Builder.wrapInstanceFunc("iSub", "LLVMBuildSub", [Value, Value, c_char_p], Value)
+Builder.wrapInstanceFunc("iMul", "LLVMBuildMul", [Value, Value, c_char_p], Value)
+Builder.wrapInstanceFunc("siDiv", "LLVMBuildSDiv", [Value, Value, c_char_p], Value)
+Builder.wrapInstanceFunc("uiDiv", "LLVMBuildUDiv", [Value, Value, c_char_p], Value)
+Builder.wrapInstanceFunc("siRem", "LLVMBuildSRem", [Value, Value, c_char_p], Value)
+Builder.wrapInstanceFunc("uiRem", "LLVMBuildURem", [Value, Value, c_char_p], Value)
+
+Builder.wrapInstanceFunc("fAdd", "LLVMBuildFAdd", [Value, Value, c_char_p], Value)
+Builder.wrapInstanceFunc("fSub", "LLVMBuildFSub", [Value, Value, c_char_p], Value)
+Builder.wrapInstanceFunc("fMul", "LLVMBuildFMul", [Value, Value, c_char_p], Value)
+Builder.wrapInstanceFunc("fDiv", "LLVMBuildFDiv", [Value, Value, c_char_p], Value)
+Builder.wrapInstanceFunc("fRem", "LLVMBuildFRem", [Value, Value, c_char_p], Value)
+
 Builder.wrapInstanceFunc("inBoundsGEP", "LLVMBuildInBoundsGEP", [Value, [Value], c_char_p], Value)
 Builder.wrapInstanceFunc("structGEP", "LLVMBuildStructGEP", [Value, c_uint, c_char_p], Value)
 
