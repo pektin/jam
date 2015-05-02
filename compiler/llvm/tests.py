@@ -2,9 +2,10 @@ import os
 from subprocess import check_output
 
 from .bindings import *
+from .builtins import builtins
+from .emitter import emit, compile
 
 BUILD_PATH = "build/tests"
-BUILD_TARGET = "build/tests/llvm.ll"
 
 def test_llvm():
     i32 = Int.new(32)
@@ -26,8 +27,15 @@ def test_llvm():
     builder.ret(Value.constInt(i32, 0, False))
 
     os.makedirs(BUILD_PATH, exist_ok=True)
-    with open(BUILD_TARGET, "w") as f:
-        f.write(module.toString().decode("UTF-8"))
+    with open(BUILD_PATH + "/llvm.ll", "wb") as f:
+        f.write(module.toString())
 
-    assert b"Hello World!\n" == check_output(["lli " + BUILD_TARGET], shell=True)
+    assert b"Hello World!\n" == check_output(["lli " + BUILD_PATH + "/llvm.ll"], shell=True)
 
+def test_builtin_lib():
+    module = emit(builtins())
+    out = compile(module)
+
+    os.makedirs(BUILD_PATH, exist_ok=True)
+    with open(BUILD_PATH + "/builtins.ll", "wb") as f:
+        f.write(out)

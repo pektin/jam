@@ -10,7 +10,6 @@ from ..lekvar import lekvar
 from ..errors import *
 
 from . import bindings as llvm
-from .builtins import LLVMType
 
 def emit(module:lekvar.Module, logger = logging.getLogger()):
     State.logger = logger.getChild("llvm")
@@ -504,10 +503,20 @@ def Class_emitType(self):
 lekvar.Class.emitType = Class_emitType
 
 #
+# BUILTINS
+#
+
+from . import builtins
+
+#
 # class LLVMType
 #
 
 LLVM_MAP = None
+
+def LLVMType_emit(self):
+    pass
+builtins.LLVMType.emit = LLVMType_emit
 
 def LLVMType_emitType(self):
     global LLVM_MAP
@@ -518,9 +527,26 @@ def LLVMType_emitType(self):
             "Int16": llvm.Int.new(16),
             "Int32": llvm.Int.new(32),
             "Int64": llvm.Int.new(64),
+            "Int128": llvm.Int.new(128),
             "Float16": llvm.Float.half(),
             "Float32": llvm.Float.float(),
             "Float64": llvm.Float.double(),
         }
     return LLVM_MAP[self.name]
-LLVMType.emitType = LLVMType_emitType
+builtins.LLVMType.emitType = LLVMType_emitType
+
+#
+# class LLVMFunction
+#
+
+builtins.LLVMFunction.llvm_value = None
+
+def LLVMFunction_emit(self):
+    if self.llvm_value is None:
+        self.generator(self)
+builtins.LLVMFunction.emit = LLVMFunction_emit
+
+def LLVMFunction_emitValue(self):
+    self.emit()
+    return self.llvm_value
+builtins.LLVMFunction.emitValue = LLVMFunction_emitValue
