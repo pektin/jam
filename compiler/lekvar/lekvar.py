@@ -152,6 +152,7 @@ class Object(ABC):
     # Resolves an attribute
     # final
     def resolveAttribute(self, reference:str):
+        self = self.resolveValue()
         instance_context = self.resolveType().instance_context
 
         if instance_context is not None:
@@ -165,6 +166,9 @@ class Object(ABC):
         if context is not None and reference in context.children:
             return context.children[reference]
         raise MissingReferenceError("{} does not have an attribute {}".format(self, reference))
+
+    def resolveValue(self):
+        return self
 
     def __repr__(self):
         return "{}".format(self.__class__.__name__)
@@ -426,8 +430,7 @@ class FunctionType(Type):
         raise InternalError("Not Implemented")
 
     def checkCompatibility(self, other:Type):
-        if isinstance(other, Reference):
-            other = other.value
+        other = other.resolveValue()
 
         if isinstance(other, FunctionType):
             if len(self.arguments) != len(other.arguments):
@@ -565,10 +568,10 @@ class Class(Type):
         return self.instance_context
 
     def checkCompatibility(self, other:Type) -> bool:
-        if isinstance(other, Reference):
-            other = other.value
+        return other.resolveValue() is self
 
-        return other is self
+    def __repr__(self):
+        return "{}({})<{}><{}>".format(self.__class__.__name__, self.name, self.constructor, self.instance_context.children)
 
 class Constructor(Function):
     def __init__(self, function:Function, constructing:Type):
@@ -769,6 +772,9 @@ class Reference(Type):
     def resolveCall(self, call:FunctionType):
         return self.value.resolveCall(call)
 
+    def resolveValue(self):
+        return self.value.resolveValue()
+
     def checkCompatibility(self, other:Type):
         return self.value.checkCompatibility(other)
 
@@ -817,6 +823,9 @@ class Attribute(Type):
 
     def resolveCall(self, call:FunctionType):
         return self.attribute.resolveCall(call)
+
+    def resolveValue(self):
+        return self.attribute.resolveValue()
 
     def checkCompatibility(self, other:Type):
         return self.attribute.checkCompatibility(other)
