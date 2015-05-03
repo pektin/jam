@@ -1,68 +1,13 @@
 
-template Int(length:Int)
-    private value:Byte[length]
-
-    def self:Float
-        return _builtins.intToFloat(self.value)
-    end
+#TODO: Allow for arbitrary sizes
+class Int
+    value:_builtins.Int64
 
     def self + other:Int
-        return _builtins.addInt(self.value, other.value)
+        return _builtins.intAdd(value, other.value)
     end
 
     def self - other:Int
-        return _builtins.subInt(self.value, other.value)
+        return _builtins.intSub(value, other.value)
     end
-
-    def self * other:Int
-        return _builtins.mulInt(self.value, other.value)
-    end
-
-    def self // other as Int
-        return _builtins.divInt(self.value, other.value)
-    end
-end
-
-class Int8
-    include Int
-end
-
-class Int16
-    include Int
-end
-
-class Int32
-    include Int
-end
-
-class Int64
-    include Int
-end
-
-template Float(length:Int)
-    private value:Byte[length]
-
-    def self + other:Float
-        return _builtins.addFloat(self.value, other.value)
-    end
-
-    def self - other:Float
-        return _builtins.subFloat(self.value, other.value)
-    end
-
-    def self * other:Float
-        return _builtins.mulFloat(self.value, other.value)
-    end
-
-    def self / other:Float
-        return _builtins.divFloat(self.value, other.value)
-    end
-end
-
-class Float32
-    include Float
-end
-
-class Float64
-    include Float
 end
