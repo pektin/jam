@@ -154,6 +154,10 @@ def Attribute_emitValue(self):
     return self.attribute.emitValue(self.value.emitAssignment())
 lekvar.Attribute.emitValue = Attribute_emitValue
 
+def Attribute_emitType(self):
+    return self.attribute.emitType()
+lekvar.Attribute.emitType = Attribute_emitType
+
 def Attribute_emitContext(self):
     return self.value.emitValue()
 lekvar.Attribute.emitContext = Attribute_emitContext
