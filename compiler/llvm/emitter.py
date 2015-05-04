@@ -150,6 +150,9 @@ lekvar.Reference.emitAssignment = Reference_emitAssignment
 #
 
 def Attribute_emitValue(self):
+    if self.attribute.static:
+        return self.attribute.emitValue()
+
     self.attribute.bound_context.scope.emit()
     return self.attribute.emitValue(self.value.emitAssignment())
 lekvar.Attribute.emitValue = Attribute_emitValue
@@ -240,6 +243,10 @@ def Module_emit(self):
     for child in self.context.children.values():
         child.emit()
 lekvar.Module.emit = Module_emit
+
+def Module_emitValue(self):
+    pass # TODO: Implement Method values
+lekvar.Module.emitValue = Module_emitValue
 
 #
 # class Call

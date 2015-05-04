@@ -46,7 +46,6 @@ defend+_- end"""
             assert token is not None
             assert token.type == output
 
-@pytest.mark.xfail
 def test_builtin_lib():
     with open(BUILTIN, "r") as f:
         ir = parser.parseFile(f)
