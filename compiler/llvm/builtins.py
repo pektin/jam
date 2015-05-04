@@ -1,7 +1,6 @@
 from functools import partial
 
 from .emitter import *
-#from . import emitter
 from ..lekvar import lekvar
 from . import bindings as llvm
 
