@@ -215,7 +215,7 @@ class Module(BoundObject):
 
     def verify(self):
         if self.verified: return
-        verified = True
+        self.verified = True
 
         with State.scoped(self):
             self.main.verify()
@@ -336,7 +336,7 @@ class Function(BoundObject):
 
     def verify(self):
         if self.verified: return
-        verified = True
+        self.verified = True
 
         with State.scoped(self):
             self.type.verify()
@@ -362,6 +362,7 @@ class Function(BoundObject):
         if not self.dependent:
             return self
 
+        # Create a template instance
         fn = copy(self)
         for index, arg in enumerate(fn.arguments):
             if isinstance(arg.type, DependentType):
@@ -429,7 +430,7 @@ class FunctionType(Type):
     def resolveType(self):
         raise InternalError("Not Implemented")
 
-    def checkCompatibility(self, other:Type):
+    def checkCompatibility(self, other:Type, reversed=False):
         other = other.resolveValue()
 
         if isinstance(other, FunctionType):
@@ -438,7 +439,7 @@ class FunctionType(Type):
 
             for self_arg, other_arg in zip(self.arguments, other.arguments):
                 if not self_arg.checkCompatibility(other_arg):
-                    return other.checkCompatibility(self)
+                    return other_arg.checkCompatibility(self_arg)
 
             return True
         return other.checkCompatibility(self)
@@ -532,12 +533,13 @@ class Class(Type):
 
         # Convert constructor method of functions to method of constructors
         #TODO: Eliminate the need for this
-        self.constructor = constructor
-        for name, overload in self.constructor.overload_context.children.items():
-            self.constructor.overload_context.children[name] = Constructor(overload, self)
-            self.constructor.overload_context.children[name].bound_context = self.constructor.overload_context
-            self.constructor.overload_context.children[name].closed_context.addChild(Variable("self", self))
-        self.instance_context.fakeChild(self.constructor)
+        if constructor is not None:
+            self.constructor = constructor
+            for name, overload in self.constructor.overload_context.children.items():
+                self.constructor.overload_context.children[name] = Constructor(overload, self)
+                self.constructor.overload_context.children[name].bound_context = self.constructor.overload_context
+                self.constructor.overload_context.children[name].closed_context.addChild(Variable("self", self))
+            self.instance_context.fakeChild(self.constructor)
 
         for child in self.instance_context.children.values():
             if isinstance(child, Method):
@@ -549,13 +551,17 @@ class Class(Type):
 
     def verify(self):
         if self.verified: return
-        verified = True
+        self.verified = True
 
         with State.scoped(self):
-            self.constructor.verify()
+            if self.constructor is not None:
+                self.constructor.verify()
             self.instance_context.verify()
 
     def resolveCall(self, call:FunctionType):
+        if self.constructor is None:
+            raise TypeError("Class {} does not have a constructor".format(self))
+
         function = self.constructor.resolveCall(call)
         function.type.return_type = self
         return function
@@ -768,6 +774,10 @@ class Reference(Type):
     @property
     def global_context(self):
         return self.value.global_context
+
+    @property
+    def instance_context(self):
+        return self.value.instance_context
 
     def resolveCall(self, call:FunctionType):
         return self.value.resolveCall(call)
