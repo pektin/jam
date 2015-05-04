@@ -176,6 +176,7 @@ class Object(ABC):
 class BoundObject(Object):
     name = None
     bound_context = None
+    static = False
 
     def __init__(self, name):
         self.name = name
@@ -201,11 +202,14 @@ class Module(BoundObject):
     context = None
     main = None
     verified = False
+    static = True
 
     def __init__(self, name:str, children:[BoundObject], main:Function = None):
         super().__init__(name)
 
         self.context = Context(self, children)
+        for child in children:
+            child.static = True
 
         self.main = main
         self.context.fakeChild(self.main)
@@ -332,6 +336,7 @@ class Function(BoundObject):
 
     def copy(self):
         fn = Function(self.name, list(map(copy, self.arguments)), list(map(copy, self.instructions)), self.type.return_type)
+        fn.static = self.static
         return fn
 
     def verify(self):
@@ -606,7 +611,9 @@ class Variable(BoundObject):
         self.type = type
 
     def copy(self):
-        return Variable(self.name, copy(self.type))
+        var = Variable(self.name, copy(self.type))
+        var.static = self.static
+        return var
 
     def verify(self):
         if self.type is not None:
