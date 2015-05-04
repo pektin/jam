@@ -1,6 +1,14 @@
 from io import StringIO
 
+import pytest
+
 from . import lexer
+from . import parser
+from ..lekvar import lekvar
+from ..llvm import emitter as llvm
+from ..llvm.builtins import builtins
+
+BUILTIN = "compiler/jam/builtins.jm"
 
 def test_lexer():
     test = """# def:end )=
@@ -37,3 +45,16 @@ defend+_- end"""
             token = lex()
             assert token is not None
             assert token.type == output
+
+@pytest.mark.xfail
+def test_builtin_lib():
+    with open(BUILTIN, "r") as f:
+        ir = parser.parseFile(f)
+
+    # inject _builtins module
+    ir.context.addChild(builtins())
+
+    # Use module as builtin module as well
+    lekvar.verify(ir, ir)
+
+    module = llvm.emit(ir)
