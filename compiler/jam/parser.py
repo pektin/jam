@@ -326,12 +326,7 @@ class Parser:
             return None
         self.next()
 
-        return self.parseType()
-
-    # Parse an expected type
-    def parseType(self):
-        name = self.expect()
-        return lekvar.Reference(name)
+        return self.parseValue()
 
     # Parse a function call
     def parseCall(self, called):
