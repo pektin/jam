@@ -10,5 +10,5 @@ class Person
 end
 
 v = Person("foo", "bar")
-print(v.surname)
-print(v.forename)
+puts(v.surname)
+puts(v.forename)

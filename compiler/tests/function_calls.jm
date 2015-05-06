@@ -1,10 +1,10 @@
 #1\n2\n
 
-def reprint(one:String, two:String) -> String
-    print(one)
+def reputs(one:String, two:String) -> String
+    puts(one)
     return two
-    print("3")
+    puts("3")
 end
 
-print(reprint("1", "2"))
+puts(reputs("1", "2"))
 

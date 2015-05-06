@@ -6,4 +6,4 @@ end
 
 var = reprint
 
-print(var("HelloWorld"))
+puts(var("HelloWorld"))

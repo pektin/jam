@@ -3,4 +3,4 @@
 def noReturn() -> String
 end
 
-print(noReturn())
+puts(noReturn())

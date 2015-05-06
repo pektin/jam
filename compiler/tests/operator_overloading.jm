@@ -5,7 +5,7 @@ class Addable
     end
 
     def self + other:String
-        print(other)
+        puts(other)
     end
 end
 

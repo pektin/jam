@@ -2,17 +2,17 @@
 
 module foo
     module bar
-        def puts()
-            foo.puts()
-            print("bar")
+        def print()
+            foo.print()
+            puts("bar")
         end
     end
 
-    def puts()
-        print("foo")
+    def print()
+        puts("foo")
     end
 end
 
-foo.bar.puts()
-foo.puts()
+foo.bar.print()
+foo.print()
 

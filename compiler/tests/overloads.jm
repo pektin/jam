@@ -1,18 +1,18 @@
 #Hello World\nTesting\nHello\nWorld!\n
 
-def puts()
-    print("Hello World")
+def print()
+    puts("Hello World")
 end
 
-def puts(string:String)
-    print(string)
+def print(string:String)
+    puts(string)
 end
 
-def puts(string:String, string2:String)
-    print(string)
-    print(string2)
+def print(string:String, string2:String)
+    puts(string)
+    puts(string2)
 end
 
-puts()
-puts("Testing")
-puts("Hello", "World!")
+print()
+print("Testing")
+print("Hello", "World!")

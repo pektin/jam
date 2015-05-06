@@ -20,7 +20,6 @@ def builtins():
     ]
     return lekvar.Module("_builtins",
         ints + floats + [
-        lekvar.ExternalFunction("print", "puts", [string], ints[2]),
         string,
         lekvar.Method("intAdd",
             [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.iAdd))
@@ -29,6 +28,10 @@ def builtins():
         lekvar.Method("intSub",
             [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.iAdd))
             for type in ints],
+        ),
+        lekvar.Method("puts",
+            [LLVMFunction("", [type], None, partial(llvmPrintfWrapper, type))
+            for type in (ints + floats) + [string]],
         ),
     ], lekvar.Function("main", [], [], None))
 
@@ -43,6 +46,36 @@ def llvmInstructionWrapper(instruction, self):
         rhs = self.llvm_value.getParam(1)
         return_value = instruction(State.builder, lhs, rhs, "")
         State.builder.ret(return_value)
+
+PRINTF_MAP = {
+    "String": "s",
+    "Int8": "hhd",
+    "Int16": "hd",
+    "Int32": "d",
+    "Int64": "ld",
+    "Int128": "lld",
+
+    "Float16": "hf",
+    "Float32": "f",
+    "Float64": "lf",
+}
+
+def llvmPrintfWrapper(type, self):
+    func_type = llvm.Function.new(llvm.Type.void(), [LLVMType("String").emitType()], True)
+    printf = State.module.addFunction("printf", func_type)
+
+    name = resolveName(self)
+    func_type = self.type.emitType()
+    self.llvm_value = State.module.addFunction(name, func_type)
+    entry = self.llvm_value.appendBlock("")
+
+    with State.blockScope(entry):
+        fmt_str_data = "%{}\n".format(PRINTF_MAP[type.name])
+        fmt_string = State.builder.globalString(fmt_str_data, State.getTempName())
+
+        value = self.llvm_value.getParam(0)
+        State.builder.call(printf, [fmt_string, value], "")
+        State.builder.retVoid()
 
 #
 # Temporary

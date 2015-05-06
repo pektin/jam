@@ -11,3 +11,7 @@ class Int
         return _builtins.intSub(value, other.value)
     end
 end
+
+def puts(value)
+    _builtins.puts(value)
+end

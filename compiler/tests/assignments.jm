@@ -8,4 +8,4 @@ def assign()
     return foo
 end
 
-print(assign())
+puts(assign())

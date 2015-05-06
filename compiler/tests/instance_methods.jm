@@ -8,7 +8,7 @@ class Person
     end
 
     def display()
-        print(name)
+        puts(name)
     end
 end
 
