@@ -177,6 +177,7 @@ class BoundObject(Object):
     name = None
     bound_context = None
     static = False
+    dependent = False
 
     def __init__(self, name):
         self.name = name
@@ -284,9 +285,9 @@ class DependentType(Type):
             return self.target.checkCompatibility(other)
 
         # Check with all compatible types
-        for type in self.compatibles:
-            if not type.checkCompatibility(other):
-                return False
+        #for type in self.compatibles:
+        #    if not type.checkCompatibility(other):
+        #        return False
 
         if other not in self.compatibles:
             self.compatibles.append(other)
@@ -505,7 +506,7 @@ class Method(BoundObject):
         # Allow only one match
         if len(matches) < 1:
             raise TypeError("{} is not compatible with {}".format(call, self))
-        elif len(matches) > 1:
+        elif len(matches) > 1 and not State.scope.dependent:
             raise TypeError("Ambiguous overloads: {}".format(matches))
 
         return matches[0]
