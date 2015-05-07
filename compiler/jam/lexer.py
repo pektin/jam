@@ -51,6 +51,7 @@ Tokens = Enum("Tokens", [
     "self_kwd",
 
     "string",
+    "integer",
     "newline",
     "group_start",
     "group_end",
@@ -138,6 +139,19 @@ TREE.links.append((node, lambda c: c in WORD_CHARACTERS))
 end_node = Node(token_type=Tokens.identifier)
 node.links.append((end_node, lambda c: c in WORD_CHARACTERS_AFTER))
 end_node.links.append((end_node, lambda c: c in WORD_CHARACTERS_AFTER))
+
+# Numbers
+DIGIT_CHARACTERS = set(string.digits)
+
+node = Node(token_type=Tokens.integer)
+TREE.links.append((node, lambda c: c in DIGIT_CHARACTERS))
+underscore_node = Node()
+node.links.append((underscore_node, lambda c: c == "_"))
+end_node = Node(token_type=Tokens.integer)
+underscore_node.links.append((end_node, lambda c: c in DIGIT_CHARACTERS))
+node.links.append((end_node, lambda c: c in DIGIT_CHARACTERS))
+end_node.links.append((underscore_node, lambda c: c == "_"))
+end_node.links.append((end_node, lambda c: c in DIGIT_CHARACTERS))
 
 #
 # Lexer
