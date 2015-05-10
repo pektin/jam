@@ -26,7 +26,7 @@ Examples
 
     # nullable types can only be operated on inside a null check
     if woman !is null
-        print(woman.surname)
+      print(woman.surname)
     end
 
 

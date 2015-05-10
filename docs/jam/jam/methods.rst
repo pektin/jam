@@ -40,15 +40,15 @@ Examples
 ::
 
     def double(x:Float) -> Float
-        return x * 2
+      return x * 2
     end
 
     def double(x) -> Int
-        return x * 2
+      return x * 2
     end
 
     def double()
-        return 2
+      return 2
     end
 
     double(2) #=> 4

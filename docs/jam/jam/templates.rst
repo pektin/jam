@@ -22,17 +22,17 @@ Examples
 ::
 
     template Person
-        name:String
+      name:String
 
-        def new(n)
-            name = n
-        end
+      def new(n)
+        name = n
+      end
     end
 
     class Employee
-        include Person
+      include Person
     end
 
     class Client
-        include Person
+      include Person
     end

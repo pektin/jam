@@ -15,20 +15,20 @@ Syntax
 Examples
 --------
 ::
-    
+
     # Boolean variables used in a conditional block
     state = true
 
     if state == true
-        print("This will print\n")
+      print("This will print\n")
     else
-        print("This will not\n")
+      print("This will not\n")
     end
 
 
-    # Boolean value used in a conditional block 
+    # Boolean value used in a conditional block
     if true
-        print("This will always print\n")
+      print("This will always print\n")
     else
-       print("This will never print\n")
+      rint("This will never print\n")
     end
