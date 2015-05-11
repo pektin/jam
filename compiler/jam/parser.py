@@ -165,11 +165,22 @@ class Parser:
             return self.parseModule()
         elif token.type == Tokens.identifier:
             return lekvar.Reference(self.next().data)
+        elif token.type == Tokens.integer:
+            return self.parseNumber()
         elif token.type == Tokens.string:
             token = self.next()
             return lekvar.Literal(token.data, lekvar.Reference("String"))
 
         self._unexpected(token)
+
+    def parseNumber(self):
+        token = self.next()
+        assert token.type == Tokens.integer
+
+        #TODO: Floating point numbers
+
+        value = int(token.data.replace("_", ""))
+        return lekvar.Literal(value, lekvar.Reference("Int"))
 
     def parseOperation(self, value):
         token = self.next()
