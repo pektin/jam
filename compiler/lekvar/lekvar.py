@@ -244,7 +244,7 @@ class Module(BoundObject):
         return self.context
 
     def __repr__(self):
-        return "{}({})<{}>[{}]".format(self.__class__.__name__, self.name, self.main, self.context)
+        return "module {}".format(self.name)
 
 class ModuleType(Type):
     module = None
@@ -386,7 +386,8 @@ class Function(BoundObject):
         return fn
 
     def __repr__(self):
-        return "{}<{}>({}):{}{}".format(self.__class__.__name__, self.dependent, self.name, self.type, self.instructions)
+        return "def {}({}) -> {}".format(self.name,
+            (", ".join(str(arg) for arg in self.arguments)), self.type.return_type)
 
 class ExternalFunction(BoundObject):
     external_name = None
@@ -416,7 +417,8 @@ class ExternalFunction(BoundObject):
     resolveCall = Function.resolveCall
 
     def __repr__(self):
-        return "{}({}->{}):{}".format(self.__class__.__name__, self.name, self.external_name, self.type)
+        return "def {}=>{}({}) -> {}".format(self.name, self.external_name,
+            (", ".join(str(arg) for arg in self.arguments)), self.type)
 
 class FunctionType(Type):
     arguments = None
@@ -460,8 +462,7 @@ class FunctionType(Type):
         return other.checkCompatibility(self)
 
     def __repr__(self):
-        return "{}({}):{}".format(self.__class__.__name__,
-            ", ".join(repr(arg) for arg in self.arguments), self.return_type)
+        return "({}) -> {}".format(", ".join(repr(arg) for arg in self.arguments), self.return_type)
 
 #
 # Method
@@ -521,7 +522,7 @@ class Method(BoundObject):
         return matches[0]
 
     def __repr__(self):
-        return "{}({}){}".format(self.__class__.__name__, self.name, self.overload_context.children.values())
+        return "method {}".format(self.name)
 
 class MethodType(Type):
     overloads = None
@@ -592,7 +593,8 @@ class Class(Type):
         return other.resolveValue() is self
 
     def __repr__(self):
-        return "{}({})<{}><{}>".format(self.__class__.__name__, self.name, self.constructor, self.instance_context.children)
+        contents = "\n".join(repr(val) for val in [self.constructor] + list(self.instance_context.children.values()))
+        return "class {}\n{}\nend".format(self.name, contents)
 
 class Constructor(Function):
     def __init__(self, function:Function, constructing:Type, tokens = None):
@@ -633,7 +635,7 @@ class Variable(BoundObject):
         return self.type
 
     def __repr__(self):
-        return "{}<{}>:{}".format(self.__class__.__name__, self.name, self.type)
+        return "{}:{}".format(self.name, self.type)
 
 #
 # Assignment
@@ -685,7 +687,7 @@ class Assignment(Object):
         return None
 
     def __repr__(self):
-        return "{}<{} = {}>".format(self.__class__.__name__, self.variable, self.value)
+        return "{} = {}".format(self.__class__.__name__, self.variable, self.value)
 
 #
 # Call
@@ -726,9 +728,7 @@ class Call(Object):
         return self.function.resolveType().return_type
 
     def __repr__(self):
-        if self.function is None:
-            return "{}<{}>({})".format(self.__class__.__name__, self.called, self.values)
-        return "{}<{}>({})".format(self.__class__.__name__, self.function, self.values)
+        return "{}({})".format(self.called, ", ".join(repr(val) for val in self.values))
 
 #
 # Literal
@@ -756,7 +756,7 @@ class Literal(Object):
         return self.type
 
     def __repr__(self):
-        return "{}<{}>".format(self.type, self.data)
+        return "{}".format(self.type, self.data)
 
 #
 # Reference
@@ -810,7 +810,7 @@ class Reference(Type):
         return self.value.checkCompatibility(other)
 
     def __repr__(self):
-        return "{}({})<{}>".format(self.__class__.__name__, self.reference, self.value)
+        return "{}".format(self.reference)
 
 class Attribute(Type):
     value = None
@@ -863,7 +863,7 @@ class Attribute(Type):
         return self.attribute.checkCompatibility(other)
 
     def __repr__(self):
-        return "{}({}).{}<{}>".format(self.__class__.__name__, self.value, self.reference, self.attribute)
+        return "{}.{}".format(self.value, self.reference)
 
 #
 # Return
@@ -898,6 +898,9 @@ class Return(Object):
     def resolveType(self):
         return None
 
+    def __repr__(self):
+        return "return {}".format(self.value)
+
 #
 # Comment
 #
@@ -920,4 +923,4 @@ class Comment(Object):
         return None
 
     def __repr__(self):
-        return "{}<{}>".format(self.__class__.__name__, self.contents)
+        return "# {} #".format(self.contents)
