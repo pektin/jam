@@ -102,8 +102,7 @@ class LLVMType(lekvar.Type):
         raise InternalError("Not Implemented")
 
     def checkCompatibility(self, other:lekvar.Type):
-        if isinstance(other, lekvar.Reference):
-            other = other.value
+        other = other.resolveValue()
 
         if isinstance(other, LLVMType):
             if self.name == other.name:
