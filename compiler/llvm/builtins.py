@@ -26,7 +26,7 @@ def builtins():
             for type in ints],
         ),
         lekvar.Method("intSub",
-            [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.iAdd))
+            [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.iSub))
             for type in ints],
         ),
         lekvar.Method("puts",
