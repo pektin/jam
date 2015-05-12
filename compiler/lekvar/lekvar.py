@@ -119,6 +119,11 @@ class Context:
         return "{}<{}>".format(self.__class__.__name__, ", ".join(map(str, self.children.values())))
 
 class Object(ABC):
+    tokens = None
+
+    def __init__(self, tokens = None):
+        self.tokens = tokens
+
     # Should return a unverified deep copy of the object
     @abstract
     def copy(self):
@@ -179,7 +184,8 @@ class BoundObject(Object):
     static = False
     dependent = False
 
-    def __init__(self, name):
+    def __init__(self, name, tokens = None):
+        super().__init__(tokens)
         self.name = name
 
     def __repr__(self):
@@ -205,8 +211,8 @@ class Module(BoundObject):
     verified = False
     static = True
 
-    def __init__(self, name:str, children:[BoundObject], main:Function = None):
-        super().__init__(name)
+    def __init__(self, name:str, children:[BoundObject], main:Function = None, tokens = None):
+        super().__init__(name, tokens)
 
         self.context = Context(self, children)
         for child in children:
@@ -243,7 +249,8 @@ class Module(BoundObject):
 class ModuleType(Type):
     module = None
 
-    def __init__(self, module:Module):
+    def __init__(self, module:Module, tokens = None):
+        super().__init__(tokens)
         self.module = module
 
     def copy(self):
@@ -269,7 +276,9 @@ class DependentType(Type):
     compatibles = None
     target = None
 
-    def __init__(self, compatibles:[Type] = None):
+    def __init__(self, compatibles:[Type] = None, tokens = None):
+        super().__init__("", tokens)
+
         if compatibles is None: compatibles = []
         self.compatibles = compatibles
 
@@ -319,8 +328,8 @@ class Function(BoundObject):
     dependent = False
     verified = False
 
-    def __init__(self, name:str, arguments:[Variable], instructions:[Object], return_type:Type = None):
-        super().__init__(name)
+    def __init__(self, name:str, arguments:[Variable], instructions:[Object], return_type:Type = None, tokens = None):
+        super().__init__(name, tokens)
 
         self.local_context = Context(self, arguments)
         self.closed_context = Context(self, [])
@@ -386,8 +395,8 @@ class ExternalFunction(BoundObject):
     dependent = False
     verified = False
 
-    def __init__(self, name:str, external_name:str, arguments:[Type], return_type:Type):
-        super().__init__(name)
+    def __init__(self, name:str, external_name:str, arguments:[Type], return_type:Type, tokens = None):
+        super().__init__(name, tokens)
         self.external_name = external_name
         self.type = FunctionType(external_name, arguments, return_type)
 
@@ -415,8 +424,8 @@ class FunctionType(Type):
 
     verified = False
 
-    def __init__(self, name:str, arguments:[Type], return_type:Type = None):
-        super().__init__(name)
+    def __init__(self, name:str, arguments:[Type], return_type:Type = None, tokens = None):
+        super().__init__(name, tokens)
         self.arguments = arguments
         self.return_type = return_type
 
@@ -464,8 +473,8 @@ class Method(BoundObject):
     overload_context = None
     verified = False
 
-    def __init__(self, name:str, overloads:[Function]):
-        super().__init__(name)
+    def __init__(self, name:str, overloads:[Function], tokens = None):
+        super().__init__(name, tokens)
 
         self.overload_context = Context(self, [])
         for overload in overloads:
@@ -517,8 +526,8 @@ class Method(BoundObject):
 class MethodType(Type):
     overloads = None
 
-    def __init__(self, name:str, overloads:[FunctionType]):
-        super().__init__(name)
+    def __init__(self, name:str, overloads:[FunctionType], tokens = None):
+        super().__init__(name, tokens)
         self.overloads = overloads
 
 #
@@ -532,8 +541,8 @@ class Class(Type):
 
     verified = False
 
-    def __init__(self, name:str, constructor:Method, attributes:[BoundObject]):
-        super().__init__(name)
+    def __init__(self, name:str, constructor:Method, attributes:[BoundObject], tokens = None):
+        super().__init__(name, tokens)
 
         self.instance_context = Context(self, attributes)
 
@@ -586,8 +595,8 @@ class Class(Type):
         return "{}({})<{}><{}>".format(self.__class__.__name__, self.name, self.constructor, self.instance_context.children)
 
 class Constructor(Function):
-    def __init__(self, function:Function, constructing:Type):
-        super().__init__(function.name, function.arguments, function.instructions, function.type.return_type)
+    def __init__(self, function:Function, constructing:Type, tokens = None):
+        super().__init__(function.name, function.arguments, function.instructions, function.type.return_type, tokens)
 
         if function.type.return_type is not None:
             raise TypeError("Constructors must return nothing")
@@ -607,8 +616,8 @@ class Constructor(Function):
 class Variable(BoundObject):
     type = None
 
-    def __init__(self, name:str, type:Type = None):
-        super().__init__(name)
+    def __init__(self, name:str, type:Type = None, tokens = None):
+        super().__init__(name, tokens)
         self.type = type
 
     def copy(self):
@@ -636,7 +645,8 @@ class Assignment(Object):
     value = None
     scope = None
 
-    def __init__(self, variable:Variable, value:Object):
+    def __init__(self, variable:Variable, value:Object, tokens = None):
+        super().__init__(tokens)
         self.variable = variable
         self.value = value
 
@@ -688,7 +698,8 @@ class Call(Object):
     values = None
     function = None
 
-    def __init__(self, called:Object, values:[Object]):
+    def __init__(self, called:Object, values:[Object], tokens = None):
+        super().__init__(tokens)
         self.called = called
         self.values = values
         self.function = None
@@ -728,7 +739,8 @@ class Literal(Object):
     data = None
     type = None
 
-    def __init__(self, data, type:Type):
+    def __init__(self, data, type:Type, tokens = None):
+        super().__init__(tokens)
         self.data = data
         self.type = type
 
@@ -758,7 +770,8 @@ class Reference(Type):
 
     verified = False
 
-    def __init__(self, reference:str):
+    def __init__(self, reference:str, tokens = None):
+        super().__init__(tokens)
         self.reference = reference
 
     def copy(self):
@@ -806,7 +819,8 @@ class Attribute(Type):
 
     verified = False
 
-    def __init__(self, value:Object, reference:str):
+    def __init__(self, value:Object, reference:str, tokens = None):
+        super().__init__(tokens)
         self.value = value
         self.reference = reference
 
@@ -861,7 +875,8 @@ class Return(Object):
     value = None
     function = None
 
-    def __init__(self, value:Object = None):
+    def __init__(self, value:Object = None, tokens = None):
+        super().__init__(tokens)
         self.value = value
 
     def copy(self):
@@ -891,7 +906,8 @@ class Return(Object):
 class Comment(Object):
     contents = None
 
-    def __init__(self, contents):
+    def __init__(self, contents, tokens = None):
+        super().__init__(tokens)
         self.contents = contents
 
     def copy(self):
