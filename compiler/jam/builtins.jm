@@ -8,11 +8,11 @@ class Int
   end
 
   def self + other:Int
-    return _builtins.intAdd(value, other.value)
+    return Int(_builtins.intAdd(value, other.value))
   end
 
   def self - other:Int
-    return _builtins.intSub(value, other.value)
+    return Int(_builtins.intSub(value, other.value))
   end
 end
 
