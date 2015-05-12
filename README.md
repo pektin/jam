@@ -1,5 +1,7 @@
 # Jam
 
+[![Circle CI](https://circleci.com/gh/pektin/jam.svg?style=svg)](https://circleci.com/gh/pektin/jam)
+
 Jam is an experimental programming language that tries to combine the advantages
 of dynamic, interpreted programming languages with those of static, compiled
 ones.
