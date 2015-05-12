@@ -1,0 +1,6 @@
+!SyntaxError
+
+def foo(i:String) -> String
+  v = i
+  puts(v)
+  return i

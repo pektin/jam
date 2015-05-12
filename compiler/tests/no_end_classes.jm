@@ -1,0 +1,8 @@
+!SyntaxError
+
+class Foo
+  v:String
+
+  def new(s:String)
+    v = s
+  end

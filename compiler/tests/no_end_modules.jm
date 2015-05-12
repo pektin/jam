@@ -1,0 +1,7 @@
+!SyntaxError
+
+module foo
+
+def bar(i:String)
+  puts(i)
+end
