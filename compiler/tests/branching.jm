@@ -1,0 +1,13 @@
+?#foo\nbar\n
+
+if true
+  puts("foo")
+else
+  puts("bar")
+end
+
+if false
+  puts("foo")
+else
+  puts("bar")
+end
