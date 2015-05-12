@@ -86,7 +86,8 @@ class Parser:
             # Check for end_kwd
             if inline:
                 token = self.strip()
-                if token is None: break
+                if token is None:
+                    raise SyntaxError("Expected 'end' before EOF")
                 elif token.type == Tokens.end_kwd:
                     tokens.append(self.next())
                     break
