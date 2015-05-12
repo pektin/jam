@@ -31,7 +31,7 @@ def builtins():
         ),
         lekvar.Method("puts",
             [LLVMFunction("", [type], None, partial(llvmPrintfWrapper, type))
-            for type in (ints + floats) + [string]],
+            for type in (ints + floats + [string])],
         ),
     ], lekvar.Function("main", [], [], None))
 
@@ -49,6 +49,7 @@ def llvmInstructionWrapper(instruction, self):
 
 PRINTF_MAP = {
     "String": "s",
+
     "Int8": "hhd",
     "Int16": "hd",
     "Int32": "d",
