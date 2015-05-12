@@ -12,7 +12,7 @@ BUILTIN = "compiler/jam/builtins.jm"
 
 def test_lexer():
     test = """# def:end )=
-def :def_end=  (=return(a)  78_788_934_0   #
+def :def_end=  (=return(a)  78_788_934_0 ///*  #
 defend+_- end"""
     # Expected output token types
     expected = [
@@ -30,6 +30,9 @@ defend+_- end"""
         lexer.Tokens.identifier,
         lexer.Tokens.group_end,
         lexer.Tokens.integer,
+        lexer.Tokens.integer_division,
+        lexer.Tokens.division,
+        lexer.Tokens.multiplication,
         lexer.Tokens.comment,
         lexer.Tokens.newline,
 
