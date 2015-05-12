@@ -61,19 +61,22 @@ class Parser:
         return token
 
     # Parse for an expected token, returning it's data
-    def expect(self, type:Tokens = Tokens.identifier):
+    def expect(self, type:Tokens):
         token = self.next()
         if token.type != type:
             self._unexpected(token)
-        return token.data
+        return token
 
     def parseModule(self, inline = True):
 
         if inline:
-            assert self.next().type == Tokens.module_kwd
+            tokens = [self.next()]
+            assert tokens[0].type == Tokens.module_kwd
 
-            module_name = self.expect()
+            tokens.append(self.expect(Tokens.identifier))
+            module_name = tokens[1].data
         else:
+            tokens = None
             module_name = "main"
 
         children = {}
@@ -85,7 +88,7 @@ class Parser:
                 token = self.strip()
                 if token is None: break
                 elif token.type == Tokens.end_kwd:
-                    self.next()
+                    tokens.append(self.next())
                     break
 
             value = self.parseLine()
@@ -110,7 +113,7 @@ class Parser:
                 instructions.append(value)
 
         return lekvar.Module(module_name, list(children.values()),
-               lekvar.Function("", [], instructions, None))
+               lekvar.Function("", [], instructions, None), tokens)
 
     def parseLine(self):
         # Parse a line. The line may not exist
@@ -120,7 +123,7 @@ class Parser:
         if token is None: return None
 
         if token.type == Tokens.comment:
-            return lekvar.Comment(self.next().data)
+            return self.parseComment()
         elif token.type == Tokens.return_kwd:
             return self.parseReturn()
         elif token.type == Tokens.identifier:
@@ -173,6 +176,11 @@ class Parser:
 
         self._unexpected(token)
 
+    def parseComment(self):
+        token = self.next()
+        assert token.type == Tokens.comment
+        return lekvar.Comment(token.data, [token])
+
     def parseNumber(self):
         token = self.next()
         assert token.type == Tokens.integer
@@ -180,7 +188,7 @@ class Parser:
         #TODO: Floating point numbers
 
         value = int(token.data.replace("_", ""))
-        return lekvar.Literal(value, lekvar.Reference("Int"))
+        return lekvar.Literal(value, lekvar.Reference("Int"), [token])
 
     def parseOperation(self, value):
         token = self.next()
@@ -189,25 +197,30 @@ class Parser:
 
         other = self.parseValue()
 
-        return lekvar.Call(lekvar.Attribute(value, operator), [other])
+        return lekvar.Call(lekvar.Attribute(value, operator), [other], [token])
 
     def parseMethod(self):
         # "def" should have already been identified
-        assert self.next().type == Tokens.def_kwd
+        tokens = [self.next()]
+        assert tokens[0].type == Tokens.def_kwd
 
         # Check for operation definitions
         if self.lookAhead().type == Tokens.self_kwd:
-            self.next()
+            tokens.append(self.next())
 
             token = self.next()
             if token.type not in OPERATION_TOKENS:
                 raise SyntaxError("{} is not a valid operation".format(token), [token])
             name = token.data
 
+            tokens.append(token)
+
             arguments = [self.parseVariable()]
             default_values = [None]
         else:
-            name = self.expect()
+            token = self.expect(Tokens.identifier)
+            tokens.append(token)
+            name = token.data
             arguments, default_values = self.parseMethodArguments()
 
         return_type = self.parseTypeSig(Tokens.returns)
@@ -223,12 +236,12 @@ class Parser:
                 raise SyntaxError("Expected 'end' before EOF")
 
             if token.type == Tokens.end_kwd:
-                self.next()
+                tokens.append(self.next())
                 break
             instructions.append(self.parseLine())
 
         # Create method with default arguments
-        overloads = [lekvar.Function("", arguments, instructions, return_type)]
+        overloads = [lekvar.Function("", arguments, instructions, return_type, tokens)]
 
         in_defaults = True
         for index, value in enumerate(reversed(default_values)):
@@ -248,7 +261,7 @@ class Parser:
                                 # Add non-default arguments with the default value
                                 args + [default_values[index]],
                             )
-                        ])
+                        ], return_type, tokens)
                     )
             else:
                 # Check for default arguments before a non-defaulted argument
@@ -299,7 +312,7 @@ class Parser:
         # class should have already been identified
         assert self.next().type == Tokens.class_kwd
 
-        name = self.expect()
+        name = self.expect(Tokens.identifier).data
 
         constructor = None
         attributes = []
@@ -326,10 +339,11 @@ class Parser:
 
     # Parse a variable, with optional type signature
     def parseVariable(self):
-        name = self.expect()
+        tokens = [self.expect(Tokens.identifier)]
+        name = tokens[0].data
         type = self.parseTypeSig()
 
-        return lekvar.Variable(name, type)
+        return lekvar.Variable(name, type, tokens)
 
     # Parse an optional type signature
     def parseTypeSig(self, typeof = Tokens.typeof):
@@ -341,7 +355,8 @@ class Parser:
 
     # Parse a function call
     def parseCall(self, called):
-        assert self.next().type == Tokens.group_start
+        tokens = [self.next()]
+        assert tokens[0].type == Tokens.group_start
 
         arguments = []
         if self.lookAhead().type != Tokens.group_end:
@@ -354,37 +369,41 @@ class Parser:
                 if token.type == Tokens.comma:
                     continue
                 elif token.type == Tokens.group_end:
+                    tokens.append(token)
                     break
                 else:
                     self._unexpected(token)
         else:
             self.next()
 
-        return lekvar.Call(called, arguments)
+        return lekvar.Call(called, arguments, tokens)
 
     # Parse a return statement
     def parseReturn(self):
         # return keyword is expected to be parsed
-        self.next()
+        tokens = [self.next()]
+        assert tokens[0].type == Tokens.return_kwd
 
         if self.lookAhead().type != Tokens.newline:
             value = self.parseValue()
         else:
             value = None
 
-        return lekvar.Return(value)
+        return lekvar.Return(value, tokens)
 
     # Parse a assignment
     def parseAssignment(self):
         variable = self.parseVariable()
 
-        assert self.next().type == Tokens.equal
+        tokens = [self.next()]
+        assert tokens[0].type == Tokens.equal
 
         value = self.parseValue()
-        return lekvar.Assignment(variable, value)
+        return lekvar.Assignment(variable, value, tokens)
 
     def parseAttribute(self, value):
-        assert self.next().type == Tokens.dot
+        tokens = [self.next()]
+        assert tokens[0].type == Tokens.dot
 
-        attribute = self.expect()
-        return lekvar.Attribute(value, attribute)
+        attribute = self.expect(Tokens.identifier).data
+        return lekvar.Attribute(value, attribute, tokens)
