@@ -34,9 +34,9 @@ defend+_- end"""
         lexer.Tokens.newline,
 
         lexer.Tokens.identifier,
-        lexer.Tokens.plus,
+        lexer.Tokens.addition,
         lexer.Tokens.identifier,
-        lexer.Tokens.minus,
+        lexer.Tokens.subtraction,
         lexer.Tokens.end_kwd,
     ]
     with StringIO(test) as input:

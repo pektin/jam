@@ -14,6 +14,14 @@ class Int
   def self - other:Int
     return Int(_builtins.intSub(value, other.value))
   end
+
+  def self * other:Int
+    return Int(_builtins.intMul(value, other.value))
+  end
+
+  def self // other:Int
+    return Int(_builtins.intDiv(value, other.value))
+  end
 end
 
 #TODO: Implement using byte arrays

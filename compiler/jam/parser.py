@@ -17,8 +17,10 @@ def parseFile(source:IOBase, logger=logging.getLogger()):
 #
 
 OPERATION_TOKENS = {
-    Tokens.plus,
-    Tokens.minus,
+    Tokens.addition,
+    Tokens.subtraction,
+    Tokens.multiplication,
+    Tokens.integer_division,
 }
 
 class Parser:
