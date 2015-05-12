@@ -175,7 +175,7 @@ def Literal_emitValue(self):
     if isinstance(self.data, str):
         data = State.builder.globalString(self.data, State.getTempName())
     elif isinstance(self.data, int):
-        raise InternalError("Not Implemented")
+        data = llvm.Value.constInt(llvm.Int.new(64), self.data, False)
     else:
         raise InternalError("Not Implemented")
 
