@@ -7,6 +7,19 @@ from ..llvm import emitter as llvm
 from ..llvm.builtins import builtins
 from ..errors import CompilerError
 
+llvm.builtins = builtins
+
+BUILTINS = "compiler/jam/builtins.jm"
+
+def builtins():
+    with open(BUILTINS, "r") as f:
+        ir = parser.parseFile(f)
+
+    # Inject backend builtins into frontend builtins
+    ir.context.addChild(llvm.builtins())
+
+    return ir
+
 def _compileFunc(func):
     def f(input, *args):
         try:
