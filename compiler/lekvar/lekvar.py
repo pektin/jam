@@ -825,7 +825,7 @@ class Attribute(Type):
         self.reference = reference
 
     def copy(self):
-        return Attribute(copy(value), self.reference)
+        return Attribute(self.value, self.reference)
 
     def verify(self):
         if self.verified: return
