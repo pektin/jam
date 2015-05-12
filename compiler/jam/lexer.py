@@ -205,7 +205,7 @@ class Lexer:
         while True:
             next_nodes = []
 
-            if self.current is not None:
+            if self.current:
                 for node in current_nodes:
                     next_nodes += node.evaluate(self.current)
 
