@@ -21,6 +21,7 @@ OPERATION_TOKENS = {
     Tokens.subtraction,
     Tokens.multiplication,
     Tokens.integer_division,
+    Tokens.division,
 }
 
 class Parser:

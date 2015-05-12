@@ -65,6 +65,7 @@ Tokens = Enum("Tokens", [
     "subtraction",
     "multiplication",
     "integer_division",
+    "division",
 ])
 
 TREE = Node()
@@ -116,6 +117,7 @@ DIRECT_MAP = [
     ("-", Tokens.subtraction),
     ("*", Tokens.multiplication),
     ("//", Tokens.integer_division),
+    ("/", Tokens.division),
 
     ("def", Tokens.def_kwd),
     ("end", Tokens.end_kwd),
