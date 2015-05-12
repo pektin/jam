@@ -3,6 +3,10 @@
 class Int
   value:_builtins.Int64
 
+  def new(v:_builtins.Int64)
+    value = v
+  end
+
   def self + other:Int
     return _builtins.intAdd(value, other.value)
   end
@@ -15,8 +19,17 @@ end
 #TODO: Implement using byte arrays
 class String
   value:_builtins.String
+
+  def new(v:_builtins.String)
+    value = v
+  end
 end
 
-def puts(value)
-  _builtins.puts(value)
+#TODO: Implement properly once casting is in place
+def puts(value:Int)
+  _builtins.puts(value.value)
+end
+
+def puts(value:String)
+  _builtins.puts(value.value)
 end
