@@ -170,12 +170,17 @@ lekvar.Attribute.emitContext = Attribute_emitContext
 #
 
 def Literal_emitValue(self):
-    type = self.type.emitType()
+    self.type.emitType()
 
-    if type == LLVM_MAP["String"]:
-        return State.builder.globalString(self.data, State.getTempName())
+    if isinstance(self.data, str):
+        data = State.builder.globalString(self.data, State.getTempName())
+    elif isinstance(self.data, int):
+        raise InternalError("Not Implemented")
     else:
         raise InternalError("Not Implemented")
+
+    return llvm.Value.globalStruct([data], False)
+
 lekvar.Literal.emitValue = Literal_emitValue
 
 #
