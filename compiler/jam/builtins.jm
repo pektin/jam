@@ -24,6 +24,31 @@ class Int
   end
 end
 
+#TODO: Allow for arbitrary sizes
+class Real
+  value:_builtins.Float64
+
+  def new(v:_builtins.Float64)
+    value = v
+  end
+
+  def self + other:Real
+    return Real(_builtins.floatAdd(value, other.value))
+  end
+
+  def self - other:Real
+    return Real(_builtins.floatSub(value, other.value))
+  end
+
+  def self * other:Real
+    return Real(_builtins.floatMul(value, other.value))
+  end
+
+  def self / other:Real
+    return Real(_builtins.floatDiv(value, other.value))
+  end
+end
+
 #TODO: Implement using byte arrays
 class String
   value:_builtins.String
@@ -39,5 +64,9 @@ def puts(value:Int)
 end
 
 def puts(value:String)
+  _builtins.puts(value.value)
+end
+
+def puts(value:Real)
   _builtins.puts(value.value)
 end
