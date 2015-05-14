@@ -198,7 +198,7 @@ class Lexer:
 
     # Lex a single token
     def lex(self):
-        token_start = self.pos
+        token_start = self.pos - 1
         token_data = ""
         current_nodes = [TREE]
 
