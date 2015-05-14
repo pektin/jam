@@ -22,6 +22,6 @@ Syntax
     TypeCast: `Value` "as" `Type`
     TypeCastDef: `ImplicitCastDef` | `ExplicitCastDef`
     ImplicitCastDef: "def" "self" ":" `Type`
-                   :     `InstructionSet`
+                   :   `InstructionSet`
                    : "end"
     ExplicitCastDef: "def" "self" "as" `Type`

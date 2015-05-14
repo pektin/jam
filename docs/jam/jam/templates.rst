@@ -13,7 +13,7 @@ Syntax
 .. productionlist::
     TemplateInclude: "include" `Template`
     Template: "template" `identifier`
-            :     `ClassInstructionSet`
+            :   `ClassInstructionSet`
             : "end"
 
 Examples

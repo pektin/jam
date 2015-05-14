@@ -43,13 +43,13 @@ Syntax
 .. productionlist::
     Type: (`Identifier` | `ArrayType` | `AssociativeArrayType` | `Class` | `Enumeration`)["?"]
     InstanceVariable: `Variable` ["=" `Value`]
+    ClassInstructionSet:  (`ClassConstructor` | `InstanceVariable` | `Assignment` | `Method` | `TypeCastDef` | `TemplateInclude`
+                       : )*
     ClassConstructor: "new" [`Identifier`] "(" [ [`Argument` ","]* `Argument` ] ")"
                     :     `InstructionSet`
                     : "end"
-    ClassInstructionSet: (`ClassConstructor` | `InstanceVariable` | `Assignment` | `Method` | `TypeCastDef` | `TemplateInclude`
-                       : )*
     Class: [`Visibility`] "class" `Identifier` ["?"] [ "(" `Identifier` ")" ]
-         :     `ClassInstructionSet`
+         :   `ClassInstructionSet`
          : "end"
 
 .. note::

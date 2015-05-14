@@ -26,12 +26,10 @@ Syntax
 ======
 
 .. productionlist::
-    MethodInstructionSet: `InstructionSet` | ("return" [`Value`]
-                        : )
     Argument: `Variable` ["=" `Value`]
     Method: [`Visibility`] "def" `Identifier` "(" [ [`Argument` ","]* `Argument` ] ")" [ "->" `Type` ]
-          :     `InstructionSet`
-          : "end"
+          :   (`InstructionSet` | ("return" [`Value`])
+          : )* "end"
 
 
 Examples

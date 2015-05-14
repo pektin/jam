@@ -14,16 +14,16 @@ Syntax
 .. productionlist::
     Conditional: `IfConditional` | `CaseConditional`
     IfConditional: "if" `Value`
-                 :     `InstructionSet`
+                 :   `InstructionSet`
                  : [ "elif" `Value`
-                 :     `InstructionSet`
+                 :   `InstructionSet`
                  : ]* [ "else"
-                 :     `InstructionSet`
+                 :   `InstructionSet`
                  : ] "end"
     CaseConditional: "case" `Value`
-                   :     `InstructionSet`
+                   :   `InstructionSet`
                    : [ "when" `Value`
-                   :     `InstructionSet`
+                   :   `InstructionSet`
                    : ]* [ "else"
-                   :     `InstructionSet`
+                   :   `InstructionSet`
                    : ] "end"

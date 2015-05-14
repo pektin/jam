@@ -12,6 +12,6 @@ Syntax
 
 .. productionlist::
     Unittest: "unittest" [ `String` ]
-            :     `InstructionSet`
+            :   `InstructionSet`
             : "end"
 

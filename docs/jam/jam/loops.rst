@@ -16,11 +16,11 @@ Syntax
 .. productionlist::
     Loop: `GenericLoop` | `WhileLoop` | `ForLoop`
     GenericLoop: "loop"
-               :     `InstructionSet`
+               :   `InstructionSet`
                : "end"
     WhileLoop: "while" `Value`
-             :     `InstructionSet`
+             :   `InstructionSet`
              : "end"
     ForLoop: "for" `Variable` "in" `Value`
-           :     `InstructionSet`
+           :   `InstructionSet`
            : "end"
