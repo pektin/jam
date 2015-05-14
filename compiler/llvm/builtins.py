@@ -80,9 +80,9 @@ PRINTF_MAP = {
     "Int64": "ld",
     "Int128": "lld",
 
-    "Float16": "hf",
-    "Float32": "f",
-    "Float64": "lf",
+    "Float16": "hg",
+    "Float32": "g",
+    "Float64": "lg",
 }
 
 def llvmPrintfWrapper(type, self):
