@@ -25,6 +25,7 @@ The Jam Language Reference describes the syntax, grammar and compilation of Jam.
     jam/type-casting
     jam/arrays
     jam/associative-arrays
+    jam/enumerations
     jam/visibility
     jam/templates
     jam/unittests

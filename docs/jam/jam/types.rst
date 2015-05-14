@@ -41,7 +41,7 @@ Syntax
 ======
 
 .. productionlist::
-    Type: (`Identifier` | `ArrayType` | `AssociativeArrayType` | `Class`)["?"]
+    Type: (`Identifier` | `ArrayType` | `AssociativeArrayType` | `Class` | `Enumeration`)["?"]
     InstanceVariable: `Variable` ["=" `Value`]
     ClassConstructor: "new" [`Identifier`] "(" [ [`Argument` ","]* `Argument` ] ")"
                     :     `InstructionSet`
