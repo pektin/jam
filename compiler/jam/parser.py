@@ -172,7 +172,7 @@ class Parser:
             return self.parseModule()
         elif token.type == Tokens.identifier:
             return lekvar.Reference(self.next().data)
-        elif token.type == Tokens.integer:
+        elif token.type in (Tokens.integer, Tokens.dot):
             return self.parseNumber()
         elif token.type == Tokens.string:
             token = self.next()
@@ -186,13 +186,43 @@ class Parser:
         return lekvar.Comment(token.data, [token])
 
     def parseNumber(self):
-        token = self.next()
-        assert token.type == Tokens.integer
+        tokens = [self.next()]
 
-        #TODO: Floating point numbers
+        # Float starting with a dot
+        if tokens[0].type == Tokens.dot:
 
-        value = int(token.data.replace("_", ""))
-        return lekvar.Literal(value, lekvar.Reference("Int"), [token])
+            token = self.next()
+            if token.type != Tokens.integer:
+                self._unexpected(token)
+
+            tokens.append(token)
+            value = float("." + token.data.replace("_", ""))
+            return lekvar.Literal(value, lekvar.Reference("Real"), tokens)
+
+        assert tokens[0].type == Tokens.integer
+
+        token = self.lookAhead()
+
+        # Float with dot in the middle
+        if token.type == Tokens.dot:
+            tokens.append(self.next())
+
+            value = float(tokens[0].data.replace("_", "") + ".")
+
+            token = self.next()
+            tokens.append(token)
+
+            if token.type == Tokens.integer:
+                value += float("." + token.data.replace("_", ""))
+            else:
+                self._unexpected(token)
+
+            return lekvar.Literal(value, lekvar.Reference("Real"), tokens)
+
+        # Integer
+        else:
+            value = int(tokens[0].data.replace("_", ""))
+            return lekvar.Literal(value, lekvar.Reference("Int"), tokens)
 
     def parseOperation(self, value):
         token = self.next()
