@@ -21,4 +21,4 @@ Syntax
     AssociativeArrayType: "{" `Type` "->" `Type` "}"
     AssociativeArrayValue: "{" `AssociativeArrayElement` (("," |
                          : ) `AssociativeArrayElement`)* "}"
-    AssociativeArrayElement: `Value` "->" `Value`
+    AssociativeArrayElement: `Value` "=>" `Value`
