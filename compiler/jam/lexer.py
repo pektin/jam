@@ -49,6 +49,8 @@ Tokens = Enum("Tokens", [
     "as_kwd",
     "module_kwd",
     "self_kwd",
+    "if_kwd",
+    "else_kwd",
 
     "string",
     "integer",
@@ -126,6 +128,8 @@ DIRECT_MAP = [
     ("as", Tokens.as_kwd),
     ("module", Tokens.module_kwd),
     ("self", Tokens.self_kwd),
+    ("if", Tokens.if_kwd),
+    ("else", Tokens.else_kwd),
 ]
 
 for value, token_type in DIRECT_MAP:
