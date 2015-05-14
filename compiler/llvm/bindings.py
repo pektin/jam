@@ -357,6 +357,7 @@ Block.wrapInstanceProp("function", "LLVMGetBasicBlockParent", None, FunctionValu
 #
 
 Value.wrapConstructor("constInt", "LLVMConstInt", [Type, c_ulonglong, c_bool])
+Value.wrapConstructor("constFloat", "LLVMConstReal", [Type, c_double])
 Value.wrapConstructor("null", "LLVMConstNull", [Type])
 Value.wrapConstructor("globalStruct", "LLVMConstStruct", [[Value], c_bool])
 
