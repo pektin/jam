@@ -37,6 +37,22 @@ def builtins():
             [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.siDiv))
             for type in ints],
         ),
+        lekvar.Method("floatAdd",
+            [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.fAdd))
+            for type in floats],
+        ),
+        lekvar.Method("floatSub",
+            [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.fSub))
+            for type in floats],
+        ),
+        lekvar.Method("floatMul",
+            [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.fMul))
+            for type in floats],
+        ),
+        lekvar.Method("floatDiv",
+            [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.fDiv))
+            for type in floats],
+        ),
         lekvar.Method("puts",
             [LLVMFunction("", [type], None, partial(llvmPrintfWrapper, type))
             for type in (ints + floats + [string])],
