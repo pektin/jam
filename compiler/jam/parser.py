@@ -133,6 +133,8 @@ class Parser:
         elif token.type == Tokens.identifier:
             if self.lookAhead(2).type == Tokens.equal:
                 return self.parseAssignment()
+        elif token.type == Tokens.if_kwd:
+            return self.parseBranch()
         return self.parseValue()
 
     def parseValue(self):
@@ -370,6 +372,45 @@ class Parser:
                 self._unexpected(token)
 
         return lekvar.Class(name, constructor, attributes)
+
+    def parseBranch(self):
+        tokens = [self.next()]
+
+        assert tokens[0].type == Tokens.if_kwd
+
+        condition = self.parseValue()
+
+        if_instructions = []
+
+        while True:
+            token = self.strip()
+
+            if token is None:
+                raise SyntaxError("Expected 'end' or 'else' before EOF")
+
+            elif token.type == Tokens.end_kwd:
+                tokens.append(self.next())
+                return lekvar.Branch(condition, if_instructions, [], tokens)
+
+            elif token.type == Tokens.else_kwd:
+                tokens.append(self.next())
+                break
+
+            if_instructions.append(self.parseLine())
+
+        else_instructions = []
+
+        while True:
+            token = self.strip()
+
+            if token is None:
+                raise SyntaxError("Expected 'end' before EOF")
+
+            elif token.type == Tokens.end_kwd:
+                tokens.append(self.next())
+                return lekvar.Branch(condition, if_instructions, else_instructions, tokens)
+
+            else_instructions.append(self.parseLine())
 
     # Parse a variable, with optional type signature
     def parseVariable(self):
