@@ -62,7 +62,7 @@ end
 class Bool
   value:_builtins.Bool
 
-  def new(v:_builtins.Bool)
+  new(v:_builtins.Bool)
     value = v
   end
 end
