@@ -610,6 +610,38 @@ class Constructor(Function):
                 raise SyntaxError("Returns within constructors are invalid")
 
 #
+# Branch
+#
+
+class Branch(Object):
+    condition = None
+    true_instructions = None
+    false_instructions = None
+
+    def __init__(self, condition, true_instructions, false_instructions, tokens = None):
+        super().__init__(tokens)
+
+        self.condition = condition
+        self.true_instructions = true_instructions
+        self.false_instructions = false_instructions
+
+    def copy(self):
+        return Branch(self.condition, self.true_instructions, self.false_instructions)
+
+    def verify(self):
+        self.condition.verify()
+
+        #TODO: Analysis on branch dependent instructions
+        for instruction in self.true_instructions:
+            instruction.verify()
+
+        for instruction in self.false_instructions:
+            instruction.verify()
+
+    def resolveType(self):
+        return None
+
+#
 # Variable
 #
 # A variable is a simple container for a value. The scope object may be used
