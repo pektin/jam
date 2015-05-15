@@ -52,6 +52,9 @@ Tokens = Enum("Tokens", [
     "if_kwd",
     "else_kwd",
 
+    "true_kwd",
+    "false_kwd",
+
     "string",
     "integer",
     "newline",
@@ -130,6 +133,9 @@ DIRECT_MAP = [
     ("self", Tokens.self_kwd),
     ("if", Tokens.if_kwd),
     ("else", Tokens.else_kwd),
+
+    ("true", Tokens.true_kwd),
+    ("false", Tokens.false_kwd),
 ]
 
 for value, token_type in DIRECT_MAP:

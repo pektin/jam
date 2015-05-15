@@ -176,11 +176,23 @@ class Parser:
             return lekvar.Reference(self.next().data)
         elif token.type in (Tokens.integer, Tokens.dot):
             return self.parseNumber()
+        elif token.type in (Tokens.true_kwd, Tokens.false_kwd):
+            return self.parseConstant()
         elif token.type == Tokens.string:
             token = self.next()
             return lekvar.Literal(token.data, lekvar.Reference("String"))
 
         self._unexpected(token)
+
+    def parseConstant(self):
+        token = self.next()
+
+        if token.type == Tokens.true_kwd:
+            return lekvar.Literal(1, lekvar.Reference("Bool"))
+        elif token.type == Tokens.false_kwd:
+            return lekvar.Literal(0, lekvar.Reference("Bool"))
+        else:
+            raise InternalError("Invalid constant token type")
 
     def parseComment(self):
         token = self.next()
