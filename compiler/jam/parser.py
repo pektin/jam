@@ -165,7 +165,7 @@ class Parser:
 
         # Identify the kind of value
         if token.type == Tokens.def_kwd:
-            return self.parseMethod()
+            return self.parseMethod(False)
         elif token.type == Tokens.class_kwd:
             return self.parseClass()
         elif token.type == Tokens.module_kwd:
@@ -233,10 +233,13 @@ class Parser:
 
         return lekvar.Call(lekvar.Attribute(value, operator), [other], [token])
 
-    def parseMethod(self):
+    def parseMethod(self, isConstructor):
         # "def" should have already been identified
         tokens = [self.next()]
-        assert tokens[0].type == Tokens.def_kwd
+        if (isConstructor):
+            assert tokens[0].type == Tokens.new_kwd
+        else:
+            assert tokens[0].type == Tokens.def_kwd
 
         # Check for operation definitions
         if self.lookAhead().type == Tokens.self_kwd:
@@ -251,6 +254,9 @@ class Parser:
 
             arguments = [self.parseVariable()]
             default_values = [None]
+        elif tokens[0].type == Tokens.new_kwd:
+            name = ""
+            arguments, default_values = self.parseMethodArguments()
         else:
             token = self.expect(Tokens.identifier)
             tokens.append(token)
@@ -359,11 +365,11 @@ class Parser:
                 self.next()
                 break
             elif token.type == Tokens.def_kwd:
-                meth = self.parseMethod()
-                if meth.name == "new":
-                    constructor = meth
-                else:
-                    attributes.append(meth)
+                meth = self.parseMethod(False)
+                attributes.append(meth)
+            elif token.type == Tokens.new_kwd:
+                meth = self.parseMethod(True)
+                constructor = meth
             elif token.type == Tokens.identifier:
                 attributes.append(self.parseVariable())
             else:
