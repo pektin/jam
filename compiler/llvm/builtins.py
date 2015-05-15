@@ -4,7 +4,12 @@ from .emitter import *
 from ..lekvar import lekvar
 from . import bindings as llvm
 
+printf = None
+
 def builtins():
+    global printf
+    printf = None
+
     string = LLVMType("String")
     ints = [
         LLVMType("Int8"),
@@ -18,9 +23,10 @@ def builtins():
         LLVMType("Float32"),
         LLVMType("Float64"),
     ]
+    bool = LLVMType("Bool")
     return lekvar.Module("_builtins",
         ints + floats + [
-        string,
+        string, bool,
         lekvar.Method("intAdd",
             [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.iAdd))
             for type in ints],
@@ -86,8 +92,11 @@ PRINTF_MAP = {
 }
 
 def llvmPrintfWrapper(type, self):
+    global printf
     func_type = llvm.Function.new(llvm.Type.void(), [LLVMType("String").emitType()], True)
-    printf = State.module.addFunction("printf", func_type)
+
+    if printf is None:
+        printf = State.module.addFunction("printf", func_type)
 
     name = resolveName(self)
     func_type = self.type.emitType()

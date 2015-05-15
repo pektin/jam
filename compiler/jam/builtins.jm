@@ -58,6 +58,15 @@ class String
   end
 end
 
+#TODO: Implement properly
+class Bool
+  value:_builtins.Bool
+
+  def new(v:_builtins.Bool)
+    value = v
+  end
+end
+
 #TODO: Implement properly once casting is in place
 def puts(value:Int)
   _builtins.puts(value.value)

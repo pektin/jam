@@ -545,6 +545,7 @@ def LLVMType_emitType(self):
     if LLVM_MAP is None:
         LLVM_MAP = {
             "String": llvm.Pointer.new(llvm.Int.new(8), 0),
+            "Bool": llvm.Int.new(1),
             "Int8": llvm.Int.new(8),
             "Int16": llvm.Int.new(16),
             "Int32": llvm.Int.new(32),
