@@ -207,6 +207,7 @@ Module.wrapInstanceFunc("dump", "LLVMDumpModule")
 Module.wrapInstanceFunc("toString", "LLVMPrintModuleToString", [], c_char_p)
 Module.wrapInstanceFunc("getType", "LLVMGetTypeByName", [c_char_p], Type)
 Module.wrapInstanceFunc("addFunction", "LLVMAddFunction", [c_char_p, Function], FunctionValue)
+Module.wrapInstanceFunc("addVariable", "LLVMAddGlobal", [Type, c_char_p], Value)
 
 Module.wrapInstanceFunc("verify", "LLVMVerifyModule", [c_uint, c_void_p], c_bool)
 
@@ -359,10 +360,12 @@ Block.wrapInstanceProp("function", "LLVMGetBasicBlockParent", None, FunctionValu
 Value.wrapConstructor("constInt", "LLVMConstInt", [Type, c_ulonglong, c_bool])
 Value.wrapConstructor("constFloat", "LLVMConstReal", [Type, c_double])
 Value.wrapConstructor("null", "LLVMConstNull", [Type])
+Value.wrapConstructor("undef", "LLVMGetUndef", [Type])
 Value.wrapConstructor("globalStruct", "LLVMConstStruct", [[Value], c_bool])
 
 Value.wrapInstanceProp("type", "LLVMTypeOf", None, Type)
 Value.wrapInstanceFunc("dump", "LLVMDumpValue")
+Value.wrapInstanceFunc("setInit", "LLVMSetInitializer", [Value])
 
 FunctionValue.wrapInstanceFunc("appendBlock", "LLVMAppendBasicBlock", [c_char_p], Block)
 FunctionValue.wrapInstanceFunc("getLastBlock", "LLVMGetLastBasicBlock", [], Block)
