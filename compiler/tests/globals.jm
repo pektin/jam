@@ -1,4 +1,4 @@
-?#Hello World!\n
+#Hello World!\n
 
 bar = "Hello World!"
 foo()
