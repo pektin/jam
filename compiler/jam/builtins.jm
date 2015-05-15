@@ -3,7 +3,7 @@
 class Int
   value:_builtins.Int64
 
-  def new(v:_builtins.Int64)
+  new(v:_builtins.Int64)
     value = v
   end
 
@@ -28,7 +28,7 @@ end
 class Real
   value:_builtins.Float64
 
-  def new(v:_builtins.Float64)
+  new(v:_builtins.Float64)
     value = v
   end
 
@@ -53,7 +53,7 @@ end
 class String
   value:_builtins.String
 
-  def new(v:_builtins.String)
+  new(v:_builtins.String)
     value = v
   end
 end

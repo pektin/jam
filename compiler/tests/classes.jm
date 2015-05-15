@@ -3,7 +3,7 @@
 class Person
     forename:String
     surname:String
-    def new(fore:String, sur:String)
+    new (fore:String, sur:String)
         forename = fore
         surname = sur
     end
