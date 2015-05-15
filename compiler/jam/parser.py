@@ -167,7 +167,7 @@ class Parser:
 
         # Identify the kind of value
         if token.type == Tokens.def_kwd:
-            return self.parseMethod(False)
+            return self.parseMethod()
         elif token.type == Tokens.class_kwd:
             return self.parseClass()
         elif token.type == Tokens.module_kwd:
@@ -247,10 +247,10 @@ class Parser:
 
         return lekvar.Call(lekvar.Attribute(value, operator), [other], [token])
 
-    def parseMethod(self, isConstructor):
-        # "def" should have already been identified
+    def parseMethod(self, is_constructor = False):
+        # starting keyword should have already been identified
         tokens = [self.next()]
-        if (isConstructor):
+        if is_constructor:
             assert tokens[0].type == Tokens.new_kwd
         else:
             assert tokens[0].type == Tokens.def_kwd
@@ -379,7 +379,7 @@ class Parser:
                 self.next()
                 break
             elif token.type == Tokens.def_kwd:
-                meth = self.parseMethod(False)
+                meth = self.parseMethod()
                 attributes.append(meth)
             elif token.type == Tokens.new_kwd:
                 meth = self.parseMethod(True)
