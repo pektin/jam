@@ -318,7 +318,7 @@ class DependentType(Type):
 # Functions are a basic container for instructions.
 
 class Function(BoundObject):
-    local_context = None
+    _local_context = None
     closed_context = None
 
     arguments = None
@@ -328,10 +328,13 @@ class Function(BoundObject):
     dependent = False
     verified = False
 
-    def __init__(self, name:str, arguments:[Variable], instructions:[Object], return_type:Type = None, tokens = None):
+    def __init__(self, name:str, arguments:[Variable], instructions:[Object], return_type:Type = None, tokens = None, static = False):
         super().__init__(name, tokens)
+        self._bound_context = None
 
-        self.local_context = Context(self, arguments)
+        self.static = static
+        if not static:
+            self._local_context = Context(self, arguments)
         self.closed_context = Context(self, [])
 
         self.arguments = arguments
@@ -343,6 +346,22 @@ class Function(BoundObject):
                 self.dependent = True
 
         self.type = FunctionType(name, [arg.type for arg in arguments], return_type)
+
+    @property
+    def local_context(self):
+        if self.static:
+            return self._bound_context
+        return self._local_context
+
+    @property
+    def bound_context(self):
+        if self.static:
+            return self._bound_context.scope.bound_context
+        return self._bound_context
+
+    @bound_context.setter
+    def bound_context(self, value):
+        self._bound_context = value
 
     def copy(self):
         fn = Function(self.name, list(map(copy, self.arguments)), list(map(copy, self.instructions)), self.type.return_type)

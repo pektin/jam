@@ -117,7 +117,7 @@ class Parser:
                 instructions.append(value)
 
         return lekvar.Module(module_name, list(children.values()),
-               lekvar.Function("", [], instructions, None), tokens)
+               lekvar.Function("", [], instructions, None, static=True), tokens)
 
     def parseLine(self):
         # Parse a line. The line may not exist
