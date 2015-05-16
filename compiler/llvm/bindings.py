@@ -350,6 +350,9 @@ Struct.wrapConstructor("new", "LLVMStructType", [[Type], c_bool])
 #
 
 Block.wrapInstanceFunc("asValue", "LLVMBasicBlockAsValue", [], Value)
+Block.wrapInstanceFunc("getPrevious", "LLVMGetPreviousBasicBlock", [], Block)
+Block.wrapInstanceFunc("getNext", "LLVMGetNextBasicBlock", [], Block)
+Block.wrapInstanceFunc("insertBlock", "LLVMInsertBasicBlock", [c_char_p], Block)
 
 Block.wrapInstanceProp("function", "LLVMGetBasicBlockParent", None, FunctionValue)
 
