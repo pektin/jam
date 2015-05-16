@@ -188,9 +188,9 @@ class Parser:
         token = self.next()
 
         if token.type == Tokens.true_kwd:
-            return lekvar.Literal(1, lekvar.Reference("Bool"))
+            return lekvar.Literal(True, lekvar.Reference("Bool"))
         elif token.type == Tokens.false_kwd:
-            return lekvar.Literal(0, lekvar.Reference("Bool"))
+            return lekvar.Literal(False, lekvar.Reference("Bool"))
         else:
             raise InternalError("Invalid constant token type")
 
