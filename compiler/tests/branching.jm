@@ -1,4 +1,4 @@
-?#foo\nbar\n
+#foo\nbar\n
 
 if true
   puts("foo")

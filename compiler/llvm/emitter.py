@@ -18,7 +18,8 @@ def emit(module:lekvar.Module, logger = logging.getLogger()):
     with State.begin("main", logger):
         module.emit()
 
-    State.logger.info("LLVM output: {}".format(State.module.verify(llvm.FailureAction.PrintMessageAction, None)))
+    message = State.module.verify(llvm.FailureAction.PrintMessageAction, None)
+
     return State.module
 
 def compile(module:llvm.Module):
@@ -174,6 +175,8 @@ def Literal_emitValue(self):
 
     if isinstance(self.data, str):
         data = State.builder.globalString(self.data, State.getTempName())
+    elif isinstance(self.data, bool):
+        data = llvm.Value.constInt(llvm.Int.new(1), self.data, False)
     elif isinstance(self.data, int):
         data = llvm.Value.constInt(llvm.Int.new(64), self.data, False)
     elif isinstance(self.data, float):
@@ -523,6 +526,34 @@ def Class_emitType(self):
     self.emit()
     return self.llvm_type
 lekvar.Class.emitType = Class_emitType
+
+#
+# class Branch
+#
+
+def Branch_emitValue(self):
+    # Grab the last block
+    last_block = self.function.llvm_value.getLastBlock()
+    # Create blocks
+    if_block = last_block.insertBlock("if")
+    else_block = last_block.insertBlock("else")
+    after = last_block.insertBlock("after")
+
+    # Emit condition
+    State.builder.positionAtEnd(if_block.getPrevious())
+    condition = State.builder.extractValue(self.condition.emitValue(), 0, State.getTempName())
+    State.builder.condBr(condition, if_block, else_block)
+
+    for block, instructions in [(if_block, self.true_instructions), (else_block, self.false_instructions)]:
+        State.builder.positionAtEnd(block)
+        for instruction in instructions:
+            instruction.emitValue()
+        State.builder.br(after)
+
+    State.builder.positionAtEnd(after)
+
+
+lekvar.Branch.emitValue = Branch_emitValue
 
 #
 # BUILTINS
