@@ -1,4 +1,4 @@
-#foo\nbar\n
+#foo\nbar\nfoo\n
 
 if true
   puts("foo")
@@ -10,4 +10,8 @@ if false
   puts("foo")
 else
   puts("bar")
+end
+
+if true
+  puts("foo")
 end
