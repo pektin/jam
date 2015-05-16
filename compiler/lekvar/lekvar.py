@@ -633,6 +633,7 @@ class Constructor(Function):
 #
 
 class Branch(Object):
+    function = None
     condition = None
     true_instructions = None
     false_instructions = None
@@ -648,6 +649,10 @@ class Branch(Object):
         return Branch(self.condition, self.true_instructions, self.false_instructions)
 
     def verify(self):
+        if not isinstance(State.scope, Function):
+            raise SyntaxError("Cannot branch outside method")
+        self.function = State.scope
+
         self.condition.verify()
 
         #TODO: Analysis on branch dependent instructions
