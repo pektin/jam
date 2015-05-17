@@ -269,16 +269,16 @@ Builder.wrapInstanceFunc("fRem", "LLVMBuildFRem", [Value, Value, c_char_p], Valu
 Builder.wrapInstanceFunc("iCmp", "LLVMBuildICmp", [c_uint, Value, Value, c_char_p], Value)
 
 class IntPredicate:
-    equal = 0
-    not_equal = 1
-    unsigned_greater_than = 2
-    unsigned_greater_or_equal_to = 3
-    unsigned_less_than = 4
-    unsigned_less_or_equal_to = 5
-    signed_greater_than = 6
-    signed_greater_or_equal_to = 7
-    signed_less_than = 8
-    signed_less_or_equal_to = 9
+    equal = 32
+    unequal = 33
+    unsigned_greater_than = 34
+    unsigned_greater_or_equal_to = 35
+    unsigned_less_than = 36
+    unsigned_less_or_equal_to = 37
+    signed_greater_than = 38
+    signed_greater_or_equal_to = 39
+    signed_less_than = 40
+    signed_less_or_equal_to = 41
 
 Builder.wrapInstanceFunc("fCmp", "LLVMBuildFCmp", [c_uint, Value, Value, c_char_p], Value)
 
