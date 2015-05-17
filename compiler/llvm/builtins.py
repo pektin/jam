@@ -43,6 +43,14 @@ def builtins():
             [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.siDiv))
             for type in ints],
         ),
+        lekvar.Method("intEqual",
+            [LLVMFunction("", [type, type], bool, partial(llvmInstructionWrapper, llvm.Builder.iCmp, additional_arguments = [llvm.IntPredicate.equal]))
+            for type in ints],
+        ),
+        lekvar.Method("intUnequal",
+            [LLVMFunction("", [type, type], bool, partial(llvmInstructionWrapper, llvm.Builder.iCmp, additional_arguments = [llvm.IntPredicate.unequal]))
+            for type in ints],
+        ),
         lekvar.Method("floatAdd",
             [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.fAdd))
             for type in floats],
@@ -65,7 +73,7 @@ def builtins():
         ),
     ], lekvar.Function("main", [], [], None))
 
-def llvmInstructionWrapper(instruction, self):
+def llvmInstructionWrapper(instruction, self, additional_arguments = []):
     name = resolveName(self)
     func_type = self.type.emitType()
     self.llvm_value = State.module.addFunction(name, func_type)
@@ -74,7 +82,8 @@ def llvmInstructionWrapper(instruction, self):
     with State.blockScope(entry):
         lhs = self.llvm_value.getParam(0)
         rhs = self.llvm_value.getParam(1)
-        return_value = instruction(State.builder, lhs, rhs, "")
+        arguments = [State.builder] + additional_arguments + [lhs, rhs, ""]
+        return_value = instruction(*arguments)
         State.builder.ret(return_value)
 
 PRINTF_MAP = {

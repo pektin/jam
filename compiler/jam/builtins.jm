@@ -22,6 +22,14 @@ class Int
   def self // other:Int
     return Int(_builtins.intDiv(value, other.value))
   end
+
+  def self == other:Int
+    return Bool(_builtins.intEqual(value, other.value))
+  end
+
+  def self != other:Int
+    return Bool(_builtins.intUnequal(value, other.value))
+  end
 end
 
 #TODO: Allow for arbitrary sizes
