@@ -22,6 +22,12 @@ OPERATION_TOKENS = {
     Tokens.multiplication,
     Tokens.integer_division,
     Tokens.division,
+    Tokens.equality,
+    Tokens.inequality,
+    Tokens.smaller_than_or_equal_to,
+    Tokens.smaller_than,
+    Tokens.greater_than_or_equal_to,
+    Tokens.greater_than,
 }
 
 class Parser:
