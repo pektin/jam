@@ -72,6 +72,12 @@ Tokens = Enum("Tokens", [
     "multiplication",
     "integer_division",
     "division",
+    "equality",
+    "inequality",
+    "smaller_than",
+    "smaller_than_or_equal_to",
+    "greater_than",
+    "greater_than_or_equal_to",
 ])
 
 TREE = Node()
@@ -110,6 +116,20 @@ node.links.append((end_node, lambda c: c == WYSIWYG_STRING_CHAR))
 # Direct maps
 # Must be ordered by length for duplicated characters
 DIRECT_MAP = [
+    # Operators
+    ("+", Tokens.addition),
+    ("-", Tokens.subtraction),
+    ("*", Tokens.multiplication),
+    ("//", Tokens.integer_division),
+    ("/", Tokens.division),
+    ("==", Tokens.equality),
+    ("!=", Tokens.inequality),
+    ("<=", Tokens.smaller_than_or_equal_to),
+    ("<", Tokens.smaller_than),
+    (">=", Tokens.greater_than_or_equal_to),
+    (">", Tokens.greater_than),
+
+    # Instructions
     ("\n", Tokens.newline),
     ("(", Tokens.group_start),
     (")", Tokens.group_end),
@@ -119,12 +139,7 @@ DIRECT_MAP = [
     ("=", Tokens.equal),
     (".", Tokens.dot),
 
-    ("+", Tokens.addition),
-    ("-", Tokens.subtraction),
-    ("*", Tokens.multiplication),
-    ("//", Tokens.integer_division),
-    ("/", Tokens.division),
-
+    # Keywords
     ("def", Tokens.def_kwd),
     ("end", Tokens.end_kwd),
     ("return", Tokens.return_kwd),
@@ -136,6 +151,7 @@ DIRECT_MAP = [
     ("if", Tokens.if_kwd),
     ("else", Tokens.else_kwd),
 
+    # Constants
     ("true", Tokens.true_kwd),
     ("false", Tokens.false_kwd),
 ]

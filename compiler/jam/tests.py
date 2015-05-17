@@ -14,6 +14,7 @@ def test_lexer():
     test = """# def:end )=
 def :def_end=new  (return(a)  #
     if=else-78_788_934_0 ///*
+  ===<=>=<>!=
 defend+_- end"""
     # Expected output token types
     expected = [
@@ -41,6 +42,15 @@ defend+_- end"""
         lexer.Tokens.integer_division,
         lexer.Tokens.division,
         lexer.Tokens.multiplication,
+        lexer.Tokens.newline,
+
+        lexer.Tokens.equality,
+        lexer.Tokens.equal,
+        lexer.Tokens.smaller_than_or_equal_to,
+        lexer.Tokens.greater_than_or_equal_to,
+        lexer.Tokens.smaller_than,
+        lexer.Tokens.greater_than,
+        lexer.Tokens.inequality,
         lexer.Tokens.newline,
 
         lexer.Tokens.identifier,

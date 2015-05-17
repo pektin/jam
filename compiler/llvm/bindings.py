@@ -266,6 +266,40 @@ Builder.wrapInstanceFunc("fMul", "LLVMBuildFMul", [Value, Value, c_char_p], Valu
 Builder.wrapInstanceFunc("fDiv", "LLVMBuildFDiv", [Value, Value, c_char_p], Value)
 Builder.wrapInstanceFunc("fRem", "LLVMBuildFRem", [Value, Value, c_char_p], Value)
 
+Builder.wrapInstanceFunc("iCmp", "LLVMBuildICmp", [c_uint, Value, Value, c_char_p], Value)
+
+class IntPredicate:
+    equal = 0
+    not_equal = 1
+    unsigned_greater_than = 2
+    unsigned_greater_or_equal_to = 3
+    unsigned_less_than = 4
+    unsigned_less_or_equal_to = 5
+    signed_greater_than = 6
+    signed_greater_or_equal_to = 7
+    signed_less_than = 8
+    signed_less_or_equal_to = 9
+
+Builder.wrapInstanceFunc("fCmp", "LLVMBuildFCmp", [c_uint, Value, Value, c_char_p], Value)
+
+class RealPredicate:
+    # always_false = 0
+    ordered_equal = 1
+    ordered_greater_than = 2
+    ordered_greter_or_equal_to = 3
+    ordered_less_than = 4
+    ordered_less_or_equal_to = 5
+    ordered_unequal = 6
+    ordered = 7
+    unordered = 8
+    unordered_equal = 9
+    unordered_greater_than = 10
+    unordered_greter_or_equal_to = 11
+    unordered_less_than = 12
+    unordered_less_or_equal_to = 13
+    unordered_unequal = 14
+    # always_true = 15
+
 Builder.wrapInstanceFunc("inBoundsGEP", "LLVMBuildInBoundsGEP", [Value, [Value], c_char_p], Value)
 Builder.wrapInstanceFunc("structGEP", "LLVMBuildStructGEP", [Value, c_uint, c_char_p], Value)
 
