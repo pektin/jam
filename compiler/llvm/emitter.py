@@ -18,7 +18,12 @@ def emit(module:lekvar.Module, logger = logging.getLogger()):
     with State.begin("main", logger):
         module.emit()
 
-    message = State.module.verify(llvm.FailureAction.PrintMessageAction, None)
+    error = State.module.verify(llvm.FailureAction.ReturnStatusAction, None)
+    # A error occurred for values < 0
+    if error < 0:
+        State.module.verify(llvm.FailureAction.PrintMessageAction, None)
+        State.module.dump()
+        raise InternalError("LLVMError: Dumped to stdout.")
 
     return State.module
 
