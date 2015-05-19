@@ -812,7 +812,7 @@ class Literal(Object):
         return self.type
 
     def __repr__(self):
-        return "{}".format(self.type, self.data)
+        return "{}({})".format(self.type, self.data)
 
 #
 # Reference
