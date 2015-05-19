@@ -16,19 +16,15 @@ def parseFile(source:IOBase, logger=logging.getLogger()):
 # Parser
 #
 
-OPERATION_TOKENS = {
-    Tokens.addition,
-    Tokens.subtraction,
-    Tokens.multiplication,
-    Tokens.integer_division,
-    Tokens.division,
-    Tokens.equality,
-    Tokens.inequality,
-    Tokens.smaller_than_or_equal_to,
-    Tokens.smaller_than,
-    Tokens.greater_than_or_equal_to,
-    Tokens.greater_than,
-}
+BINARY_OPERATIONS = [
+    {Tokens.equality, Tokens.inequality,
+     Tokens.smaller_than, Tokens.smaller_than_or_equal_to,
+     Tokens.greater_than, Tokens.greater_than_or_equal_to},
+    {Tokens.addition, Tokens.subtraction},
+    {Tokens.multiplication, Tokens.division, Tokens.integer_division},
+]
+
+OPERATION_TOKENS = {type for operation in BINARY_OPERATIONS for type in operation }
 
 class Parser:
     lexer = None
@@ -144,6 +140,59 @@ class Parser:
         return self.parseValue()
 
     def parseValue(self):
+        values = [self.parseUnaryOperation()]
+        operations = []
+
+        while True:
+            token = self.strip([Tokens.comment, Tokens.newline])
+
+            if token and token.type in OPERATION_TOKENS:
+                operations.append(self.next())
+                values.append(self.parseUnaryOperation())
+            else:
+                break
+
+        return self.parseBinaryOperation(values, operations)
+
+    def parseBinaryOperation(self, values, operations, operation_index = 0):
+        if len(values) == 1:
+            return values[0]
+
+        if operation_index == len(BINARY_OPERATIONS):
+            raise InternalError("Unparsed operations detected {}".format(values))
+
+
+        # Accumulate values from higher order operations
+        # Separated by current order operations
+        operation_values = []
+        operation_operations = []
+
+        previous_index = 0
+        for index, operation in enumerate(operations):
+            if operation.type in BINARY_OPERATIONS[operation_index]:
+                operation_operations.append(operation)
+
+                operation_values.append(self.parseBinaryOperation(
+                    values[previous_index:index + 1],
+                    operations[previous_index:index],
+                    operation_index + 1,
+                ))
+                previous_index = index + 1
+        operation_values.append(self.parseBinaryOperation(
+            values[previous_index:],
+            operations[previous_index:],
+            operation_index + 1,
+        ))
+
+        # Accumulate operations (left to right)
+        lhs = operation_values[0]
+        for index, operation in enumerate(operation_operations):
+            rhs = operation_values[index + 1]
+            lhs = lekvar.Call(lekvar.Attribute(lhs, operation.data), [rhs], operation)
+
+        return lhs
+
+    def parseUnaryOperation(self):
         value = self.parseSingleValue()
 
         while True:
@@ -156,8 +205,6 @@ class Parser:
                 value = self.parseCall(value)
             elif token.type == Tokens.dot:
                 value = self.parseAttribute(value)
-            elif token.type in OPERATION_TOKENS:
-                value = self.parseOperation(value)
             else:
                 break
 
@@ -243,15 +290,6 @@ class Parser:
         else:
             value = int(tokens[0].data.replace("_", ""))
             return lekvar.Literal(value, lekvar.Reference("Int"), tokens)
-
-    def parseOperation(self, value):
-        token = self.next()
-        assert token.type in OPERATION_TOKENS
-        operator = token.data
-
-        other = self.parseValue()
-
-        return lekvar.Call(lekvar.Attribute(value, operator), [other], [token])
 
     def parseMethod(self, is_constructor = False):
         # starting keyword should have already been identified
