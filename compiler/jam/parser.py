@@ -291,15 +291,14 @@ class Parser:
             value = int(tokens[0].data.replace("_", ""))
             return lekvar.Literal(value, lekvar.Reference("Int"), tokens)
 
-    def parseMethod(self, is_constructor = False):
+    def parseMethod(self):
         # starting keyword should have already been identified
         tokens = [self.next()]
-        if is_constructor:
-            assert tokens[0].type == Tokens.new_kwd
-        else:
-            assert tokens[0].type == Tokens.def_kwd
+        assert tokens[0].type == Tokens.def_kwd
 
-        # Check for operation definitions
+        # Parse different kinds of methods
+
+        # Operations
         if self.lookAhead().type == Tokens.self_kwd:
             tokens.append(self.next())
 
@@ -312,9 +311,7 @@ class Parser:
 
             arguments = [self.parseVariable()]
             default_values = [None]
-        elif tokens[0].type == Tokens.new_kwd:
-            name = ""
-            arguments, default_values = self.parseMethodArguments()
+        # Normal named methods
         else:
             token = self.expect(Tokens.identifier)
             tokens.append(token)
@@ -323,7 +320,19 @@ class Parser:
 
         return_type = self.parseTypeSig(Tokens.returns)
 
+        return self.parseMethodBody(name, arguments, default_values, return_type, tokens)
 
+    def parseConstructor(self):
+        # starting keyword should have already been identified
+        tokens = [self.next()]
+        assert tokens[0].type == Tokens.new_kwd
+
+        name = ""
+        arguments, default_values = self.parseMethodArguments()
+
+        return self.parseMethodBody(name, arguments, default_values, None, tokens)
+
+    def parseMethodBody(self, name, arguments, default_values, return_type, tokens):
         # Parse instructions
         instructions = []
 
@@ -426,7 +435,7 @@ class Parser:
                 meth = self.parseMethod()
                 attributes.append(meth)
             elif token.type == Tokens.new_kwd:
-                meth = self.parseMethod(True)
+                meth = self.parseConstructor()
                 constructor = meth
             elif token.type == Tokens.identifier:
                 attributes.append(self.parseVariable())
