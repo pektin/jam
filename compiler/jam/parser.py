@@ -380,38 +380,36 @@ class Parser:
     def parseMethodArguments(self):
         arguments, default_values = [], []
 
-        token = self.lookAhead()
-        if token.type != Tokens.newline and token.type != Tokens.typeof: # Allow for no arguments
-            token = self.next()
+        token = self.next()
 
-            # Arguments start with "("
-            if token.type != Tokens.group_start:
-                self._unexpected(token)
+        # Arguments start with "("
+        if token.type != Tokens.group_start:
+            self._unexpected(token)
 
-            if self.lookAhead().type != Tokens.group_end: # Allow for no arguments
+        if self.lookAhead().type != Tokens.group_end: # Allow for no arguments
 
-                # Parse arguments
-                while True:
-                    arguments.append(self.parseVariable())
+            # Parse arguments
+            while True:
+                arguments.append(self.parseVariable())
 
-                    # Parse default arguments
+                # Parse default arguments
+                token = self.next()
+                if token.type == Tokens.equal:
+                    default_values.append(self.parseValue())
                     token = self.next()
-                    if token.type == Tokens.equal:
-                        default_values.append(self.parseValue())
-                        token = self.next()
-                    else:
-                        default_values.append(None)
+                else:
+                    default_values.append(None)
 
-                    # Arguments separated by comma
-                    if token.type == Tokens.comma:
-                        continue
-                    # Arguments end with ")"
-                    elif token.type == Tokens.group_end:
-                        break
-                    else:
-                        self._unexpected(token)
-            else:
-                self.next()
+                # Arguments separated by comma
+                if token.type == Tokens.comma:
+                    continue
+                # Arguments end with ")"
+                elif token.type == Tokens.group_end:
+                    break
+                else:
+                    self._unexpected(token)
+        else:
+            self.next()
 
         return arguments, default_values
 
