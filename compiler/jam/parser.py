@@ -234,8 +234,20 @@ class Parser:
         elif token.type == Tokens.string:
             token = self.next()
             return lekvar.Literal(token.data, lekvar.Reference("String"))
+        elif token.type == Tokens.group_start:
+            return self.parseGrouping()
 
         self._unexpected(token)
+
+    def parseGrouping(self):
+        token = self.next()
+        assert token.type == Tokens.group_start
+
+        value = self.parseValue()
+
+        self.expect(Tokens.group_end)
+
+        return value
 
     def parseConstant(self):
         token = self.next()
