@@ -443,8 +443,7 @@ class ExternalFunction(BoundObject):
     resolveCall = Function.resolveCall
 
     def __repr__(self):
-        return "def {}=>{}({}) -> {}".format(self.name, self.external_name,
-            (", ".join(str(arg) for arg in self.arguments)), self.type)
+        return "def {}=>{} -> {}".format(self.name, self.external_name, self.type)
 
 class FunctionType(Type):
     arguments = None
