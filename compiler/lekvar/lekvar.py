@@ -636,6 +636,55 @@ class Constructor(Function):
                 raise SyntaxError("Returns within constructors are invalid")
 
 #
+# Loop
+#
+
+class Loop(Object):
+    function = None
+    instructions = None
+
+    def __init__(self, instructions, tokens = None):
+        super().__init__(tokens)
+
+        self.instructions = instructions
+
+    def copy(self):
+        return Loop(self.instructions)
+
+    def verify(self):
+        if not isinstance(State.scope, Function):
+            raise SyntaxError("Cannot branch outside method")
+        self.function = State.scope
+
+        with State.softScoped(self):
+            for instruction in self.instructions:
+                instruction.verify()
+
+    def resolveType(self):
+        return None
+
+#
+# Break
+#
+
+class Break(Object):
+    loop = None
+
+    def __init__(self, tokens = None):
+        super().__init__(tokens)
+
+    def copy(self):
+        return Break()
+
+    def verify(self):
+        if not isinstance(State.soft_scope, Loop):
+            raise SyntaxError("Cannot break outside loop")
+        self.loop = State.soft_scope
+
+    def resolveType(self):
+        return None
+
+#
 # Branch
 #
 
