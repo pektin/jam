@@ -59,15 +59,14 @@ def resolveReference(reference:str):
 
 # More general copy function which handles None
 def copy(obj):
-    if obj is not None:
-        return obj.copy()
-    return None
+    return obj.copy() if obj else None
 
 # The global state for the verifier
 class State:
     builtins = None
     logger = None
     scope = None
+    soft_scope = None
 
     @classmethod
     @contextmanager
@@ -76,6 +75,14 @@ class State:
         cls.scope = scope
         yield
         cls.scope = previous
+
+    @classmethod
+    @contextmanager
+    def softScoped(cls, scope:Object):
+        previous = cls.soft_scope
+        cls.soft_scope = scope
+        yield
+        cls.soft_scope = previous
 
 #
 # Abstract Base Structures
@@ -655,12 +662,13 @@ class Branch(Object):
 
         self.condition.verify()
 
-        #TODO: Analysis on branch dependent instructions
-        for instruction in self.true_instructions:
-            instruction.verify()
+        with State.softScoped(self):
+            #TODO: Analysis on branch dependent instructions
+            for instruction in self.true_instructions:
+                instruction.verify()
 
-        for instruction in self.false_instructions:
-            instruction.verify()
+            for instruction in self.false_instructions:
+                instruction.verify()
 
     def resolveType(self):
         return None
