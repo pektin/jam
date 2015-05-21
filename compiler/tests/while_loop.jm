@@ -1,0 +1,7 @@
+?#foo\nfoo\nfoo\n
+
+i = 0
+while i < 3
+    puts("foo")
+    i = i + 1
+end
