@@ -137,6 +137,8 @@ class Parser:
                 return self.parseAssignment()
         elif token.type == Tokens.if_kwd:
             return self.parseBranch()
+        elif token.type == Tokens.while_kwd:
+            return self.parseWhile()
         return self.parseValue()
 
     def parseValue(self):
@@ -453,6 +455,30 @@ class Parser:
                 self._unexpected(token)
 
         return lekvar.Class(name, constructor, attributes)
+
+    def parseWhile(self):
+        tokens = [self.next()]
+
+        assert tokens[0].type == Tokens.while_kwd
+
+        condition = self.parseValue()
+
+        instructions = []
+
+        while True:
+            token = self.strip()
+
+            if token is None:
+                raise SyntaxError("Expected 'end' before EOF")
+
+            elif token.type == Tokens.end_kwd:
+                tokens.append(self.next())
+                break
+
+            instructions.append(self.parseLine())
+
+        branch = lekvar.Branch(condition, [lekvar.Break()], [])
+        return lekvar.Loop([branch] + instructions, tokens)
 
     def parseBranch(self):
         tokens = [self.next()]
