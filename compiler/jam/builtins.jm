@@ -30,6 +30,22 @@ class Int
   def self != other:Int
     return Bool(_builtins.intUnequal(value, other.value))
   end
+
+  def self > other:Int
+    return Bool(_builtins.intGreaterThan(value, other.value))
+  end
+
+  def self >= other:Int
+    return Bool(_builtins.intGreaterOrEqualTo(value, other.value))
+  end
+
+  def self < other:Int
+    return Bool(_builtins.intSmallerThan(value, other.value))
+  end
+
+  def self <= other:Int
+    return Bool(_builtins.intSmallerOrEqualTo(value, other.value))
+  end
 end
 
 #TODO: Allow for arbitrary sizes

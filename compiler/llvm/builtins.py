@@ -24,54 +24,53 @@ def builtins():
         LLVMType("Float64"),
     ]
     bool = LLVMType("Bool")
-    return lekvar.Module("_builtins",
-        ints + floats + [
-        string, bool,
-        lekvar.Method("intAdd",
-            [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.iAdd))
-            for type in ints],
-        ),
-        lekvar.Method("intSub",
-            [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.iSub))
-            for type in ints],
-        ),
-        lekvar.Method("intMul",
-            [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.iMul))
-            for type in ints],
-        ),
-        lekvar.Method("intDiv",
-            [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.siDiv))
-            for type in ints],
-        ),
-        lekvar.Method("intEqual",
-            [LLVMFunction("", [type, type], bool, partial(llvmInstructionWrapper, llvm.Builder.iCmp, additional_arguments = [llvm.IntPredicate.equal]))
-            for type in ints],
-        ),
-        lekvar.Method("intUnequal",
-            [LLVMFunction("", [type, type], bool, partial(llvmInstructionWrapper, llvm.Builder.iCmp, additional_arguments = [llvm.IntPredicate.unequal]))
-            for type in ints],
-        ),
-        lekvar.Method("floatAdd",
-            [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.fAdd))
-            for type in floats],
-        ),
-        lekvar.Method("floatSub",
-            [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.fSub))
-            for type in floats],
-        ),
-        lekvar.Method("floatMul",
-            [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.fMul))
-            for type in floats],
-        ),
-        lekvar.Method("floatDiv",
-            [LLVMFunction("", [type, type], type, partial(llvmInstructionWrapper, llvm.Builder.fDiv))
-            for type in floats],
-        ),
+
+    builtin_objects = [string, bool] + ints + floats
+
+    # (the types the method applies to, the name, the instruction, additional arguments)
+    methods = [
+        (ints, "intAdd", llvm.Builder.iAdd, []),
+        (ints, "intSub", llvm.Builder.iSub, []),
+        (ints, "intMul", llvm.Builder.iMul, []),
+        (ints, "intDiv", llvm.Builder.siDiv, []),
+        (ints, "intEqual", llvm.Builder.iCmp, [llvm.IntPredicate.equal]),
+        (ints, "intUnequal", llvm.Builder.iCmp, [llvm.IntPredicate.unequal]),
+        (ints, "intGreaterThan", llvm.Builder.iCmp, [llvm.IntPredicate.signed_greater_than]),
+        (ints, "intGreaterOrEqualTo", llvm.Builder.iCmp, [llvm.IntPredicate.signed_greater_or_equal_to]),
+        (ints, "intSmallerThan", llvm.Builder.iCmp, [llvm.IntPredicate.signed_less_than]),
+        (ints, "intSmallerOrEqualTo", llvm.Builder.iCmp, [llvm.IntPredicate.signed_less_or_equal_to]),
+        (floats, "floatAdd", llvm.Builder.fAdd, []),
+        (floats, "floatSub", llvm.Builder.fSub, []),
+        (floats, "floatMul", llvm.Builder.fMul, []),
+        (floats, "floatDiv", llvm.Builder.fDiv, []),
+    ]
+
+    for types, name, instruction, arguments in methods:
+
+        functions = []
+        for type in types:
+            return_type = bool if arguments else type
+
+            functions.append(
+                LLVMFunction("", [type, type], return_type,
+                    partial(llvmInstructionWrapper, instruction,
+                            additional_arguments=arguments)
+                )
+            )
+        builtin_objects.append(
+            lekvar.Method(name, functions)
+        )
+
+    builtin_objects.append(
         lekvar.Method("puts",
             [LLVMFunction("", [type], None, partial(llvmPrintfWrapper, type))
             for type in (ints + floats + [string])],
         ),
-    ], lekvar.Function("main", [], [], None))
+    )
+
+    return lekvar.Module("_builtins", builtin_objects,
+        lekvar.Function("main", [], [], None)
+    )
 
 def llvmInstructionWrapper(instruction, self, additional_arguments = []):
     name = resolveName(self)
