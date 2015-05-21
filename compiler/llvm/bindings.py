@@ -275,10 +275,10 @@ class IntPredicate:
     unsigned_greater_or_equal_to = 35
     unsigned_less_than = 36
     unsigned_less_or_equal_to = 37
-    signed_less_or_equal_to = 38
-    signed_less_than = 39
-    signed_greater_or_equal_to = 40
-    signed_greater_than = 41
+    signed_greater_than = 38
+    signed_greater_or_equal_to = 39
+    signed_less_than = 40
+    signed_less_or_equal_to = 41
 
 Builder.wrapInstanceFunc("fCmp", "LLVMBuildFCmp", [c_uint, Value, Value, c_char_p], Value)
 
