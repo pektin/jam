@@ -477,7 +477,7 @@ class Parser:
 
             instructions.append(self.parseLine())
 
-        branch = lekvar.Branch(condition, [lekvar.Break()], [])
+        branch = lekvar.Branch(condition, [], [lekvar.Break()])
         return lekvar.Loop([branch] + instructions, tokens)
 
     def parseBranch(self):
