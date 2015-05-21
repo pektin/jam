@@ -1,4 +1,4 @@
-?#foo\nfoo\nfoo\n
+#foo\nfoo\nfoo\n
 
 i = 3
 loop

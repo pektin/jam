@@ -139,6 +139,10 @@ class Parser:
             return self.parseBranch()
         elif token.type == Tokens.while_kwd:
             return self.parseWhile()
+        elif token.type == Tokens.loop_kwd:
+            return self.parseLoop()
+        elif token.type == Tokens.break_kwd:
+            return self.parseBreak()
         return self.parseValue()
 
     def parseValue(self):
@@ -479,6 +483,34 @@ class Parser:
 
         branch = lekvar.Branch(condition, [], [lekvar.Break()])
         return lekvar.Loop([branch] + instructions, tokens)
+
+    def parseLoop(self):
+        tokens = [self.next()]
+
+        assert tokens[0].type == Tokens.loop_kwd
+
+        instructions = []
+
+        while True:
+            token = self.strip()
+
+            if token is None:
+                raise SyntaxError("Expected 'end' before EOF")
+
+            elif token.type == Tokens.end_kwd:
+                tokens.append(self.next())
+                break
+
+            instructions.append(self.parseLine())
+
+        return lekvar.Loop(instructions, tokens)
+
+    def parseBreak(self):
+        token = self.next()
+
+        assert token.type == Tokens.break_kwd
+
+        return lekvar.Break([token])
 
     def parseBranch(self):
         tokens = [self.next()]
