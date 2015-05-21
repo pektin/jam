@@ -545,7 +545,6 @@ def Branch_emitValue(self):
     after = last_block.insertBlock("after")
 
     # Emit condition
-    State.builder.positionAtEnd(if_block.getPrevious())
     condition = State.builder.extractValue(self.condition.emitValue(), 0, State.getTempName())
     State.builder.condBr(condition, if_block, else_block)
 
