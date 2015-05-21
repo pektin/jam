@@ -388,6 +388,9 @@ Block.wrapInstanceFunc("getPrevious", "LLVMGetPreviousBasicBlock", [], Block)
 Block.wrapInstanceFunc("getNext", "LLVMGetNextBasicBlock", [], Block)
 Block.wrapInstanceFunc("insertBlock", "LLVMInsertBasicBlock", [c_char_p], Block)
 
+Block.wrapInstanceFunc("moveBefore", "LLVMMoveBasicBlockBefore", [Block])
+Block.wrapInstanceFunc("moveAfter", "LLVMMoveBasicBlockAfter", [Block])
+
 Block.wrapInstanceProp("function", "LLVMGetBasicBlockParent", None, FunctionValue)
 
 #
