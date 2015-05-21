@@ -24,6 +24,7 @@ Method = None
 
 def verify(module:Module, builtin:Module, logger = logging.getLogger()):
     # Set up the initial state before verifying
+    State.init()
     State.builtins = builtin
     State.logger = logger.getChild("lekvar")
 
@@ -66,23 +67,30 @@ class State:
     builtins = None
     logger = None
     scope = None
-    soft_scope = None
+    soft_scope_stack = None
+
+    @classmethod
+    def init(cls):
+        cls.builtins = None
+        cls.logger = None
+        cls.scope = None
+        cls.soft_scope_stack = None
 
     @classmethod
     @contextmanager
     def scoped(cls, scope:BoundObject):
-        previous = cls.scope
+        previous = cls.scope, cls.soft_scope_stack
         cls.scope = scope
+        cls.soft_scope_stack = []
         yield
-        cls.scope = previous
+        cls.scope, cls.soft_scope_stack = previous
 
     @classmethod
     @contextmanager
     def softScoped(cls, scope:Object):
-        previous = cls.soft_scope
-        cls.soft_scope = scope
+        cls.soft_scope_stack.append(scope)
         yield
-        cls.soft_scope = previous
+        cls.soft_scope_stack.pop()
 
 #
 # Abstract Base Structures
@@ -676,9 +684,15 @@ class Break(Object):
         return Break()
 
     def verify(self):
-        if not isinstance(State.soft_scope, Loop):
+        self.loop = self._getSoftScope()
+        if self.loop is None:
             raise SyntaxError("Cannot break outside loop")
-        self.loop = State.soft_scope
+
+    def _getSoftScope(self):
+        for scope in State.soft_scope_stack:
+            if isinstance(scope, Loop):
+                return scope
+        return None
 
     def resolveType(self):
         return None
