@@ -1,0 +1,10 @@
+?#foo\nfoo\nfoo\n
+
+i = 3
+loop
+  if i < 1
+    break
+  end
+  puts("foo")
+  i = i - 1
+end
