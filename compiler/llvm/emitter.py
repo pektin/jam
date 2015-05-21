@@ -533,6 +533,43 @@ def Class_emitType(self):
 lekvar.Class.emitType = Class_emitType
 
 #
+# class Loop
+#
+
+lekvar.Loop.after = None
+
+def Loop_emitValue(self):
+    # Grab the last block
+    last_block = self.function.llvm_value.getLastBlock()
+    # Create blocks
+    loop_block = last_block.insertBlock("loop")
+    self.after = last_block.insertBlock("after")
+
+    # Reposition builder
+    State.builder.br(loop_block)
+    State.builder.positionAtEnd(loop_block)
+
+    for instruction in self.instructions:
+        instruction.emitValue()
+    # Loop
+    # Rely on break to end the loop
+    State.builder.br(loop_block)
+
+    # Move the after block before the last block
+    self.after.moveBefore(last_block)
+    State.builder.positionAtEnd(self.after)
+lekvar.Loop.emitValue = Loop_emitValue
+
+#
+# class Break
+#
+
+def Break_emitValue(self):
+    # Branch to the after block of the loop
+    State.builder.br(self.loop.after)
+lekvar.Break.emitValue = Break_emitValue
+
+#
 # class Branch
 #
 
@@ -554,9 +591,8 @@ def Branch_emitValue(self):
             instruction.emitValue()
         State.builder.br(after)
 
+    after.moveBefore(last_block)
     State.builder.positionAtEnd(after)
-
-
 lekvar.Branch.emitValue = Branch_emitValue
 
 #
