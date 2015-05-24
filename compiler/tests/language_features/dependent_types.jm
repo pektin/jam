@@ -3,7 +3,7 @@
 class Foo
   bar:String
 
-  new(b:String) #TODO: Remove `:String`
+  new(b)
     bar = b
   end
 
