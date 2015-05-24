@@ -806,7 +806,7 @@ class Assignment(Object):
         # Infer or verify the variable type
         if self.variable.type is None:
             self.variable.type = value_type
-        elif not self.variable.type.checkCompatibility(value_type):
+        elif not value_type.checkCompatibility(self.variable.type):
             raise TypeError("Cannot assign {} of type {} to variable {} of type {}".format(self.value, value_type, self.variable, self.variable.type))
 
     def resolveType(self):
