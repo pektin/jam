@@ -1,0 +1,21 @@
+?#foo\nfoo\n
+
+class Foo
+  bar:String
+
+  new(b:String) #TODO: Remove `:String`
+    bar = b
+  end
+
+  def print()
+    puts(bar)
+  end
+end
+
+def print(f)
+  puts(f.bar)
+  f.print()
+end
+
+foo = Foo("foo")
+print(foo)
