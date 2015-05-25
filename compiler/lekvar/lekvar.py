@@ -41,8 +41,8 @@ def resolveReference(reference:str):
     while True:
         context = scope.local_context
 
-        if context is not None and reference in context.children:
-            found.append(context.children[reference])
+        if context is not None and reference in context:
+            found.append(context[reference])
 
         # Go to builtins once the top of the tree is reached, otherwise move up
         if scope is State.builtins:
@@ -116,12 +116,24 @@ class Context:
         for child in self.children.values():
             child.verify()
 
+    # Doubly link a child to the context
     def addChild(self, child):
         self.children[child.name] = child
         self.fakeChild(child)
 
+    # Bind the child to the context, but not the context to the child
+    # Useful for setting up "parenting" for internal objects
     def fakeChild(self, child):
         child.bound_context = self
+
+    def __contains__(self, name:str):
+        return name in self.children
+
+    def __getitem__(self, name:str):
+        return self.children[name]
+
+    def __setitem__(self, name:str, value:BoundObject):
+        self.children[name] = value
 
     def __add__(self, other:Context):
         for child in self.children.values():
@@ -183,8 +195,8 @@ class Object(ABC):
         else:
             context = self.global_context
 
-        if context is not None and reference in context.children:
-            return context.children[reference]
+        if context is not None and reference in context:
+            return context[reference]
         raise MissingReferenceError("{} does not have an attribute {}".format(self, reference))
 
     def resolveValue(self):
@@ -585,9 +597,9 @@ class Class(Type):
         if constructor is not None:
             self.constructor = constructor
             for name, overload in self.constructor.overload_context.children.items():
-                self.constructor.overload_context.children[name] = Constructor(overload, self)
-                self.constructor.overload_context.children[name].bound_context = self.constructor.overload_context
-                self.constructor.overload_context.children[name].closed_context.addChild(Variable("self", self))
+                self.constructor.overload_context[name] = Constructor(overload, self)
+                self.constructor.overload_context[name].bound_context = self.constructor.overload_context
+                self.constructor.overload_context[name].closed_context.addChild(Variable("self", self))
             self.instance_context.fakeChild(self.constructor)
 
         for child in self.instance_context.children.values():
