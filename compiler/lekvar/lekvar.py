@@ -135,6 +135,9 @@ class Context:
     def __setitem__(self, name:str, value:BoundObject):
         self.children[name] = value
 
+    def __iter__(self):
+        return iter(self.children.values())
+
     def __add__(self, other:Context):
         for child in self.children.values():
             if child.name in other.children:
@@ -534,7 +537,7 @@ class Method(BoundObject):
         self.overload_context.addChild(overload)
 
     def assimilate(self, other:Method):
-        for overload in other.overload_context.children.values():
+        for overload in other.overload_context:
             self.addOverload(overload)
 
     def verify(self):
@@ -542,7 +545,7 @@ class Method(BoundObject):
         self.verified = True
 
         with State.scoped(self):
-            for overload in self.overload_context.children.values():
+            for overload in self.overload_context:
                 overload.verify()
 
     def resolveType(self):
@@ -552,7 +555,7 @@ class Method(BoundObject):
         matches = []
 
         # Collect overloads which match the call type
-        for overload in self.overload_context.children.values():
+        for overload in self.overload_context:
             try:
                 matches.append(overload.resolveCall(call))
             except TypeError:
@@ -596,15 +599,16 @@ class Class(Type):
         #TODO: Eliminate the need for this
         if constructor is not None:
             self.constructor = constructor
-            for name, overload in self.constructor.overload_context.children.items():
+            for overload in self.constructor.overload_context:
+                name = overload.name
                 self.constructor.overload_context[name] = Constructor(overload, self)
                 self.constructor.overload_context[name].bound_context = self.constructor.overload_context
                 self.constructor.overload_context[name].closed_context.addChild(Variable("self", self))
             self.instance_context.fakeChild(self.constructor)
 
-        for child in self.instance_context.children.values():
+        for child in self.instance_context:
             if isinstance(child, Method):
-                for overload in child.overload_context.children.values():
+                for overload in child.overload_context:
                     overload.closed_context.addChild(Variable("self", self))
 
     def copy(self):
@@ -638,7 +642,7 @@ class Class(Type):
         return other.resolveValue() is self
 
     def __repr__(self):
-        contents = "\n".join(repr(val) for val in [self.constructor] + list(self.instance_context.children.values()))
+        contents = "\n".join(repr(val) for val in [self.constructor] + list(self.instance_context))
         return "class {}\n{}\nend".format(self.name, contents)
 
 class Constructor(Function):
