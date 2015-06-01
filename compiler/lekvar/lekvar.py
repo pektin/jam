@@ -32,6 +32,13 @@ def verify(module:Module, builtin:Module, logger = logging.getLogger()):
 
     module.verify()
 
+def checkCompatibility(type1, type2):
+    if type1.checkCompatibility(type2):
+        return True
+    elif type2.checkCompatibility(type1):
+        return True
+    return False
+
 # Resolves a reference inside of a given scope.
 def resolveReference(reference:str):
     found = []
@@ -420,7 +427,7 @@ class Function(BoundObject):
         return self.type
 
     def resolveCall(self, call:FunctionType):
-        if not self.resolveType().checkCompatibility(call):
+        if not checkCompatibility(self.resolveType(), call):
             raise TypeError("{} is not compatible with {}".format(call, self.resolveType()))
 
         if not self.dependent:
@@ -822,7 +829,7 @@ class Assignment(Object):
         # Infer or verify the variable type
         if self.variable.type is None:
             self.variable.type = value_type
-        elif not value_type.checkCompatibility(self.variable.type):
+        elif not checkCompatibility(value_type, self.variable.type):
             raise TypeError("Cannot assign {} of type {} to variable {} of type {}".format(self.value, value_type, self.variable, self.variable.type))
 
     def resolveType(self):
@@ -1035,7 +1042,7 @@ class Return(Object):
         if self.function.type.return_type is None:
             self.function.type.return_type = self.value.resolveType()
         else:
-            self.function.type.return_type.checkCompatibility(self.value.resolveType())
+            checkCompatibility(self.function.type.return_type, self.value.resolveType())
 
     def resolveType(self):
         return None
