@@ -231,7 +231,7 @@ class BoundObject(Object):
 class Type(BoundObject):
     @property
     def instance_context(self):
-        None
+        return None
 
     @abstract
     def checkCompatibility(self, other:Type) -> bool:
