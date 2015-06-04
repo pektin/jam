@@ -1,0 +1,17 @@
+#8\n
+
+def fib(n:Int)
+  i = 1
+  j = 1
+
+  while n > 2
+    tmp = j
+    j = i + j
+    i = tmp
+    n = n - 1
+  end
+
+  return j
+end
+
+puts(fib(6))
