@@ -27,31 +27,18 @@ value is an "object" and has a type. Every type is also an object and has a
 type. As a basis, the only other concept not directly being an object are
 instructions.
 
-For debugging and other global input/output, Lekvar creates a `State` object
-that is passed from function to function when Lekvar is verified.
-
 ### Object
 
-In terms of Lekvar, every object has a type and each objects behaviour is
-entirely defined by it's type.
+An object is a singular, local object. The object must have a type. A object is considered an instruction when it's type is `None`.
 
-Every object must define:
-* `resolveType(Scope, State):Type`, returns the type of the object
-* `verify(Scope, State)`, verifies the objects integrity
+### Context
 
-### Scope
+A context is a collection of bound objects that is bound to an object. A context can be used to link a scope to it's children, but can also be used for other kinds of contexts. A context may also fake a child, making the connection to the context one way.
 
-A scope is an Object that also defined a `name:String` and a `parent:Scope`
-attribute.
+### BoundObject
+
+The same as an object, except that this object has to be bound to a context. Every bound object must therefore have a name, and a reference to the context it is bound to.
 
 ### Type
 
-A type defines what an object is and what it can do. Type is also a Scope.
-
-Every type must define:
-* `collectAttributes(State, String):Object`
-* `checkCompatibility(Type):Bool`
-
-### Function
-
-A function is a single callable collection of instructions.
+A type is an object that is used to describe another object. It provides the attributes and functions of said described object.
