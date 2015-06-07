@@ -24,9 +24,7 @@ Method = None
 
 def verify(module:Module, builtin:Module, logger = logging.getLogger()):
     # Set up the initial state before verifying
-    State.init()
-    State.builtins = builtin
-    State.logger = logger.getChild("lekvar")
+    State.init(builtin, logger.getChild("lekvar"))
 
     State.logger.info(module)
 
@@ -73,31 +71,33 @@ def copy(obj):
 class State:
     builtins = None
     logger = None
-    scope = None
-    soft_scope_stack = None
+    scope_stack = None
 
     @classmethod
-    def init(cls):
-        cls.builtins = None
-        cls.logger = None
-        cls.scope = None
-        cls.soft_scope_stack = None
+    def init(cls, builtins:Module, logger:logging.Logger):
+        cls.builtins = builtins
+        cls.logger = logger
+        cls.scope_stack = []
+
+    @classmethod
+    @property
+    def scope(cls):
+        # Get the first element from the back that isn't soft
+        for scope in reversed(cls.scope_stack):
+            if not scope[1]:
+                return scope
+
+    @classmethod
+    @property
+    def soft_scope(cls):
+        return cls.scope_stack[-1]
 
     @classmethod
     @contextmanager
-    def scoped(cls, scope:BoundObject):
-        previous = cls.scope, cls.soft_scope_stack
-        cls.scope = scope
-        cls.soft_scope_stack = []
+    def scoped(cls, scope:BoundObject, soft = False):
+        cls.scope_stack.append((scope, soft))
         yield
-        cls.scope, cls.soft_scope_stack = previous
-
-    @classmethod
-    @contextmanager
-    def softScoped(cls, scope:Object):
-        cls.soft_scope_stack.append(scope)
-        yield
-        cls.soft_scope_stack.pop()
+        cls.scope_stack.pop()
 
 #
 # Abstract Base Structures
