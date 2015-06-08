@@ -68,13 +68,6 @@ defend+_- end"""
             assert token.type == output
 
 def test_builtin_lib():
-    with open(BUILTIN, "r") as f:
-        ir = parser.parseFile(f)
+    ir = compiler.builtins()
 
-    # inject _builtins module
-    ir.context.addChild(builtins())
-
-    # Use module as builtin module as well
-    lekvar.verify(ir, ir)
-
-    module = llvm.emit(ir)
+    module = ir.emit()
