@@ -1,10 +1,13 @@
+import sys
 from io import StringIO
 
 import pytest
+import logging
 
 from . import lexer
 from . import parser
-from ..lekvar import lekvar
+from . import compiler
+from .. import lekvar
 from ..llvm import emitter as llvm
 from ..llvm.builtins import builtins
 
@@ -67,7 +70,11 @@ defend+_- end"""
             assert token is not None
             assert token.type == output
 
-def test_builtin_lib():
+def test_builtin_lib(verbosity):
+    logging.basicConfig(level=logging.WARNING - verbosity*10, stream=sys.stdout)
+
     ir = compiler.builtins()
 
-    module = ir.emit()
+    lekvar.verify(ir, ir)
+
+    module = llvm.emit(ir)
