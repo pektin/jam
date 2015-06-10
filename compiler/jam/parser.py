@@ -2,7 +2,7 @@ import logging
 from io import IOBase
 
 from .. errors import *
-from ..lekvar import lekvar
+from .. import lekvar
 from .lexer import Lexer, Tokens
 
 #

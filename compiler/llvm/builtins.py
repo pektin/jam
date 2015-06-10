@@ -1,7 +1,7 @@
 from functools import partial
 
 from .emitter import *
-from ..lekvar import lekvar
+from .. import lekvar
 from . import bindings as llvm
 
 printf = None
