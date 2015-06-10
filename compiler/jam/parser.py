@@ -2,7 +2,7 @@ import logging
 from io import IOBase
 
 from .. errors import *
-from ..lekvar import lekvar
+from .. import lekvar
 from .lexer import Lexer, Tokens
 
 #
@@ -118,8 +118,7 @@ class Parser:
                 # Other values are added as instructions
                 instructions.append(value)
 
-        return lekvar.Module(module_name, list(children.values()),
-               lekvar.Function("", [], instructions, None, static=True), tokens)
+        return lekvar.Module(module_name, list(children.values()), instructions, tokens)
 
     def parseLine(self):
         # Parse a line. The line may not exist

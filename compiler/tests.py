@@ -17,7 +17,7 @@ for root, dirs, files in os.walk(TESTS_PATH):
         path = os.path.join(root, file)
         name = "test_" + os.path.split(root)[1] + "." + file
 
-        def test(file=file, path=path, verbosity=0):
+        def test(verbosity, file=file, path=path):
             logging.basicConfig(level=logging.WARNING - verbosity*10, stream=sys.stdout)
 
             # Get the path to the built file

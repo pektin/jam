@@ -2,7 +2,7 @@ import logging
 from io import IOBase
 
 from . import parser
-from ..lekvar import lekvar
+from .. import lekvar
 from ..llvm import emitter as llvm
 from ..llvm.builtins import builtins
 from ..errors import CompilerError
@@ -15,7 +15,7 @@ def builtins():
     with open(BUILTINS, "r") as f:
         ir = parser.parseFile(f)
 
-    # Inject backend builtins into frontend builtins
+    # Inject backend builtins into frontend builtins (there may be a better method?)
     ir.context.addChild(llvm.builtins())
 
     return ir

@@ -6,7 +6,7 @@ from functools import partial
 from abc import abstractmethod as abstract
 from subprocess import check_output
 
-from ..lekvar import lekvar
+from .. import lekvar
 from ..errors import *
 
 from . import bindings as llvm
@@ -50,20 +50,28 @@ class State:
         cls.self = None
         cls.builder = llvm.Builder.new()
         cls.module = llvm.Module.fromName(name)
-        cls.main = []
-        yield
+
         main_type = llvm.Function.new(llvm.Int.new(32), [], False)
-        main = cls.module.addFunction("main", main_type)
+        cls.main = cls.module.addFunction("main", main_type)
+        cls.main.appendBlock("entry")
+        main_exit = cls.main.appendBlock("exit")
 
-        entry = main.appendBlock("entry")
-        with cls.blockScope(entry):
-            for func in cls.main:
-                call = lekvar.Call(func, [])
-                call.function = func
-                call.emitValue()
+        yield
 
+        # add a goto exit for the last block
+        with cls.blockScope(cls.main.getLastBlock().getPrevious()):
+            State.builder.br(main_exit)
+
+        with cls.blockScope(main_exit):
             return_value = llvm.Value.constInt(llvm.Int.new(32), 0, False)
             cls.builder.ret(return_value)
+
+    @classmethod
+    def addMainInstructions(cls, instructions:[lekvar.Object]):
+        last_block = cls.main.getLastBlock().getPrevious()
+        with cls.blockScope(last_block):
+            for instruction in instructions:
+                instruction.emitValue()
 
     @classmethod
     @contextmanager
@@ -84,12 +92,6 @@ class State:
     @classmethod
     def getTempName(self):
         return "temp"
-
-
-def main_call(func:lekvar.Function):
-    call = lekvar.Call(func, [])
-    call.function = func
-    return call
 
 # Abstract extensions
 
@@ -255,16 +257,16 @@ lekvar.Assignment.emitValue = Assignment_emitValue
 
 def Module_emit(self):
     if self.llvm_value is not None: return
+    self.llvm_value = State.main
 
-    self.llvm_value = self.main.emitValue()
-    State.main.append(self.main)
+    State.addMainInstructions(self.main)
 
-    for child in self.context.children.values():
+    for child in self.context:
         child.emit()
 lekvar.Module.emit = Module_emit
 
 def Module_emitValue(self):
-    pass # TODO: Implement Method values
+    raise InternalError("Not Implemented") #TODO: Implement Method values
 lekvar.Module.emitValue = Module_emitValue
 
 #
@@ -273,7 +275,11 @@ lekvar.Module.emitValue = Module_emitValue
 
 def Call_emitValue(self):
     called = self.function.emitValue()
-    context = self.called.emitContext() or self.function.emitContext()
+    # Only use the function's context if it is static
+    if self.called.resolveValue().static:
+        context = self.function.emitContext()
+    else:
+        context = self.called.emitContext()
 
     if context is not None:
         context = self.function.emitContext(context)
@@ -353,7 +359,7 @@ def Function_emit(self):
     if self.dependent: return
     if self.llvm_value is not None: return
 
-    if len(self.closed_context.children) > 0:
+    if len(self.closed_context) > 0:
         self.llvm_value = 0 # Temporarily set llvm_value to something so this function isn't emitted twice
         self.bound_context.scope.emit()
         self.llvm_closure_type = self.closed_context.emitType()
@@ -420,7 +426,7 @@ def Function_emitPreContext(self):
 lekvar.Function.emitPreContext = Function_emitPreContext
 
 def Function_emitContext(self, self_value = None):
-    if self_value is not None and len(self.closed_context.children) > 0:
+    if self_value is not None and len(self.closed_context) > 0:
         context = State.builder.alloca(self.llvm_closure_type, State.getTempName())
         self_ptr = State.builder.structGEP(context, 0, State.getTempName())
         State.builder.store(self_value, self_ptr)
@@ -501,7 +507,7 @@ def Method_emit(self):
         self.bound_context.scope.emit()
     self.llvm_value = 0
 
-    for overload in self.overload_context.children.values():
+    for overload in self.overload_context:
         overload.emit()
 lekvar.Method.emit = Method_emit
 
@@ -515,14 +521,14 @@ def Class_emit(self):
     if self.llvm_type is not None: return
 
     var_types = []
-    for child in self.instance_context.children.values():
+    for child in self.instance_context:
         if isinstance(child, lekvar.Variable):
             child.llvm_context_index = len(var_types)
             var_types.append(child.type.emitType())
 
     self.llvm_type = llvm.Struct.new(var_types, False)
 
-    for child in self.instance_context.children.values():
+    for child in self.instance_context:
         child.emit()
 
 lekvar.Class.emit = Class_emit
