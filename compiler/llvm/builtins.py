@@ -68,9 +68,7 @@ def builtins():
         ),
     )
 
-    return lekvar.Module("_builtins", builtin_objects,
-        lekvar.Function("main", [], [], None)
-    )
+    return lekvar.Module("_builtins", builtin_objects)
 
 def llvmInstructionWrapper(instruction, self, additional_arguments = []):
     name = resolveName(self)
