@@ -132,14 +132,11 @@ class LLVMType(lekvar.Type):
         pass
 
     def resolveType(self):
-        raise InternalError("Not Implemented")
+        return None
 
     @property
-    def children(self):
-        raise InternalError("Not Implemented")
-
-    def addChild(self, child):
-        raise InternalError("Not Implemented")
+    def local_context(self):
+        return None
 
     def checkCompatibility(self, other:lekvar.Type):
         other = other.resolveValue()
@@ -158,3 +155,7 @@ class LLVMFunction(lekvar.ExternalFunction):
     def __init__(self, name:str, arguments:[lekvar.Type], return_type:lekvar.Type, generator):
         super().__init__(name, name, arguments, return_type)
         self.generator = generator
+
+    @property
+    def local_context(self):
+        return None
