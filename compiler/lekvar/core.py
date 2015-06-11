@@ -6,6 +6,7 @@ from .state import State
 
 # Python predefines
 Context = None
+Object = None
 BoundObject = None
 Type = None
 Function = None
@@ -25,9 +26,7 @@ class Context:
         for child in children:
             self.addChild(child)
 
-    def copy(self):
-        return list(map(copy, self.children.values()))
-
+    # Verifies all child objects within the scope of this context's scope
     def verify(self):
         with State.scoped(self.scope):
             for child in self.children.values():
@@ -52,18 +51,12 @@ class Context:
     def __setitem__(self, name:str, value:BoundObject):
         self.children[name] = value
 
+    # Iterate through the children (not their names)
     def __iter__(self):
         return iter(self.children.values())
 
     def __len__(self):
         return len(self.children)
-
-    def __add__(self, other:Context):
-        for child in self.children.values():
-            if child.name in other.children:
-                raise AmbiguityError()
-
-        return Context(None, self.children.values() + other.children.values())
 
     def __repr__(self):
         return "{}<{}>".format(self.__class__.__name__, ", ".join(map(str, self.children.values())))
@@ -96,9 +89,13 @@ class Object(ABC):
     def resolveValue(self) -> Object:
         return self
 
+    # Resolves a call using this object's type.
+    # May be overridden for more specific behaviour
     def resolveCall(self, call:FunctionType) -> Function:
         return self.resolveType().resolveInstanceCall(call)
 
+    # Provides a context of attributes using this object's type.
+    # May be overridden for more specific behaviour
     @property
     def context(self) -> Context:
         return self.resolveType().instance_context
@@ -118,6 +115,8 @@ class BoundObject(Object):
         super().__init__(tokens)
         self.name = name
 
+    # The local context provides the context accessible objects bound to a
+    # context whose scope is this object.
     @abstractproperty
     def local_context(self):
         pass
