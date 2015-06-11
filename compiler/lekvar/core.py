@@ -11,10 +11,9 @@ Type = None
 Function = None
 FunctionType = None
 
-#
-# Abstract Base Classes
-#
 
+# A context provides a useful wrapper around the mapping of child objects
+# to their scope.
 class Context:
     scope = None
     children = None
@@ -69,6 +68,7 @@ class Context:
     def __repr__(self):
         return "{}<{}>".format(self.__class__.__name__, ", ".join(map(str, self.children.values())))
 
+# A generic object that represents a single value/instruction.
 class Object(ABC):
     tokens = None
 
@@ -88,24 +88,26 @@ class Object(ABC):
     # Should return an instance of Type representing the type of the object
     # Returns None for instructions
     @abstract
-    def resolveType(self) -> Context:
+    def resolveType(self) -> Type:
         pass
 
     # Should return a Object inplace of the current one
     # only useful for objects that link to other objects
-    def resolveValue(self):
+    def resolveValue(self) -> Object:
         return self
 
     def resolveCall(self, call:FunctionType) -> Function:
         return self.resolveType().resolveInstanceCall(call)
 
     @property
-    def context(self):
+    def context(self) -> Context:
         return self.resolveType().instance_context
 
     def __repr__(self):
         return "{}".format(self.__class__.__name__)
 
+# A generic object that can be bound to a context. Any object that may have
+# other objects bound to it through a context must also be a bound object.
 class BoundObject(Object):
     name = None
     bound_context = None
@@ -123,6 +125,7 @@ class BoundObject(Object):
     def __repr__(self):
         return "{}({})".format(self.__class__.__name__, self.name)
 
+# A type object that is used to describe certain behaviour of an object.
 class Type(BoundObject):
     # The attributes available on an instance
     @property
