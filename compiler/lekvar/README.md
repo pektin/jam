@@ -24,21 +24,27 @@ which provide the higher level features for the frontend.
 
 The design follows similar principles as dynamic programming languages. Every
 value is an "object" and has a type. Every type is also an object and has a
-type. As a basis, the only other concept not directly being an object are
-instructions.
+type.
 
 ### Object
 
-An object is a singular, local object. The object must have a type. A object is considered an instruction when it's type is `None`.
+A object represents a singular value. If a object does not have a type, it is
+considered a instruction and cannot be used as a value.
 
 ### Context
 
-A context is a collection of bound objects that is bound to an object. A context can be used to link a scope to it's children, but can also be used for other kinds of contexts. A context may also fake a child, making the connection to the context one way.
+A context is a structure that binds objects to other objects. A context is bound
+to a singular scope, a bound object itself, and has a set of objects that are
+bound to it's scope.
 
-### BoundObject
+### Bound Object
 
-The same as an object, except that this object has to be bound to a context. Every bound object must therefore have a name, and a reference to the context it is bound to.
+A bound object is a object that can both have a context and/or be bound to one.
+Since objects are bound by their name, every bound object must have a name.
 
 ### Type
 
-A type is an object that is used to describe another object. It provides the attributes and functions of said described object.
+A type is an object that holds information on that object. A type may supply a
+context for the object or what happens when the object is called. A type itself
+is also an object and therefore also has a type. The type of types may not be
+cyclic until it reaches the base type, whose type is itself.

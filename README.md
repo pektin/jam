@@ -47,7 +47,8 @@ For further help run:
 
 ## Development
 
-In order to run the automated tests for the compiler, the py.test framework is required.
+In order to run the automated tests for the compiler, the py.test framework is
+required.
 
 Ubuntu:
 
