@@ -2,6 +2,8 @@ from ctypes import *
 import traceback
 import logging
 
+from ..errors import *
+
 _lib = CDLL("libLLVM-3.4.so.1")
 
 c_bool = c_int
@@ -176,7 +178,15 @@ class Value(Wrappable, c_void_p):
 class FunctionValue(Value):
     pass
 
-__all__ = "Context Module Builder Type Pointer Int Float Function Block Value FunctionValue".split()
+__all__ = """Context Module Builder Type Pointer Int Float Function Block Value
+FunctionValue""".split()
+
+
+# Error message disposal function
+# Internal usage only
+
+setTypes("LLVMDisposeMessage", [c_char_p], None)
+disposeError = _lib.LLVMDisposeMessage
 
 #
 # Context
@@ -207,9 +217,30 @@ Module.wrapInstanceFunc("dump", "LLVMDumpModule")
 Module.wrapInstanceFunc("toString", "LLVMPrintModuleToString", [], c_char_p)
 Module.wrapInstanceFunc("getType", "LLVMGetTypeByName", [c_char_p], Type)
 Module.wrapInstanceFunc("addFunction", "LLVMAddFunction", [c_char_p, Function], FunctionValue)
+Module.wrapInstanceFunc("getFunction", "LLVMGetNamedFunction", [c_char_p], FunctionValue)
 Module.wrapInstanceFunc("addVariable", "LLVMAddGlobal", [Type, c_char_p], Value)
 
-Module.wrapInstanceFunc("verify", "LLVMVerifyModule", [c_uint, c_void_p], c_bool)
+setTypes("LLVMVerifyModule", [Module, c_uint, POINTER(c_char_p)], c_bool)
+
+@logged("verify", "LLVMVerifyModule", False)
+def Module_verify(self):
+    error_msg = c_char_p()
+
+    result = _lib.LLVMVerifyModule(self, FailureAction.ReturnStatusAction, byref(error_msg))
+
+    if result == 0: # 0 means complete success, no message
+        return
+
+    message = "LLVM: \"{}\"".format(error_msg.value.decode("UTF-8"))
+    disposeError(error_msg)
+
+    if result == 1: # 1 means success with some errors
+        State.logger.warn(message)
+        return
+    # Otherwise it should be failure
+    State.logger.error(message)
+    raise InternalError("LLVM: Module verification exit code {}".format(result))
+Module.verify = Module_verify
 
 class FailureAction:
     AbortProcessAction = 0
@@ -239,7 +270,7 @@ Builder.wrapInstanceFunc("indirectBr", "LLVMBuildIndirectBr", [Value, c_uint], V
 Builder.wrapInstanceFunc("destination", "LLVMAddDestination", [Value, Block])
 Builder.wrapInstanceFunc("switch", "LLVMBuildSwitch", [Value, Block, c_uint], Value)
 Builder.wrapInstanceFunc("case", "LLVMAddCase", [Value, Value, Block])
-Builder.wrapInstanceFunc("invoke", "LLVMBuildInvoke", [Value, [Value], Block, Block, c_char_p], Value) # ditto
+Builder.wrapInstanceFunc("invoke", "LLVMBuildInvoke", [Value, [Value], Block, Block, c_char_p], Value)
 
 Builder.wrapInstanceFunc("malloc", "LLVMBuildMalloc", [Type, c_char_p], Value)
 Builder.wrapInstanceFunc("free", "LLVMBuildFree", [Value], Value)
@@ -412,4 +443,3 @@ FunctionValue.wrapInstanceFunc("getLastBlock", "LLVMGetLastBasicBlock", [], Bloc
 FunctionValue.wrapInstanceFunc("getParam", "LLVMGetParam", [c_uint], Value)
 
 FunctionValue.wrapInstanceProp("type", "LLVMTypeOf", None, Function)
-
