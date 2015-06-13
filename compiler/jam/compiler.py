@@ -40,13 +40,13 @@ def _compile(input:IOBase, logger):
 
 @_compileFunc
 def compileRun(input:IOBase, output:IOBase = None, logger = logging.getLogger()):
-    module = _compile(input, logger)
+    source = _compile(input, logger)
     if output is not None:
-        output.write(llvm.compile(module).decode("UTF-8"))
-    return llvm.run(module).decode("UTF-8")
+        output.write(source.decode("UTF-8"))
+    return llvm.run(source).decode("UTF-8")
 
 @_compileFunc
 def compile(input:IOBase, output:IOBase, logger = logging.getLogger()):
-    output.write(llvm.compile(_compile(input, logger)).decode("UTF-8"))
+    output.write(_compile(input, logger).decode("UTF-8"))
 
 

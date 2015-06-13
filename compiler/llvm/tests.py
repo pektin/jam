@@ -3,7 +3,7 @@ from subprocess import check_output
 
 from .bindings import *
 from .builtins import builtins
-from .emitter import emit, compile
+from .emitter import emit
 
 BUILD_PATH = "build/tests"
 
@@ -33,9 +33,9 @@ def test_llvm():
     assert b"Hello World!\n" == check_output(["lli " + BUILD_PATH + "/llvm.ll"], shell=True)
 
 def test_builtin_lib():
-    module = emit(builtins())
-    out = compile(module)
+    source = emit(builtins())
 
     os.makedirs(BUILD_PATH, exist_ok=True)
     with open(BUILD_PATH + "/builtins.ll", "wb") as f:
-        f.write(out)
+        f.write(source)
+

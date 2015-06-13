@@ -20,21 +20,10 @@ def emit(module:lekvar.Module, logger = logging.getLogger()):
 
     State.module.verify()
 
-    return State.module
+    return State.module.toString()
 
-def compile(module:llvm.Module):
-    return module.toString()
-
-def run(module:llvm.Module):
-    #TODO: Do this properly
-    with tempfile.NamedTemporaryFile("wb", delete=False) as f:
-        f.write(compile(module))
-        f.flush()
-
-    try:
-        return check_output(["lli", f.name])
-    finally:
-        os.remove(f.name)
+def run(source:bytes):
+    return check_output("lli", input = source)
 
 class State:
     @classmethod
