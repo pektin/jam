@@ -4,6 +4,7 @@ import os
 import sys
 import logging
 import argparse
+import cProfile
 from io import StringIO
 
 from compiler.jam import compiler
@@ -39,6 +40,11 @@ parser.add_argument("--version",
     action='version',
     version="Jam Compiler V0.1a",
 )
+parser.add_argument("--profile",
+    help="Uses cProfile to profile the compiler.",
+    action='store_true',
+    required=False,
+)
 
 def main():
     args = parser.parse_args()
@@ -49,8 +55,16 @@ def main():
 
     logging.basicConfig(level=logging.WARNING - args.verbose*10, stream=sys.stdout)
 
+    if args.profile:
+        profiler = cProfile.Profile()
+        profiler.enable()
+
     with args.input, output:
         print(compile(args.input, output), end="")
+
+    if args.profile:
+        profiler.disable()
+        profiler.print_stats()
 
 if __name__ == "__main__":
     main()
