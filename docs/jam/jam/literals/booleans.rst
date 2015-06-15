@@ -30,5 +30,5 @@ Examples
     if true
       print("This will always print\n")
     else
-      rint("This will never print\n")
+      print("This will never print\n")
     end
