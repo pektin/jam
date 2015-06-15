@@ -3,7 +3,7 @@ BUILDDIR = build
 .PHONY: docs tests clean help
 
 docs:
-	sphinx-build -b html docs $(BUILDDIR)/html $@
+	sphinx-build -b html docs $(BUILDDIR)/html
 
 tests:
 	py.test-3
