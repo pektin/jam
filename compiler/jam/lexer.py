@@ -83,6 +83,8 @@ Tokens = Enum("Tokens", [
     "smaller_than_or_equal_to",
     "greater_than",
     "greater_than_or_equal_to",
+
+    "logical_negation",
 ])
 
 TREE = Node()
@@ -133,6 +135,7 @@ DIRECT_MAP = [
     ("<", Tokens.smaller_than),
     (">=", Tokens.greater_than_or_equal_to),
     (">", Tokens.greater_than),
+    ("!", Tokens.logical_negation),
 
     # Instructions
     ("\n", Tokens.newline),
