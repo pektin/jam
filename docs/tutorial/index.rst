@@ -1,5 +1,6 @@
 .. _tutorial-index:
 
+################
 The Jam Tutorial
 ################
 
@@ -7,3 +8,5 @@ The Jam Tutorial
     :numbered:
     :titlesonly:
 
+    introduction
+    beginners
