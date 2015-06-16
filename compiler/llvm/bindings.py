@@ -72,10 +72,10 @@ def logged(cls_name, name, check_null = True):
 
 class Wrappable:
     @classmethod
-    def wrapInstanceFunc(cls, cls_name:str, name:str, args:[] = [], ret = None):
+    def wrapInstanceFunc(cls, cls_name:str, name:str, args:[] = [], ret = None, check_null = True):
         setTypes(name, convertArgtypes([cls] + args), ret)
 
-        @logged(cls_name, name, ret is not None)
+        @logged(cls_name, name, check_null and ret is not None)
         def func(self, *args):
             value = getattr(_lib, name)(self, *convertArgs(args))
 
@@ -89,10 +89,10 @@ class Wrappable:
         setattr(cls, cls_name, func)
 
     @classmethod
-    def wrapInstanceProp(cls, cls_name:str, get_name:str, set_name:str, type):
+    def wrapInstanceProp(cls, cls_name:str, get_name:str, set_name:str, type, check_null = True):
         setTypes(get_name, [cls], type)
         @property
-        @logged(cls_name, get_name)
+        @logged(cls_name, get_name, check_null)
         def get(self):
             value = getattr(_lib, get_name)(self)
 
@@ -257,6 +257,8 @@ Builder.wrapConstructor("withContext", "LLVMCreateBuilderInContext", [Context])
 Builder.wrapDestructor("LLVMDisposeBuilder")
 
 # Functions
+Builder.wrapInstanceFunc("positionAt", "LLVMPositionBuilder", [Block, Value])
+Builder.wrapInstanceFunc("positionBefore", "LLVMPositionBuilderBefore", [Value])
 Builder.wrapInstanceFunc("positionAtEnd", "LLVMPositionBuilderAtEnd", [Block])
 Builder.wrapInstanceProp("position", "LLVMGetInsertBlock", None, Block)
 
@@ -415,12 +417,15 @@ Struct.wrapConstructor("new", "LLVMStructType", [[Type], c_bool])
 #
 
 Block.wrapInstanceFunc("asValue", "LLVMBasicBlockAsValue", [], Value)
-Block.wrapInstanceFunc("getPrevious", "LLVMGetPreviousBasicBlock", [], Block)
-Block.wrapInstanceFunc("getNext", "LLVMGetNextBasicBlock", [], Block)
+Block.wrapInstanceFunc("getPrevious", "LLVMGetPreviousBasicBlock", [], Block, check_null=False)
+Block.wrapInstanceFunc("getNext", "LLVMGetNextBasicBlock", [], Block, check_null=False)
 Block.wrapInstanceFunc("insertBlock", "LLVMInsertBasicBlock", [c_char_p], Block)
 
 Block.wrapInstanceFunc("moveBefore", "LLVMMoveBasicBlockBefore", [Block])
 Block.wrapInstanceFunc("moveAfter", "LLVMMoveBasicBlockAfter", [Block])
+
+Block.wrapInstanceFunc("getFirstValue", "LLVMGetFirstInstruction", [], Value)
+Block.wrapInstanceFunc("getLastValue", "LLVMGetLastInstruction", [], Value)
 
 Block.wrapInstanceProp("function", "LLVMGetBasicBlockParent", None, FunctionValue)
 
@@ -440,6 +445,7 @@ Value.wrapInstanceFunc("setInit", "LLVMSetInitializer", [Value])
 
 FunctionValue.wrapInstanceFunc("appendBlock", "LLVMAppendBasicBlock", [c_char_p], Block)
 FunctionValue.wrapInstanceFunc("getLastBlock", "LLVMGetLastBasicBlock", [], Block)
+FunctionValue.wrapInstanceFunc("getFirstBlock", "LLVMGetFirstBasicBlock", [], Block)
 FunctionValue.wrapInstanceFunc("getParam", "LLVMGetParam", [c_uint], Value)
 
 FunctionValue.wrapInstanceProp("type", "LLVMTypeOf", None, Function)
