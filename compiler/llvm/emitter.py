@@ -77,6 +77,18 @@ class State:
     def getTempName(self):
         return "temp"
 
+    # Emmit an allocation as an instruction
+    # Enforces allocation to happen early
+    @classmethod
+    def alloca(cls, type:llvm.Type, name:str):
+        # Find first block
+        entry = cls.builder.position.function.getFirstBlock()
+
+        with cls.blockScope(entry):
+            cls.builder.positionAt(entry, entry.getFirstValue())
+            value = cls.builder.alloca(type, name)
+        return value
+
 # Abstract extensions
 
 lekvar.BoundObject.llvm_value = None
@@ -411,7 +423,7 @@ lekvar.Function.emitPreContext = Function_emitPreContext
 
 def Function_emitContext(self, self_value = None):
     if self_value is not None and len(self.closed_context) > 0:
-        context = State.builder.alloca(self.llvm_closure_type, State.getTempName())
+        context = State.alloca(self.llvm_closure_type, State.getTempName())
         self_ptr = State.builder.structGEP(context, 0, State.getTempName())
         State.builder.store(self_value, self_ptr)
         return State.builder.load(context, State.getTempName())
