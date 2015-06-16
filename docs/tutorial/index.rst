@@ -9,4 +9,4 @@ The Jam Tutorial
     :titlesonly:
 
     introduction
-    beginners
+    basics
