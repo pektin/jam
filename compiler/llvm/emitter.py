@@ -370,6 +370,10 @@ def Function_emit(self):
     exit = self.llvm_value.appendBlock("exit")
 
     with State.blockScope(entry):
+
+        for child in self.local_context:
+            child.emit()
+
         self.emitBody()
         State.builder.br(exit)
 

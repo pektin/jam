@@ -1,10 +1,10 @@
-?#even\nodd\neven\nodd\n
+#even\nodd\neven\nodd\n
 
 i = 0
 while i < 4
    if isEven(i)
       puts("even")
-   else 
+   else
       puts("odd")
    end
    i = i + 1
@@ -17,4 +17,4 @@ def isEven(n:Int)
       flag = false
    end
    return flag
-end 
+end
