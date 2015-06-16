@@ -72,8 +72,18 @@ class Parser:
             self._unexpected(token)
         return token
 
-    def parseModule(self, inline = True):
+    def addChild(self, children:{str: lekvar.BoundObject}, value:lekvar.BoundObject):
+        name = value.name
 
+        if isinstance(value, lekvar.Method):
+            if name in children:
+                children[name].assimilate(value)
+            else:
+                children[name] = value
+        else:
+            children[name] = value
+
+    def parseModule(self, inline = True):
         if inline:
             tokens = [self.next()]
             assert tokens[0].type == Tokens.module_kwd
@@ -104,16 +114,7 @@ class Parser:
 
             if isinstance(value, lekvar.BoundObject):
                 # Scopes are automatically added as children
-                name = value.name
-
-                if isinstance(value, lekvar.Method):
-
-                    if name in children:
-                        children[name].assimilate(value)
-                    else:
-                        children[name] = value
-                else:
-                    children[name] = value
+                self.addChild(children, value)
             else:
                 # Other values are added as instructions
                 instructions.append(value)
@@ -437,27 +438,38 @@ class Parser:
         name = self.expect(Tokens.identifier).data
 
         constructor = None
-        attributes = []
+        attributes = {}
 
         while True:
             token = self.strip()
+
             if token is None:
                 raise SyntaxError("Expected 'end' before EOF")
+
             elif token.type == Tokens.end_kwd:
                 self.next()
                 break
+
             elif token.type == Tokens.def_kwd:
-                meth = self.parseMethod()
-                attributes.append(meth)
+                value = self.parseMethod()
+
             elif token.type == Tokens.new_kwd:
                 meth = self.parseConstructor()
-                constructor = meth
+                if constructor is not None:
+                    constructor.assimilate(meth)
+                else:
+                    constructor = meth
+                continue
+
             elif token.type == Tokens.identifier:
-                attributes.append(self.parseVariable())
+                value = self.parseVariable()
+
             else:
                 self._unexpected(token)
 
-        return lekvar.Class(name, constructor, attributes)
+            self.addChild(attributes, value)
+
+        return lekvar.Class(name, constructor, list(attributes.values()))
 
     def parseWhile(self):
         tokens = [self.next()]
