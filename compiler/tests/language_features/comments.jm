@@ -1,0 +1,20 @@
+#
+
+# Foo
+def foo() # Moo
+  # Bar
+end # Moo
+
+# Foo
+class Foo # Moo
+  # Foo
+  new() # Moo
+    # Bar
+  end # Moo
+  # Foo
+  def foo() # Moo
+    # Bar
+  end # Moo
+  # Foo
+end # Moo
+# Foo
