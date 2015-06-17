@@ -24,7 +24,15 @@ BINARY_OPERATIONS = [
     {Tokens.multiplication, Tokens.division, Tokens.integer_division},
 ]
 
-OPERATION_TOKENS = {type for operation in BINARY_OPERATIONS for type in operation }
+BINARY_OPERATION_TOKENS = {type for operation in BINARY_OPERATIONS for type in operation }
+
+UNARY_OPERATIONS = [
+    Tokens.addition,
+    Tokens.subtraction,
+    Tokens.logical_negation,
+]
+
+UNARY_OPERATION_TOKENS = set(UNARY_OPERATIONS)
 
 class Parser:
     lexer = None
@@ -152,7 +160,7 @@ class Parser:
         while True:
             token = self.strip([Tokens.comment, Tokens.newline])
 
-            if token and token.type in OPERATION_TOKENS:
+            if token and token.type in BINARY_OPERATION_TOKENS:
                 operations.append(self.next())
                 values.append(self.parseUnaryOperation())
             else:
@@ -199,8 +207,26 @@ class Parser:
         return lhs
 
     def parseUnaryOperation(self):
+        # Collect prefix unary operations
+        operations = []
+        while True:
+            token = self.strip([Tokens.comment, Tokens.newline])
+
+            if token is None:
+                break
+
+            if token.type in UNARY_OPERATION_TOKENS:
+                operations.insert(0, self.next())
+            else:
+                break
+
         value = self.parseSingleValue()
 
+        # Make prefix operations
+        for operation in operations:
+            value = lekvar.Call(lekvar.Attribute(value, operation.data), [], operation)
+
+        # Postfix unary operations
         while True:
             token = self.strip([Tokens.comment, Tokens.newline])
 
@@ -316,19 +342,33 @@ class Parser:
 
         # Parse different kinds of methods
 
-        # Operations
+        # Binary Operations
         if self.lookAhead().type == Tokens.self_kwd:
             tokens.append(self.next())
 
             token = self.next()
-            if token.type not in OPERATION_TOKENS:
+            if token.type not in BINARY_OPERATION_TOKENS:
                 raise SyntaxError("{} is not a valid operation".format(token), [token])
             name = token.data
+
+            print(name)
 
             tokens.append(token)
 
             arguments = [self.parseVariable()]
             default_values = [None]
+        # Unary Operations
+        elif self.lookAhead(2).type == Tokens.self_kwd:
+            token = self.next()
+            if token.type not in BINARY_OPERATION_TOKENS:
+                raise SyntaxError("{} is not a valid operation".format(token), [token])
+            name = token.data
+
+            tokens.append(token)
+            tokens.append(self.next())
+
+            arguments = []
+            default_values = []
         # Normal named methods
         else:
             token = self.expect(Tokens.identifier)
