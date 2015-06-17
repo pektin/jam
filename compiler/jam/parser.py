@@ -351,8 +351,6 @@ class Parser:
                 raise SyntaxError("{} is not a valid operation".format(token), [token])
             name = token.data
 
-            print(name)
-
             tokens.append(token)
 
             arguments = [self.parseVariable()]
