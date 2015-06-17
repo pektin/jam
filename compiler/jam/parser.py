@@ -481,7 +481,7 @@ class Parser:
         attributes = {}
 
         while True:
-            token = self.strip()
+            token = self.strip([Tokens.comment, Tokens.newline])
 
             if token is None:
                 raise SyntaxError("Expected 'end' before EOF")
