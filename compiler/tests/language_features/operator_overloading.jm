@@ -1,13 +1,18 @@
-#foo\n
+#foo\nbar\n
 
 class Addable
-    new()
-    end
+  new()
+  end
 
-    def self + other:String
-        puts(other)
-    end
+  def self + other:String
+    puts(other)
+  end
+
+  def -self
+    return "bar"
+  end
 end
 
 a = Addable()
 a + "foo"
+puts(-a)
