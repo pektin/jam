@@ -23,7 +23,7 @@ class Loop(Object):
 
     def verify(self):
         if not isinstance(State.scope, (Function, Module)):
-            raise SyntaxError("Cannot branch in {}", State.scope)
+            raise SyntaxError("Cannot loop here", self.tokens)
         self.function = State.scope
 
         with State.scoped(self, soft=True):
@@ -31,7 +31,7 @@ class Loop(Object):
                 instruction.verify()
 
     def resolveType(self):
-        raise TypeError("Loop objects do not have a type")
+        raise InternalError("Loop objects do not have a type")
 
 #
 # Break
@@ -49,10 +49,10 @@ class Break(Object):
     def verify(self):
         self.loop = State.getSoftScope(lambda a: isinstance(a, Loop))
         if self.loop is None:
-            raise SyntaxError("Cannot break outside loop")
+            raise SyntaxError("Cannot `break` outside loop", self.tokens)
 
     def resolveType(self):
-        raise TypeError("Break objects do not have a type")
+        raise InternalError("Break objects do not have a type")
 
 #
 # Branch
@@ -76,7 +76,7 @@ class Branch(Object):
 
     def verify(self):
         if not isinstance(State.scope, (Function, Module)):
-            raise SyntaxError("Cannot branch in {}", State.scope)
+            raise SyntaxError("Cannot branch here", self.tokens)
         self.function = State.scope
 
         self.condition.verify()
@@ -90,4 +90,4 @@ class Branch(Object):
                 instruction.verify()
 
     def resolveType(self):
-        raise TypeError("Branch objects do not have a type")
+        raise InternalError("Branch objects do not have a type")

@@ -67,7 +67,7 @@ class Assignment(Object):
             if variable.type is None:
                 variable.type = self.variable.type
             elif self.variable.type is not None: #TODO: Maybe just verify compatibility?
-                raise TypeError("Cannot override variable type")
+                raise TypeError("Cannot override variable type", self.tokens)
 
             self.variable = variable
 
@@ -82,10 +82,11 @@ class Assignment(Object):
 
         # Verify the variable's type with the assigned values
         if not checkCompatibility(value_type, self.variable.type):
-            raise TypeError("Cannot assign {} of type {} to variable {} of type {}".format(self.value, value_type, self.variable, self.variable.type))
+            raise TypeError("Cannot assign {} of type {} to variable {} of type {}".format(self.value, value_type, self.variable, self.variable.type),
+                self.value.tokens + self.variable.tokens + self.tokens)
 
     def resolveType(self):
-        raise TypeError("Assignments do not have types")
+        raise InternalError("Assignments do not have types")
 
     def __repr__(self):
         return "{} = {}".format(self.variable, self.value)

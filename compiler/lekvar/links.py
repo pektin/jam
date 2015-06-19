@@ -1,3 +1,5 @@
+from ..errors import *
+
 from .core import Context, Object, BoundObject, Type
 from .util import resolveReference, resolveAttribute
 from .function import Function, FunctionType
@@ -9,7 +11,7 @@ class Reference(Type):
     verified = False
 
     def __init__(self, reference:str, tokens = None):
-        super().__init__(tokens)
+        super().__init__(reference, tokens)
         self.reference = reference
 
     def copy(self):
@@ -20,7 +22,11 @@ class Reference(Type):
         self.verified = True
 
         # Resolve the reference using general reference resolution
-        self.value = resolveReference(self.reference)
+        try:
+            self.value = resolveReference(self.reference)
+        except MissingReferenceError as e:
+            e.addMessage("", self.tokens)
+            raise e
         self.value.verify()
 
     def resolveType(self):
@@ -58,7 +64,7 @@ class Attribute(Type):
     verified = False
 
     def __init__(self, value:Object, reference:str, tokens = None):
-        super().__init__(tokens)
+        super().__init__(reference, tokens)
         self.value = value
         self.reference = reference
 
@@ -75,7 +81,7 @@ class Attribute(Type):
         self.attribute.verify()
 
         if self.attribute is None:
-            raise MissingReferenceError("{} does not have an attribute {}".format(self.value, self.reference))
+            raise MissingReferenceError("{} does not have an attribute {}".format(self.value, self.reference), self.value.tokens + self.tokens)
 
     @property
     def local_context(self):

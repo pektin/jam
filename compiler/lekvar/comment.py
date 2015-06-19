@@ -14,7 +14,7 @@ class Comment(Object):
         pass
 
     def resolveType(self):
-        raise TypeError("Comments do not have a type")
+        raise InternalError("Comments do not have a type")
 
     def __repr__(self):
         return "# {} #".format(self.contents)

@@ -64,7 +64,7 @@ class Parser:
 
     # Throw an unexpected token error
     def _unexpected(self, token):
-        raise SyntaxError("Unexpected {}: '{}'".format(token.type, token.data), [token])
+        raise SyntaxError("Unexpected {}: `{}`".format(token.type.name, token.data), [token])
 
     # Strip all tokens of a type, returning one lookAhead or None
     def strip(self, types:[Tokens] = [Tokens.newline]):
@@ -104,7 +104,7 @@ class Parser:
             tokens.append(self.expect(Tokens.identifier))
             module_name = tokens[1].data
         else:
-            tokens = None
+            tokens = []
             module_name = "main"
 
         children = {}
@@ -115,7 +115,7 @@ class Parser:
             if inline:
                 token = self.strip()
                 if token is None:
-                    raise SyntaxError("Expected 'end' before EOF")
+                    raise SyntaxError("Expected `end` before EOF for module", tokens)
                 elif token.type == Tokens.end_kwd:
                     tokens.append(self.next())
                     break
@@ -178,8 +178,7 @@ class Parser:
             return values[0]
 
         if operation_index == len(BINARY_OPERATIONS):
-            raise InternalError("Unparsed operations detected {}".format(values))
-
+            raise InternalError("Unparsed operation {}".format(values))
 
         # Accumulate values from higher order operations
         # Separated by current order operations
@@ -253,7 +252,7 @@ class Parser:
 
         # EOF handling
         if token is None:
-            raise SyntaxError("Expected value before EOF")
+            raise SyntaxError("Expected value before EOF") #TODO: Add token reference
 
         # Identify the kind of value
         if token.type == Tokens.def_kwd:
@@ -263,7 +262,8 @@ class Parser:
         elif token.type == Tokens.module_kwd:
             return self.parseModule()
         elif token.type == Tokens.identifier:
-            return lekvar.Reference(self.next().data)
+            token = self.next()
+            return lekvar.Reference(token.data, [token])
         elif token.type in (Tokens.integer, Tokens.dot):
             return self.parseNumber()
         elif token.type in (Tokens.true_kwd, Tokens.false_kwd):
@@ -401,7 +401,7 @@ class Parser:
             token = self.strip()
 
             if token is None:
-                raise SyntaxError("Expected 'end' before EOF")
+                raise SyntaxError("Expected `end` before EOF for method", tokens)
 
             if token.type == Tokens.end_kwd:
                 tokens.append(self.next())
@@ -434,7 +434,7 @@ class Parser:
             else:
                 # Check for default arguments before a non-defaulted argument
                 if value is not None:
-                    raise SyntaxError("Cannot have non-defaulted arguments after defaulted ones")
+                    raise SyntaxError("Cannot have non-defaulted arguments after defaulted ones", value.tokens)
 
         return lekvar.Method(name, overloads)
 
@@ -476,9 +476,12 @@ class Parser:
 
     def parseClass(self):
         # class should have already been identified
-        assert self.next().type == Tokens.class_kwd
+        tokens = [self.next()]
+        assert tokens[0].type == Tokens.class_kwd
 
-        name = self.expect(Tokens.identifier).data
+        token = self.expect(Tokens.identifier)
+        tokens.append(token)
+        name = token.data
 
         constructor = None
         attributes = {}
@@ -487,10 +490,10 @@ class Parser:
             token = self.strip([Tokens.comment, Tokens.newline])
 
             if token is None:
-                raise SyntaxError("Expected 'end' before EOF")
+                raise SyntaxError("Expected `end` before EOF for class", tokens)
 
             elif token.type == Tokens.end_kwd:
-                self.next()
+                tokens.append(self.next())
                 break
 
             elif token.type == Tokens.def_kwd:
@@ -516,7 +519,6 @@ class Parser:
 
     def parseWhile(self):
         tokens = [self.next()]
-
         assert tokens[0].type == Tokens.while_kwd
 
         condition = self.parseValue()
@@ -527,7 +529,7 @@ class Parser:
             token = self.strip()
 
             if token is None:
-                raise SyntaxError("Expected 'end' before EOF")
+                raise SyntaxError("Expected `end` before EOF for while loop", tokens)
 
             elif token.type == Tokens.end_kwd:
                 tokens.append(self.next())
@@ -540,7 +542,6 @@ class Parser:
 
     def parseLoop(self):
         tokens = [self.next()]
-
         assert tokens[0].type == Tokens.loop_kwd
 
         instructions = []
@@ -549,7 +550,7 @@ class Parser:
             token = self.strip()
 
             if token is None:
-                raise SyntaxError("Expected 'end' before EOF")
+                raise SyntaxError("Expected `end` before EOF for loop", tokens)
 
             elif token.type == Tokens.end_kwd:
                 tokens.append(self.next())
@@ -568,7 +569,6 @@ class Parser:
 
     def parseBranch(self):
         tokens = [self.next()]
-
         assert tokens[0].type == Tokens.if_kwd
 
         condition = self.parseValue()
@@ -579,7 +579,7 @@ class Parser:
             token = self.strip()
 
             if token is None:
-                raise SyntaxError("Expected 'end' or 'else' before EOF")
+                raise SyntaxError("Expected `end` or `else` before EOF for if branch", tokens)
 
             elif token.type == Tokens.end_kwd:
                 tokens.append(self.next())
@@ -597,7 +597,7 @@ class Parser:
             token = self.strip()
 
             if token is None:
-                raise SyntaxError("Expected 'end' before EOF")
+                raise SyntaxError("Expected `end` before EOF for else branch", tokens)
 
             elif token.type == Tokens.end_kwd:
                 tokens.append(self.next())

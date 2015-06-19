@@ -16,8 +16,6 @@ class Call(Object):
         return Call(copy(self.called), list(map(copy, self.values)))
 
     def verify(self):
-        super().verify()
-
         self.called.verify()
 
         # Verify arguments and create the function type of the call

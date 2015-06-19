@@ -51,7 +51,7 @@ class Class(Type):
 
     def resolveCall(self, call:FunctionType):
         if self.constructor is None:
-            raise TypeError("Class {} does not have a constructor".format(self))
+            raise TypeError("Class does not have a constructor".format(self), self.tokens)
         return self.constructor.resolveCall(call)
 
     @property
@@ -68,7 +68,7 @@ class Class(Type):
 class Constructor(Function):
     def __init__(self, function:Function, constructing:Type, tokens = None):
         if function.type.return_type is not None:
-            raise TypeError("Constructors must return nothing")
+            raise TypeError("Constructors must return nothing", function.tokens)
         function.type.return_type = constructing
 
         super().__init__(function.name, function.arguments, function.instructions, function.type.return_type, tokens)
@@ -76,4 +76,4 @@ class Constructor(Function):
     def verifySelf(self):
         for instruction in self.instructions:
             if isinstance(instruction, Return):
-                raise SyntaxError("Returns within constructors are invalid")
+                raise SyntaxError("Returns within constructors are invalid", instruction.tokens)

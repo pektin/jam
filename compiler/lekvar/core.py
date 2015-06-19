@@ -134,15 +134,9 @@ class Type(BoundObject):
     # Resolves a call on an instance
     # Returns the function to call for that instance
     def resolveInstanceCall(self, call:FunctionType) -> Function:
-        raise SemanticError("Cannot call object of type {}".format(self))
+        raise TypeError("Cannot call object of type {}".format(self), self.tokens)
 
     # Returns whether or not a given type is compatible with this type
     @abstract
     def checkCompatibility(self, other:Type) -> bool:
         pass
-
-    # Resolves any compatibility (such as casting/dependence) for a type
-    # By default does a compatibility check and raises when not compatible
-    def resolveCompatibility(self, other:Type):
-        if not self.checkCompatibility(other):
-            raise TypeError()

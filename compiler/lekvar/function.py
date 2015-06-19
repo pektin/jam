@@ -63,14 +63,14 @@ class Function(BoundObject):
     def verifySelf(self):
         # Ensure non-void functions return
         if not any(isinstance(inst, Return) for inst in self.instructions) and self.type.return_type is not None:
-            raise SemanticError("All code paths must return")
+            raise SemanticError("All code paths must return", self.tokens)
 
     def resolveType(self):
         return self.type
 
     def resolveCall(self, call:FunctionType):
         if not checkCompatibility(self.resolveType(), call):
-            raise TypeError("{} is not compatible with {}".format(call, self.resolveType()))
+            raise TypeError("Function is not callable with {}".format(call), self.tokens)
 
         if not self.dependent:
             return self
@@ -155,7 +155,7 @@ class Return(Object):
         self.value.verify()
 
         if not isinstance(State.scope, Function):
-            raise SyntaxError("Cannot return outside of a function")
+            raise SyntaxError("Cannot return outside of a function", self.tokens)
         self.function = State.scope
 
         # Infer function types

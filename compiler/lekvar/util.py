@@ -38,7 +38,10 @@ def resolveReference(reference:str):
     if len(found) < 1:
         raise MissingReferenceError("No reference to {}".format(reference))
     elif len(found) > 1:
-        raise AmbiguityError("Ambiguous reference to {}".format(reference))
+        raise AmbiguityError(
+            [("Ambiguous reference to {}\nMatches:".format(reference), [],)]+
+            [("", match.tokens) for match in found]
+        )
 
     return found[0]
 
@@ -48,8 +51,7 @@ def resolveAttribute(object:Object, reference:str):
 
     if context is not None and reference in context:
         return context[reference]
-
-    raise MissingReferenceError("{} does not have an attribute {}".format(object, reference))
+    return None
 
 # More general copy function which handles None
 def copy(obj):
