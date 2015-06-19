@@ -7,6 +7,7 @@ import argparse
 import cProfile
 from io import StringIO
 
+from compiler.errors import CompilerError
 from compiler.jam import compiler
 
 parser = argparse.ArgumentParser(
@@ -60,7 +61,11 @@ def main():
         profiler.enable()
 
     with args.input, output:
-        print(compile(args.input, output), end="")
+        try:
+            print(compile(args.input, output), end="")
+        except CompilerError as e:
+            message = e.args[0]
+            print("{}: {}".format(type(e).__name__, message))
 
     if args.profile:
         profiler.disable()
