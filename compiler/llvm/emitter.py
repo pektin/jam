@@ -324,7 +324,10 @@ def Context_emitType(self):
         child.llvm_context_index = index
         types.append(child.resolveType().emitType())
 
-    self.llvm_type = llvm.Struct.new(types, False)
+    if len(types) > 0:
+        self.llvm_type = llvm.Struct.new(types, False)
+    else:
+        self.llvm_type = llvm.Pointer.void_p()
 
     return self.llvm_type
 lekvar.Context.emitType = Context_emitType
@@ -355,12 +358,7 @@ def Function_emit(self):
     if self.dependent: return
     if self.llvm_value is not None: return
 
-    if len(self.closed_context) > 0:
-        self.llvm_value = 0 # Temporarily set llvm_value to something so this function isn't emitted twice
-        self.bound_context.scope.emit()
-        self.llvm_closure_type = self.closed_context.emitType()
-    else:
-        self.llvm_closure_type = llvm.Type.void_p()
+    self.llvm_closure_type = self.closed_context.emitType()
 
     name = resolveName(self)
     func_type = self.resolveType().emitType(self.llvm_closure_type)
@@ -501,12 +499,6 @@ lekvar.ExternalFunction.emitValue = ExternalFunction_emitValue
 #
 
 def Method_emit(self):
-    if self.llvm_value is not None: return
-
-    if isinstance(self.bound_context.scope, lekvar.Class):
-        self.bound_context.scope.emit()
-    self.llvm_value = 0
-
     for overload in self.overload_context:
         overload.emit()
 lekvar.Method.emit = Method_emit
@@ -518,23 +510,23 @@ lekvar.Method.emit = Method_emit
 lekvar.Class.llvm_type = None
 
 def Class_emit(self):
-    if self.llvm_type is not None: return
-
-    var_types = []
-    for child in self.instance_context:
-        if isinstance(child, lekvar.Variable):
-            child.llvm_context_index = len(var_types)
-            var_types.append(child.type.emitType())
-
-    self.llvm_type = llvm.Struct.new(var_types, False)
-
+    self.constructor.emit()
     for child in self.instance_context:
         child.emit()
 
 lekvar.Class.emit = Class_emit
 
 def Class_emitType(self):
-    self.emit()
+    if self.llvm_type is None:
+        var_types = []
+
+        for child in self.instance_context:
+            if isinstance(child, lekvar.Variable):
+                child.llvm_context_index = len(var_types)
+                var_types.append(child.type.emitType())
+
+        self.llvm_type = llvm.Struct.new(var_types, False)
+
     return self.llvm_type
 lekvar.Class.emitType = Class_emitType
 
