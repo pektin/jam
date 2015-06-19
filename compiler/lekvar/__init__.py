@@ -1,4 +1,7 @@
 import logging
+from io import IOBase
+
+from ..errors import CompilerError
 
 from .state import State
 from .core import Context, Object, BoundObject, Type
@@ -15,10 +18,16 @@ from .literal import Literal
 from .branches import Loop, Break, Branch
 from .comment import Comment
 
-def verify(module:Module, builtin:Module, logger = logging.getLogger()):
+def verify(module:Module, builtin:Module, logger = logging.getLogger(), source:IOBase = None):
     # Set up the initial state before verifying
     State.init(builtin, logger.getChild("lekvar"))
 
     State.logger.info(module.context)
 
-    module.verify()
+    try:
+        module.verify()
+    except CompilerError as e:
+        if source is not None:
+            source.seek(0)
+            e.format(source.read())
+        raise e

@@ -10,7 +10,12 @@ from .lexer import Lexer, Tokens
 #
 
 def parseFile(source:IOBase, logger=logging.getLogger()):
-    return Parser(Lexer(source), logger).parseModule(False)
+    try:
+        return Parser(Lexer(source), logger).parseModule(False)
+    except CompilerError as e:
+        source.seek(0)
+        e.format(source.read())
+        raise e
 
 #
 # Parser
