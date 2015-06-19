@@ -1,0 +1,24 @@
+#13\n
+
+class Foo
+  x:Real
+
+  new(a:Real)
+    x = a
+  end
+
+  def print()
+    puts(x)
+  end
+
+  def foo(other:Foo)
+    a = x*other.x - 2.0
+    n = Foo(a)
+    return n
+  end
+end
+
+bar = Foo(3.0)
+bar2 = Foo(5.0)
+n = bar.foo(bar2)
+n.print()
