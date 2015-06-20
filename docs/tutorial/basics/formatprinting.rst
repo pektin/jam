@@ -3,9 +3,11 @@
 Formatted print
 ###############
 
-Using quotations "" with puts() will allow for standard string formatting to 
-occur. By default, a new line character ``/n`` is added at the end of every
-string
+Using quotations ``" "`` with puts() will allow for standard string formatting 
+to occur. By default, a new line character ``/n`` is added at the end of every
+string.
+
+The following control characters are supported.
 
 ======== ============================
 Sequence Meaning
@@ -27,7 +29,7 @@ curlybrace (``#{``), followed by any value and a closing curlybrace (``}``).
 
 ::
 
-    var name = "Harold"
+    name = "Harold"
 
     # This function will print out "My name is Harrold" with a newline
     print("My name is #{name}")
@@ -36,9 +38,11 @@ In contrast WYSIWYG strings start and end with backticks (`````) and have no
 special formatting.
 
 ::
+    
+    # This will print "Hello World" with a newline
+    puts(`Hello World`)
 
-	puts(`Hello World`)
 
 See more
 ========
-:ref:`Language reference documentation<jam-literals-strings>`
+:ref:`Strings language reference<jam-literals-strings>`
