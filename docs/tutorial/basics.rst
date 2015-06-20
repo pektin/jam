@@ -11,3 +11,4 @@ languages and straightforward to exisiting programmers
     basics/helloworld
     basics/comments
     basics/formatprinting
+    basics/literals
