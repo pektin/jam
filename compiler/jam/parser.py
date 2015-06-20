@@ -270,7 +270,11 @@ class Parser:
             return self.parseConstant()
         elif token.type == Tokens.string:
             token = self.next()
-            return lekvar.Literal(token.data, lekvar.Reference("String"))
+            return lekvar.Literal(token.data, lekvar.Reference("String"), [token])
+        elif token.type == Tokens.format_string:
+            token = self.next()
+            return lekvar.Literal(token.data.encode("UTF-8").decode("unicode-escape"),
+                lekvar.Reference("String"), [token])
         elif token.type == Tokens.group_start:
             return self.parseGrouping()
 
