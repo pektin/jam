@@ -62,6 +62,7 @@ Tokens = Enum("Tokens", [
     "false_kwd",
 
     "string",
+    "format_string",
     "integer",
     "newline",
     "group_start",
@@ -104,11 +105,17 @@ node.links.append((node, lambda c: c != NEWLINE_CHAR))
 
 # Strings
 FORMAT_STRING_CHAR = "\""
+FORMAT_STRING_ESCAPE_CHAR = "\\"
 
 node = Node()
 TREE.links.append((node, lambda c: c == FORMAT_STRING_CHAR))
-node.links.append((node, lambda c: c != FORMAT_STRING_CHAR))
-end_node = Node(token_type=Tokens.string, verify=lambda s: s[1:-1])
+node.links.append((node, lambda c: c != FORMAT_STRING_CHAR and c != FORMAT_STRING_ESCAPE_CHAR))
+
+escape = Node()
+node.links.append((escape, lambda c: c == FORMAT_STRING_ESCAPE_CHAR))
+escape.links.append((node, lambda c: True))
+
+end_node = Node(token_type=Tokens.format_string, verify=lambda s: s[1:-1])
 node.links.append((end_node, lambda c: c == FORMAT_STRING_CHAR))
 
 # WYSIWYG Strings
