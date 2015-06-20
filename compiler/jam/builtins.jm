@@ -98,6 +98,14 @@ class Bool
   new(v:_builtins.Bool)
     value = v
   end
+
+  def !self
+    #TODO: Get rid of branching here
+    if Bool(value)
+      return false
+    end
+    return true
+  end
 end
 
 #TODO: Implement properly once casting is in place
