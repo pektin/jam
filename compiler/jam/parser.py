@@ -363,7 +363,7 @@ class Parser:
         # Unary Operations
         elif self.lookAhead(2).type == Tokens.self_kwd:
             token = self.next()
-            if token.type not in BINARY_OPERATION_TOKENS:
+            if token.type not in UNARY_OPERATION_TOKENS:
                 raise SyntaxError("{} is not a valid operation".format(token), [token])
             name = token.data
 
