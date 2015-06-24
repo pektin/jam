@@ -1,5 +1,7 @@
 # Jam
 
+[![Join the chat at https://gitter.im/pektin/jam](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/pektin/jam?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![Circle CI](https://circleci.com/gh/pektin/jam.svg?style=svg)](https://circleci.com/gh/pektin/jam)
 
 Jam is an experimental programming language that tries to combine the advantages
