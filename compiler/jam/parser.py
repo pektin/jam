@@ -145,9 +145,12 @@ class Parser:
             return self.parseComment()
         elif token.type == Tokens.return_kwd:
             return self.parseReturn()
-        elif token.type == Tokens.identifier:
-            if self.lookAhead(2).type == Tokens.equal:
-                return self.parseAssignment()
+        elif token.type in (Tokens.identifier, Tokens.const_kwd):
+            i = 1
+            while self.lookAhead(i).type != Tokens.newline:
+                if self.lookAhead(i).type == Tokens.equal:
+                    return self.parseAssignment()
+                i += 1
         elif token.type == Tokens.if_kwd:
             return self.parseBranch()
         elif token.type == Tokens.while_kwd:
@@ -611,11 +614,21 @@ class Parser:
 
     # Parse a variable, with optional type signature
     def parseVariable(self):
-        tokens = [self.expect(Tokens.identifier)]
-        name = tokens[0].data
+        tokens = []
+
+        if self.lookAhead().type == Tokens.const_kwd:
+            tokens.append(self.next())
+            constant = True
+        else:
+            constant = False
+
+        token = self.expect(Tokens.identifier)
+        tokens.append(token)
+        name = token.data
+
         type = self.parseTypeSig()
 
-        return lekvar.Variable(name, type, tokens)
+        return lekvar.Variable(name, type, constant, tokens)
 
     # Parse an optional type signature
     def parseTypeSig(self, typeof = Tokens.typeof):
