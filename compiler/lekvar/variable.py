@@ -12,13 +12,16 @@ from .core import Context, Object, BoundObject, Type
 
 class Variable(BoundObject):
     type = None
+    constant = False
+    assigned = False
 
-    def __init__(self, name:str, type:Type = None, tokens = None):
+    def __init__(self, name:str, type:Type = None, constant = False, tokens = None):
         super().__init__(name, tokens)
         self.type = type
+        self.constant = constant
 
     def copy(self):
-        var = Variable(self.name, copy(self.type))
+        var = Variable(self.name, copy(self.type), self.constant)
         var.static = self.static
         return var
 
@@ -27,6 +30,11 @@ class Variable(BoundObject):
 
     def resolveType(self):
         return self.type
+
+    def resolveAssignment(self):
+        if self.constant and self.assigned:
+            raise TypeError("Cannot assign to constant")
+        self.assigned = True
 
     @property
     def local_context(self):
@@ -84,6 +92,13 @@ class Assignment(Object):
         if not checkCompatibility(value_type, self.variable.type):
             raise TypeError("Cannot assign {} of type {} to variable {} of type {}".format(self.value, value_type, self.variable, self.variable.type),
                 self.value.tokens + self.variable.tokens + self.tokens)
+
+        # Allow variable to handle any state associated with assignments
+        try:
+            self.variable.resolveAssignment()
+        except TypeError as e:
+            e.addMessage("", self.tokens)
+            raise
 
     def resolveType(self):
         raise InternalError("Assignments do not have types")
