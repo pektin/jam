@@ -1,0 +1,8 @@
+!TypeError
+
+def foo(const bar:Int)
+  bar = bar + 2
+  return bar
+end
+
+puts(foo(3))
