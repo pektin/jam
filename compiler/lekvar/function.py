@@ -51,6 +51,10 @@ class Function(BoundObject):
         if self.verified: return
         self.verified = True
 
+        # Arguments are considered to be already assigned
+        for variable in self.arguments:
+            variable.resolveAssignment()
+
         with State.scoped(self):
             self.type.verify()
 
