@@ -15,6 +15,7 @@ syntax.
     literals/integers
     literals/floats
     literals/strings
+    literals/symbols
     literals/booleans
     literals/null
 
@@ -22,4 +23,4 @@ Syntax
 ======
 
 .. productionlist::
-    Literal: `Integer` | `Float` | `String` | `Boolean` | `Null` 
+    Literal: `Integer` | `Float` | `String` | `Symbol` | `Boolean` | `Null`
