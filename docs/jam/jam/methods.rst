@@ -27,7 +27,9 @@ Syntax
 
 .. productionlist::
     Argument: `Variable` ["=" `Value`]
-    Method: [`Visibility`] "def" `Identifier` "(" [ [`Argument` ","]* `Argument` ] ")" [ "->" `Type` ]
+    MethodType: "(" [`Type` ","]* `Type` ")" [ "->" `Type` ]
+    MethodPrototype: `Identifier` "(" [ [`Argument` ","]* `Argument` ] ")" [ "->" `Type` ]
+    Method: [`Visibility`] "def" `MethodPrototype`
           :   (`InstructionSet` | ("return" [`Value`])
           : )* "end"
 
