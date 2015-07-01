@@ -26,30 +26,85 @@ class State:
         cls.scope_stack = []
 
     @classproperty
-    def scope(cls):
+    def scope_state(cls):
         # Get the first element from the back that isn't soft
-        for scope in reversed(cls.scope_stack):
-            if not scope[1]:
-                return scope[0]
+        for scope_state in reversed(cls.scope_stack):
+            if not scope_state.soft:
+                return scope_state
+    @classproperty
+    def scope(cls):
+        return cls.scope_state.scope
 
     @classproperty
-    def soft_scope(cls):
+    def soft_scope_state(cls):
         return cls.scope_stack[-1]
+    @classproperty
+    def soft_scope(cls):
+        return cls.soft_scope_state.scope
 
     @classmethod
-    def getSoftScope(cls, condition):
-        for scope in reversed(cls.scope_stack):
-            if scope[1]:
-                if condition(scope[0]):
-                    return scope[0]
+    def getSoftScopeState(cls, condition):
+        for scope_state in reversed(cls.scope_stack):
+            if scope_state.soft:
+                if condition(scope_state.scope):
+                    return scope_state
             else:
                 break
-
-        return None
+    @classmethod
+    def getSoftScope(cls, condition):
+        return cls.getSoftScopeState(condition).scope
 
     @classmethod
     @contextmanager
-    def scoped(cls, scope:BoundObject, soft = False):
-        cls.scope_stack.append((scope, soft))
-        yield
+    def scoped(cls, scope:BoundObject, soft = False, analys = False):
+        scope_state = AnalysScopeState(scope) if analys else ScopeState(scope)
+        scope_state.soft = soft
+
+        cls.scope_stack.append(scope_state)
+        yield scope_state
         cls.scope_stack.pop()
+
+class ScopeState:
+    soft = False
+
+    def __init__(self, scope:BoundObject):
+        self.scope = scope
+
+    def merge_or(self, other):
+        out = self.copy()
+        out.imerge_or(other)
+        return out
+
+    def merge_and(self, other):
+        out = self.copy()
+        out.imerge_and(other)
+        return out
+
+    def copy(self):
+        return ScopeState(self.scope)
+
+    def imerge_or(self, other):
+        raise InternalError("Cannot merge default scope states")
+
+    def imerge_and(self, other):
+        raise InternalError("Cannot merge default scope states")
+
+class AnalysScopeState(ScopeState):
+    def __init__(self, scope:BoundObject):
+        super().__init__(scope)
+        self.definately_returns = False
+        self.maybe_returns = False
+
+    def copy(self):
+        state = AnalysScopeState(self.scope)
+        state.definately_returns = self.definately_returns
+        state.maybe_returns = self.maybe_returns
+        return state
+
+    def imerge_or(self, other):
+        self.definately_returns = self.definately_returns and other.definately_returns
+        self.maybe_returns = self.definately_returns or other.definately_returns
+
+    def imerge_and(self, other):
+        self.definately_returns = self.definately_returns or other.definately_returns
+        self.maybe_returns = self.definately_returns or other.definately_returns
