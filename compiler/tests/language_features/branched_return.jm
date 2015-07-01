@@ -1,0 +1,12 @@
+#foo\nbar\n
+
+def foo(bar:Bool)
+  if bar
+    return "foo"
+  else
+    return "bar"
+  end
+end
+
+puts(foo(true))
+puts(foo(false))
