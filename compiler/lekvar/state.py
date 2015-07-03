@@ -1,6 +1,8 @@
 import logging
 from contextlib import contextmanager
 
+from .. errors import *
+
 # Python predefines
 Module = None
 BoundObject = None

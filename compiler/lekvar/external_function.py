@@ -23,8 +23,7 @@ class ExternalFunction(BoundObject):
         if self.verified: return
         self.verified = True
 
-        with State.scoped(self):
-            self.type.verify()
+        self.type.verify()
 
     def resolveType(self):
         return self.type
