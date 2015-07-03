@@ -60,7 +60,9 @@ class ModuleType(Type):
     def verify(self):
         if self.verified: return
         self.verified = True
-        self._context.verify()
+
+        with State.scoped(self._context.scope):
+            self._context.verify()
 
     def resolveType(self):
         raise InternalError("Not Implemented")

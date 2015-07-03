@@ -44,7 +44,7 @@ class Class(Type):
             if self.constructor is not None:
                 self.constructor.verify()
 
-        self.instance_context.verify()
+            self.instance_context.verify()
 
     def resolveType(self):
         raise InternalError("Not Implemented")

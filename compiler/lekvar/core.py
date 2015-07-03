@@ -26,11 +26,10 @@ class Context:
         for child in children:
             self.addChild(child)
 
-    # Verifies all child objects within the scope of this context's scope
+    # Verifies all child objects
     def verify(self):
-        with State.scoped(self.scope):
-            for child in self.children.values():
-                child.verify()
+        for child in self.children.values():
+            child.verify()
 
     # Doubly link a child to the context
     def addChild(self, child):

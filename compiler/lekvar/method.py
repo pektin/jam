@@ -33,8 +33,7 @@ class Method(BoundObject):
         self.verified = True
 
         with State.scoped(self):
-            for overload in self.overload_context:
-                overload.verify()
+            self.overload_context.verify()
 
     def resolveType(self):
         if self.type is None:
