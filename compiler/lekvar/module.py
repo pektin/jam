@@ -28,10 +28,11 @@ class Module(BoundObject):
         if self.verified: return
         self.verified = True
 
-        with State.scoped(self):
+        with State.scoped(self, analys = True):
             for instruction in self.main:
                 instruction.verify()
-        self.context.verify()
+
+            self.context.verify()
 
     def resolveType(self):
         if self.type is not None:

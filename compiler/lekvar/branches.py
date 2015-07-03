@@ -26,9 +26,12 @@ class Loop(Object):
             raise SyntaxError("Cannot loop here", self.tokens)
         self.function = State.scope
 
-        with State.scoped(self, soft=True):
+        with State.scoped(self, soft = True, analys = True) as state:
             for instruction in self.instructions:
                 instruction.verify()
+
+        # Update scope state
+        State.soft_scope_state.imerge_or(state)
 
     def resolveType(self):
         raise InternalError("Loop objects do not have a type")
@@ -81,13 +84,16 @@ class Branch(Object):
 
         self.condition.verify()
 
-        with State.scoped(self, soft=True):
-            #TODO: Analysis on branch dependent instructions
+        with State.scoped(self, soft = True, analys = True) as tstate:
             for instruction in self.true_instructions:
                 instruction.verify()
 
+        with State.scoped(self, soft = True, analys = True) as fstate:
             for instruction in self.false_instructions:
                 instruction.verify()
+
+        # Update scope state
+        State.soft_scope_state.imerge_and(tstate.merge_or(fstate))
 
     def resolveType(self):
         raise InternalError("Branch objects do not have a type")

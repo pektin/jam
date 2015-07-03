@@ -55,18 +55,20 @@ class Function(BoundObject):
         for variable in self.arguments:
             variable.resolveAssignment()
 
-        with State.scoped(self):
+        with State.scoped(self, analys = True):
             self.type.verify()
 
             for instruction in self.instructions:
                 instruction.verify()
 
-            # Further, analytical verification
+            # Analytical verification
             self.verifySelf()
 
+    # Used to perform analytical verification after standard verification
+    # Guaranteed to run within the scope of the function
     def verifySelf(self):
-        # Ensure non-void functions return
-        if not any(isinstance(inst, Return) for inst in self.instructions) and self.type.return_type is not None:
+        # If we have a return type, we must return on all code paths
+        if self.type.return_type is not None and not State.soft_scope_state.definately_returns:
             raise SemanticError("All code paths must return", self.tokens)
 
     def resolveType(self):
@@ -156,7 +158,10 @@ class Return(Object):
         return Return(copy(self.value))
 
     def verify(self):
+        scope = State.soft_scope_state.scope
         self.value.verify()
+        if hasattr(scope, "bound_context"):
+            assert scope.bound_context.scope is State.soft_scope_state.scope.bound_context.scope
 
         if not isinstance(State.scope, Function):
             raise SyntaxError("Cannot return outside of a function", self.tokens)
@@ -167,6 +172,10 @@ class Return(Object):
             self.function.type.return_type = self.value.resolveType()
         else:
             checkCompatibility(self.function.type.return_type, self.value.resolveType())
+
+        # Update scope state
+        State.soft_scope_state.definately_returns = True
+        State.soft_scope_state.maybe_returns = True
 
     def resolveType(self):
         return None

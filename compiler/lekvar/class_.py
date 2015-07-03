@@ -74,6 +74,7 @@ class Constructor(Function):
         super().__init__(function.name, function.arguments, function.instructions, function.type.return_type, tokens)
 
     def verifySelf(self):
-        for instruction in self.instructions:
-            if isinstance(instruction, Return):
-                raise SyntaxError("Returns within constructors are invalid", instruction.tokens)
+        # Constructors may not return
+        if State.soft_scope_state.maybe_returns:
+            #TODO: Find returns
+            raise SyntaxError("Returns within constructors are invalid", self.tokens)
