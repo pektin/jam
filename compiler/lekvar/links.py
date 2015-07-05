@@ -4,41 +4,28 @@ from .core import Context, Object, BoundObject, Type
 from .util import resolveReference, resolveAttribute
 from .function import Function, FunctionType
 
-class Reference(Type):
-    reference = None
+class Link(Type):
     value = None
 
-    verified = False
+    def __init__(self, name:str, value:Object = None, tokens = None):
+        super().__init__(name, tokens)
+        self.value = value
 
-    def __init__(self, reference:str, tokens = None):
-        super().__init__(reference, tokens)
-        self.reference = reference
-
-    def copy(self):
-        return Reference(self.reference)
+    # Dispatch all functions to the linked value
 
     def verify(self):
-        if self.verified: return
-        self.verified = True
-
-        # Resolve the reference using general reference resolution
-        try:
-            self.value = resolveReference(self.reference)
-        except MissingReferenceError as e:
-            e.addMessage("", self.tokens)
-            raise e
         self.value.verify()
 
     def resolveType(self):
         return self.value.resolveType()
 
     @property
-    def local_context(self):
-        return self.value.local_context
-
-    @property
     def context(self):
         return self.value.context
+
+    @property
+    def local_context(self):
+        return self.value.local_context
 
     @property
     def instance_context(self):
@@ -53,59 +40,63 @@ class Reference(Type):
     def checkCompatibility(self, other:Type):
         return self.value.checkCompatibility(other)
 
-    def __repr__(self):
-        return "{}".format(self.reference)
+    def resolveCompatibility(self, other:Type):
+        return self.value.resolveCompatibility(other)
 
-class Attribute(Type):
-    value = None
-    reference = None
-    attribute = None
-
+class Reference(Link):
     verified = False
+    # The reference is the name
+    @property
+    def reference(self): return self.name
 
-    def __init__(self, value:Object, reference:str, tokens = None):
-        super().__init__(reference, tokens)
-        self.value = value
-        self.reference = reference
+    def __init__(self, reference:str, tokens = None):
+        super().__init__(reference, None, tokens)
 
     def copy(self):
-        return Attribute(self.value, self.reference)
+        return Reference(self.reference, self.tokens)
 
     def verify(self):
         if self.verified: return
         self.verified = True
 
-        self.value.verify()
-        # Resolve the attribute using the values attribute resolution
-        self.attribute = resolveAttribute(self.value, self.reference)
-        self.attribute.verify()
-
-        if self.attribute is None:
-            raise MissingReferenceError("{} does not have an attribute {}".format(self.value, self.reference), self.value.tokens + self.tokens)
-
-    @property
-    def local_context(self):
-        return self.attribute.local_context
-
-    @property
-    def context(self):
-        return self.attribute.context
-
-    @property
-    def instance_context(self):
-        return self.attribute.instance_context
-
-    def resolveType(self):
-        return self.attribute.resolveType()
-
-    def resolveCall(self, call:FunctionType):
-        return self.attribute.resolveCall(call)
-
-    def resolveValue(self):
-        return self.attribute.resolveValue()
-
-    def checkCompatibility(self, other:Type):
-        return self.attribute.checkCompatibility(other)
+        # Resolve the reference using general reference resolution
+        try:
+            self.value = resolveReference(self.reference)
+        except MissingReferenceError as e:
+            e.addMessage("", self.tokens)
+            raise e
+        super().verify()
 
     def __repr__(self):
-        return "{}.{}".format(self.value, self.reference)
+        return "{}".format(self.reference)
+
+class Attribute(Link):
+    # The object the value belongs to
+    parent = None
+    # The reference is the name
+    @property
+    def reference(self): return self.name
+
+    verified = False
+
+    def __init__(self, parent:Object, reference:str, tokens = None):
+        super().__init__(reference, None, tokens)
+        self.parent = parent
+
+    def copy(self):
+        return Attribute(self.parent, self.reference, self.tokens)
+
+    def verify(self):
+        if self.verified: return
+        self.verified = True
+
+        self.parent.verify()
+        # Resolve the attribute using the values attribute resolution
+        self.value = resolveAttribute(self.parent, self.reference)
+        self.value.verify()
+
+        if self.value is None:
+            raise MissingReferenceError("{} does not have an attribute {}".format(self.parent, self.reference), self.parent.tokens + self.tokens)
+
+    def __repr__(self):
+        return "{}.{}".format(self.parent, self.reference)

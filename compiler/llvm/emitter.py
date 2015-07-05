@@ -154,19 +154,19 @@ lekvar.Reference.emitAssignment = Reference_emitAssignment
 #
 
 def Attribute_emitValue(self):
-    if self.attribute.static:
-        return self.attribute.emitValue()
+    if self.value.static:
+        return self.value.emitValue()
 
-    self.attribute.bound_context.scope.emit()
-    return self.attribute.emitValue(self.value.emitAssignment())
+    self.value.bound_context.scope.emit()
+    return self.value.emitValue(self.parent.emitAssignment())
 lekvar.Attribute.emitValue = Attribute_emitValue
 
 def Attribute_emitType(self):
-    return self.attribute.emitType()
+    return self.value.emitType()
 lekvar.Attribute.emitType = Attribute_emitType
 
 def Attribute_emitContext(self):
-    return self.value.emitValue()
+    return self.parent.emitValue()
 lekvar.Attribute.emitContext = Attribute_emitContext
 
 #
