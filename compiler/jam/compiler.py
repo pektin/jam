@@ -12,7 +12,7 @@ llvm.builtins = builtins
 BUILTINS = "compiler/jam/builtins.jm"
 
 def builtins():
-    with open(BUILTINS, "r") as f:
+    with open(BUILTINS, "r") as f, lekvar.source(f):
         ir = parser.parseFile(f)
 
     # Inject backend builtins into frontend builtins (there may be a better method?)
@@ -22,8 +22,9 @@ def builtins():
 
 def _compile(input:IOBase, logger):
     # Produce lekvar
-    ir = parser.parseFile(input)
-    lekvar.verify(ir, builtins(), logger=logger, source=input)
+    with lekvar.source(input):
+        ir = parser.parseFile(input)
+        lekvar.verify(ir, builtins(), logger=logger)
     # Emit LLVM
     return llvm.emit(ir, logger)
 

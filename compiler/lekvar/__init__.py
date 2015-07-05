@@ -1,5 +1,6 @@
 import logging
 from io import IOBase
+from contextlib import contextmanager
 
 from ..errors import CompilerError
 
@@ -18,7 +19,7 @@ from .literal import Literal
 from .branches import Loop, Break, Branch
 from .comment import Comment
 
-def verify(module:Module, builtin:Module, logger = logging.getLogger(), source:IOBase = None):
+def verify(module:Module, builtin:Module, logger = logging.getLogger()):
     # Set up the initial state before verifying
     State.init(builtin, logger.getChild("lekvar"))
 
@@ -27,7 +28,14 @@ def verify(module:Module, builtin:Module, logger = logging.getLogger(), source:I
     try:
         module.verify()
     except CompilerError as e:
-        if source is not None:
-            source.seek(0)
-            e.format(source.read())
+        if module.source is not None:
+            module.source.seek(0)
+            e.format(module.source.read())
         raise e
+
+@contextmanager
+def source(source:IOBase):
+    previous = State.source
+    State.source = source
+    yield
+    State.source = previous

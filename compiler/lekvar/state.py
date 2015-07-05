@@ -17,6 +17,7 @@ class classproperty:
 
 # The global state for the verifier
 class State:
+    source = None
     builtins = None
     logger = None
     scope_stack = None

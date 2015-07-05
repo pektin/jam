@@ -62,9 +62,11 @@ class Context:
 
 # A generic object that represents a single value/instruction.
 class Object(ABC):
+    source = None
     tokens = None
 
     def __init__(self, tokens = None):
+        self.source = State.source
         self.tokens = tokens
 
     # Should return a unverified deep copy of the object
