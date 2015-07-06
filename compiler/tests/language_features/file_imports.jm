@@ -1,0 +1,13 @@
+?#bar\nfoo\nfoo\nbar\n
+
+import .file_imported
+
+def bar()
+  import .file_imported.foo
+
+  foo()
+  puts("bar")
+end
+
+file_imported.foo()
+bar()
