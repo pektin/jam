@@ -3,6 +3,8 @@ from io import IOBase
 
 from .. errors import *
 from .. import lekvar
+
+from . import import_
 from .lexer import Lexer, Tokens
 
 #
@@ -151,6 +153,8 @@ class Parser:
                 if self.lookAhead(i).type == Tokens.equal:
                     return self.parseAssignment()
                 i += 1
+        elif token.type == Tokens.import_kwd:
+            return self.parseImport()
         elif token.type == Tokens.if_kwd:
             return self.parseBranch()
         elif token.type == Tokens.while_kwd:
@@ -692,3 +696,43 @@ class Parser:
 
         attribute = self.expect(Tokens.identifier).data
         return lekvar.Attribute(value, attribute, tokens)
+
+    def parseImport(self):
+        tokens = [self.next()]
+        assert tokens[0].type == Tokens.import_kwd
+
+        path = self.parseImportPath(tokens)
+
+        name = None
+        if self.lookAhead().type == Tokens.as_kwd:
+            tokens.append(self.next())
+
+            token = self.expect(Tokens.identifier)
+            tokens.append(token)
+            name = token.data
+
+        return lekvar.Import(path, name, tokens)
+
+    def parseImportPath(self, tokens):
+        path = []
+
+        # Paths can start with any number of dots
+        while self.lookAhead().type == Tokens.dot:
+            token = self.expect(Tokens.dot)
+            tokens.append(token)
+            path.append(".")
+
+        # Then identifiers separated by dots
+        while True:
+            token = self.expect(Tokens.identifier)
+            tokens.append(token)
+            path.append(token.data)
+
+            token = self.lookAhead()
+            # Check for next path element
+            if token.type == Tokens.dot:
+                tokens.append(self.next())
+                continue
+            # Otherwise stop parsing for a path
+            else:
+                return path
