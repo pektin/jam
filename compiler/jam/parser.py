@@ -81,10 +81,15 @@ class Parser:
         return token
 
     # Parse for an expected token, returning it's data
-    def expect(self, type:Tokens):
+    # May also pass a tokens argument, to which the lexed token is appended
+    def expect(self, type:Tokens, tokens:[] = None):
         token = self.next()
         if token.type != type:
             self._unexpected(token)
+
+        if tokens is not None:
+            tokens.append(token)
+
         return token
 
     def addChild(self, children:{str: lekvar.BoundObject}, value:lekvar.BoundObject):
@@ -103,8 +108,7 @@ class Parser:
             tokens = [self.next()]
             assert tokens[0].type == Tokens.module_kwd
 
-            tokens.append(self.expect(Tokens.identifier))
-            module_name = tokens[1].data
+            module_name = self.expect(Tokens.identifier, tokens).data
         else:
             tokens = []
             module_name = "main"
@@ -385,9 +389,7 @@ class Parser:
             default_values = []
         # Normal named methods
         else:
-            token = self.expect(Tokens.identifier)
-            tokens.append(token)
-            name = token.data
+            name = self.expect(Tokens.identifier, tokens).data
             arguments, default_values = self.parseMethodArguments()
 
         return_type = self.parseTypeSig(Tokens.returns)
@@ -490,9 +492,7 @@ class Parser:
         tokens = [self.next()]
         assert tokens[0].type == Tokens.class_kwd
 
-        token = self.expect(Tokens.identifier)
-        tokens.append(token)
-        name = token.data
+        name = self.expect(Tokens.identifier, tokens).data
 
         constructor = None
         attributes = {}
@@ -626,9 +626,7 @@ class Parser:
         else:
             constant = False
 
-        token = self.expect(Tokens.identifier)
-        tokens.append(token)
-        name = token.data
+        name = self.expect(Tokens.identifier, tokens).data
 
         type = self.parseTypeSig()
 
@@ -694,7 +692,7 @@ class Parser:
         tokens = [self.next()]
         assert tokens[0].type == Tokens.dot
 
-        attribute = self.expect(Tokens.identifier).data
+        attribute = self.expect(Tokens.identifier, tokens).data
         return lekvar.Attribute(value, attribute, tokens)
 
     def parseImport(self):
@@ -707,9 +705,7 @@ class Parser:
         if self.lookAhead().type == Tokens.as_kwd:
             tokens.append(self.next())
 
-            token = self.expect(Tokens.identifier)
-            tokens.append(token)
-            name = token.data
+            name = self.expect(Tokens.identifier, tokens).data
 
         return lekvar.Import(path, name, tokens)
 
@@ -718,21 +714,18 @@ class Parser:
 
         # Paths can start with any number of dots
         while self.lookAhead().type == Tokens.dot:
-            token = self.expect(Tokens.dot)
-            tokens.append(token)
+            tokens.append(self.next())
             path.append(".")
 
         # Then identifiers separated by dots
         while True:
-            token = self.expect(Tokens.identifier)
-            tokens.append(token)
+            token = self.expect(Tokens.identifier, tokens)
             path.append(token.data)
 
             token = self.lookAhead()
             # Check for next path element
             if token.type == Tokens.dot:
                 tokens.append(self.next())
-                continue
             # Otherwise stop parsing for a path
             else:
                 return path
