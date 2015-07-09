@@ -1,0 +1,26 @@
+#bar\nfoo\n
+
+module foo
+  module bar
+    def print()
+      puts("bar")
+    end
+  end
+
+  def print()
+    puts("foo")
+  end
+end
+
+def main1()
+  import foo.bar
+  print()
+end
+
+def main2()
+  import foo
+  print()
+end
+
+main1()
+main2()
