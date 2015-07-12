@@ -1,6 +1,6 @@
 from .core import Context, Object, BoundObject, Type
 
-class DependentType(Type):
+class DependentObject(Type):
     compatibles = None
     target = None
 
@@ -11,7 +11,7 @@ class DependentType(Type):
         self.compatibles = compatibles
 
     def copy(self):
-        return DependentType(self.compatibles[:])
+        return DependentObject(self.compatibles[:])
 
     def verify(self):
         pass

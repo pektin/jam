@@ -4,7 +4,7 @@ from .state import State
 from .core import Context, Object, BoundObject, Type
 from .util import checkCompatibility
 from .variable import Variable
-from .dependent import DependentType
+from .dependent import DependentObject
 
 # Python Predefines
 FunctionType = None
@@ -33,7 +33,7 @@ class Function(BoundObject):
 
         for arg in self.arguments:
             if arg.type is None:
-                arg.type = DependentType()
+                arg.type = DependentObject()
                 self.dependent = True
 
         self.type = FunctionType(name, [arg.type for arg in arguments], return_type)
@@ -84,7 +84,7 @@ class Function(BoundObject):
         # Create a template instance
         fn = copy(self)
         for index, arg in enumerate(fn.arguments):
-            if isinstance(arg.type, DependentType):
+            if isinstance(arg.type, DependentObject):
                 fn.type.arguments[index] = arg.type.target = call.arguments[index]
         fn.verify()
         return fn

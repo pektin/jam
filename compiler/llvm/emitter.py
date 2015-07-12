@@ -333,19 +333,19 @@ def Context_emitType(self):
 lekvar.Context.emitType = Context_emitType
 
 #
-# class DependentType
+# class DependentObject
 #
 
-lekvar.DependentType.llvm_type = None
+lekvar.DependentObject.llvm_type = None
 
-def DependentType_emitType(self):
+def DependentObject_emitType(self):
     if self.llvm_type is None:
         if self.target is None:
             raise InternalError("Invalid dependent type target")
         else:
             self.llvm_type = self.target.emitType()
     return self.llvm_type
-lekvar.DependentType.emitType = DependentType_emitType
+lekvar.DependentObject.emitType = DependentObject_emitType
 
 #
 # class Function
