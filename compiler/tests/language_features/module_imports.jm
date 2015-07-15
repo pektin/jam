@@ -1,4 +1,4 @@
-#bar\nfoo\n
+?#bar\nfoo\n
 
 module foo
   module bar
