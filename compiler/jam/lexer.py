@@ -66,7 +66,6 @@ Tokens = Enum("Tokens", [
     "string",
     "format_string",
     "integer",
-    "newline",
     "group_start",
     "group_end",
     "typeof",
@@ -91,15 +90,15 @@ Tokens = Enum("Tokens", [
 ])
 
 TREE = Node()
-NEWLINE_CHAR = "\n"
 
 # Ignore whitespace
-WHITESPACE = set(" \t")
+WHITESPACE = set(" \t\n")
 
 TREE.links.append((TREE, lambda c: c in WHITESPACE))
 
 # Comments
 COMMENT_CHAR = "#"
+NEWLINE_CHAR = "\n"
 
 node = Node(token_type=Tokens.comment)
 TREE.links.append((node, lambda c: c == COMMENT_CHAR))
@@ -147,7 +146,6 @@ DIRECT_MAP = [
     ("!", Tokens.logical_negation),
 
     # Instructions
-    ("\n", Tokens.newline),
     ("(", Tokens.group_start),
     (")", Tokens.group_end),
     (":", Tokens.typeof),

@@ -69,7 +69,7 @@ class Parser:
         raise SyntaxError("Unexpected {}: `{}`".format(token.type.name, token.data), [token])
 
     # Strip all tokens of a type, returning one lookAhead or None
-    def strip(self, types:[Tokens] = [Tokens.newline]):
+    def strip(self, types:[Tokens]):
         token = self.lookAhead()
         if token is None: return None
 
@@ -119,7 +119,7 @@ class Parser:
         while True:
             # Check for end_kwd
             if inline:
-                token = self.strip()
+                token = self.lookAhead()
                 if token is None:
                     raise SyntaxError("Expected `end` before EOF for module", tokens)
                 elif token.type == Tokens.end_kwd:
@@ -143,20 +143,13 @@ class Parser:
     def parseLine(self):
         # Parse a line. The line may not exist
 
-        # Ignore newlines
-        token = self.strip()
+        token = self.lookAhead()
         if token is None: return None
 
         if token.type == Tokens.comment:
             return self.parseComment()
         elif token.type == Tokens.return_kwd:
             return self.parseReturn()
-        elif token.type in (Tokens.identifier, Tokens.const_kwd):
-            i = 1
-            while self.lookAhead(i).type != Tokens.newline:
-                if self.lookAhead(i).type == Tokens.equal:
-                    return self.parseAssignment()
-                i += 1
         elif token.type == Tokens.import_kwd:
             return self.parseImport()
         elif token.type == Tokens.if_kwd:
@@ -167,6 +160,14 @@ class Parser:
             return self.parseLoop()
         elif token.type == Tokens.break_kwd:
             return self.parseBreak()
+        elif token.type in (Tokens.identifier, Tokens.const_kwd):
+            # The assignment operator must be within the first 5 tokens (inclusive).
+            # Shortest being: foo =
+            # Longest being: const foo:Bar =
+            for i in range(6):
+                token = self.lookAhead(i)
+                if token is not None and token.type == Tokens.equal:
+                    return self.parseAssignment()
         return self.parseValue()
 
     def parseValue(self):
@@ -174,7 +175,7 @@ class Parser:
         operations = []
 
         while True:
-            token = self.strip([Tokens.comment, Tokens.newline])
+            token = self.strip([Tokens.comment])
 
             if token and token.type in BINARY_OPERATION_TOKENS:
                 operations.append(self.next())
@@ -225,7 +226,7 @@ class Parser:
         # Collect prefix unary operations
         operations = []
         while True:
-            token = self.strip([Tokens.comment, Tokens.newline])
+            token = self.strip([Tokens.comment])
 
             if token is None:
                 break
@@ -243,7 +244,7 @@ class Parser:
 
         # Postfix unary operations
         while True:
-            token = self.strip([Tokens.comment, Tokens.newline])
+            token = self.strip([Tokens.comment])
 
             if token is None:
                 break
@@ -259,7 +260,7 @@ class Parser:
 
     def parseSingleValue(self):
         # Ignore comments and newlines until a value is reached
-        token = self.strip([Tokens.comment, Tokens.newline])
+        token = self.strip([Tokens.comment])
 
         # EOF handling
         if token is None:
@@ -335,7 +336,7 @@ class Parser:
         token = self.lookAhead()
 
         # Float with dot in the middle
-        if token.type == Tokens.dot:
+        if token is not None and token.type == Tokens.dot:
             tokens.append(self.next())
 
             value = float(tokens[0].data.replace("_", "") + ".")
@@ -411,7 +412,7 @@ class Parser:
         instructions = []
 
         while True:
-            token = self.strip()
+            token = self.lookAhead()
 
             if token is None:
                 raise SyntaxError("Expected `end` before EOF for method", tokens)
@@ -498,7 +499,7 @@ class Parser:
         attributes = {}
 
         while True:
-            token = self.strip([Tokens.comment, Tokens.newline])
+            token = self.strip([Tokens.comment])
 
             if token is None:
                 raise SyntaxError("Expected `end` before EOF for class", tokens)
@@ -537,7 +538,7 @@ class Parser:
         instructions = []
 
         while True:
-            token = self.strip()
+            token = self.lookAhead()
 
             if token is None:
                 raise SyntaxError("Expected `end` before EOF for while loop", tokens)
@@ -558,7 +559,7 @@ class Parser:
         instructions = []
 
         while True:
-            token = self.strip()
+            token = self.lookAhead()
 
             if token is None:
                 raise SyntaxError("Expected `end` before EOF for loop", tokens)
@@ -587,7 +588,7 @@ class Parser:
         if_instructions = []
 
         while True:
-            token = self.strip()
+            token = self.lookAhead()
 
             if token is None:
                 raise SyntaxError("Expected `end` or `else` before EOF for if branch", tokens)
@@ -605,7 +606,7 @@ class Parser:
         else_instructions = []
 
         while True:
-            token = self.strip()
+            token = self.lookAhead()
 
             if token is None:
                 raise SyntaxError("Expected `end` before EOF for else branch", tokens)
@@ -671,9 +672,9 @@ class Parser:
         tokens = [self.next()]
         assert tokens[0].type == Tokens.return_kwd
 
-        if self.lookAhead().type != Tokens.newline:
+        try:
             value = self.parseValue()
-        else:
+        except SyntaxError:
             value = None
 
         return lekvar.Return(value, tokens)

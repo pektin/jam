@@ -22,7 +22,6 @@ defend+_- end"""
     # Expected output token types
     expected = [
         lexer.Tokens.comment,
-        lexer.Tokens.newline,
 
         lexer.Tokens.def_kwd,
         lexer.Tokens.typeof,
@@ -35,7 +34,6 @@ defend+_- end"""
         lexer.Tokens.identifier,
         lexer.Tokens.group_end,
         lexer.Tokens.comment,
-        lexer.Tokens.newline,
 
         lexer.Tokens.if_kwd,
         lexer.Tokens.equal,
@@ -45,7 +43,6 @@ defend+_- end"""
         lexer.Tokens.integer_division,
         lexer.Tokens.division,
         lexer.Tokens.multiplication,
-        lexer.Tokens.newline,
 
         lexer.Tokens.equality,
         lexer.Tokens.equal,
@@ -54,7 +51,6 @@ defend+_- end"""
         lexer.Tokens.smaller_than,
         lexer.Tokens.greater_than,
         lexer.Tokens.inequality,
-        lexer.Tokens.newline,
 
         lexer.Tokens.identifier,
         lexer.Tokens.addition,
