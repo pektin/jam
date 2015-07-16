@@ -355,7 +355,7 @@ lekvar.Function.llvm_closure_type = None
 lekvar.Function.llvm_context = None
 
 def Function_emit(self):
-    if self.dependent: return
+    if self.dependent: raise InternalError("Not Implemented")
     if self.llvm_value is not None: return
 
     self.llvm_closure_type = self.closed_context.emitType()

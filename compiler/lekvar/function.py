@@ -78,16 +78,13 @@ class Function(BoundObject):
         if not checkCompatibility(self.resolveType(), call):
             raise TypeError("Function is not callable with {}".format(call), self.tokens)
 
-        if not self.dependent:
-            return self
+        # Resolve dependencies for dependent arguments
+        if self.dependent:
+            for index, arg in enumerate(self.arguments):
+                if isinstance(arg.type, DependentObject):
+                    arg.type.resolveDependency(call.arguments[index])
 
-        # Create a template instance
-        fn = copy(self)
-        for index, arg in enumerate(fn.arguments):
-            if isinstance(arg.type, DependentObject):
-                fn.type.arguments[index] = arg.type.target = call.arguments[index]
-        fn.verify()
-        return fn
+        return self
 
     def __repr__(self):
         return "def {}({}) -> {}".format(self.name,
