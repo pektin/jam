@@ -93,6 +93,9 @@ class SemanticError(CompilerError):
 class TypeError(SemanticError):
     pass
 
+class DependencyError(TypeError):
+    pass
+
 class ValueError(SemanticError):
     pass
 
