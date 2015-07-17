@@ -1,0 +1,18 @@
+#Bar\nFoo\n
+
+class Foo
+  foo:String
+
+  new(f:String)
+    foo = f
+  end
+
+  def self as String
+    return foo
+  end
+end
+
+foo1 = Foo("Bar")
+foo2 = Foo("Foo")
+puts(foo1 as String)
+puts(foo2 as String)
