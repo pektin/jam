@@ -129,8 +129,11 @@ class FunctionType(Type):
 
             for self_arg, other_arg in zip(self.arguments, other.arguments):
                 if not self_arg.checkCompatibility(other_arg):
-                    return other_arg.checkCompatibility(self_arg)
+                    return False
 
+            # Only check for return type compatibility when the other has one
+            if other.return_type is not None:
+                return self.return_type.checkCompatibility(other.return_type)
             return True
         return False
 
