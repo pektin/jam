@@ -4,12 +4,14 @@ from .function import FunctionType
 class Call(Object):
     called = None
     values = None
+    return_type = None
     function = None
 
-    def __init__(self, called:Object, values:[Object], tokens = None):
+    def __init__(self, called:Object, values:[Object], return_type:Type = None, tokens = None):
         super().__init__(tokens)
         self.called = called
         self.values = values
+        self.return_type = return_type
         self.function = None
 
     def copy(self):
@@ -23,7 +25,8 @@ class Call(Object):
         for val in self.values:
             val.verify()
             arg_types.append(val.resolveType())
-        call_type = FunctionType("", arg_types)
+        call_type = FunctionType("", arg_types, self.return_type)
+        call_type.verify()
 
         # Resolve the call
         self.function = self.called.resolveCall(call_type)
