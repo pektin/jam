@@ -9,7 +9,8 @@ from .dependent import DependentObject
 # Python Predefines
 FunctionType = None
 
-
+# A function is a single callable entity. It is defined through a set of inputs,
+# a set of instructions, and a singular output.
 class Function(BoundObject):
     _local_context = None
     closed_context = None
@@ -110,6 +111,7 @@ class FunctionType(Type):
 
         for arg in self.arguments:
             arg.verify()
+
         if self.return_type is not None:
             self.return_type.verify()
 
@@ -145,7 +147,6 @@ class FunctionType(Type):
 #
 # Returns can only exist as instructions for functions. They cause the function
 # to return with a specified value.
-
 class Return(Object):
     value = None
     function = None
