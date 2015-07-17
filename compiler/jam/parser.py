@@ -218,7 +218,7 @@ class Parser:
         lhs = operation_values[0]
         for index, operation in enumerate(operation_operations):
             rhs = operation_values[index + 1]
-            lhs = lekvar.Call(lekvar.Attribute(lhs, operation.data), [rhs], operation)
+            lhs = lekvar.Call(lekvar.Attribute(lhs, operation.data), [rhs], None, operation)
 
         return lhs
 
@@ -240,7 +240,7 @@ class Parser:
 
         # Make prefix operations
         for operation in operations:
-            value = lekvar.Call(lekvar.Attribute(value, operation.data), [], operation)
+            value = lekvar.Call(lekvar.Attribute(value, operation.data), [], None, operation)
 
         # Postfix unary operations
         while True:
@@ -253,6 +253,8 @@ class Parser:
                 value = self.parseCall(value)
             elif token.type == Tokens.dot:
                 value = self.parseAttribute(value)
+            elif token.type == Tokens.as_kwd:
+                value = self.parseCast(value)
             else:
                 break
 
@@ -363,37 +365,58 @@ class Parser:
 
         # Parse different kinds of methods
 
-        # Binary Operations
-        if self.lookAhead().type == Tokens.self_kwd:
-            tokens.append(self.next())
+        # Non cast operations
+        if self.lookAhead(2).type not in [Tokens.as_kwd, Tokens.typeof]:
+            # Binary Operations
+            if self.lookAhead().type == Tokens.self_kwd:
+                tokens.append(self.next())
 
-            token = self.next()
-            if token.type not in BINARY_OPERATION_TOKENS:
-                raise SyntaxError("{} is not a valid operation".format(token), [token])
-            name = token.data
+                token = self.next()
+                if token.type not in BINARY_OPERATION_TOKENS:
+                    raise SyntaxError("{} is not a valid operation".format(token), [token])
+                name = token.data
 
-            tokens.append(token)
+                tokens.append(token)
 
-            arguments = [self.parseVariable()]
-            default_values = [None]
-        # Unary Operations
-        elif self.lookAhead(2).type == Tokens.self_kwd:
-            token = self.next()
-            if token.type not in UNARY_OPERATION_TOKENS:
-                raise SyntaxError("{} is not a valid operation".format(token), [token])
-            name = token.data
+                arguments = [self.parseVariable()]
+                default_values = [None]
+            # Unary Operations
+            elif self.lookAhead(2).type == Tokens.self_kwd:
+                token = self.next()
+                if token.type not in UNARY_OPERATION_TOKENS:
+                    raise SyntaxError("{} is not a valid operation".format(token), [token])
+                name = token.data
 
-            tokens.append(token)
-            tokens.append(self.next())
+                tokens.append(token)
+                tokens.append(self.next())
 
-            arguments = []
-            default_values = []
-        # Normal named methods
+                arguments = []
+                default_values = []
+            # Normal named methods
+            else:
+                name = self.expect(Tokens.identifier, tokens).data
+                arguments, default_values = self.parseMethodArguments()
+
+            return_type = self.parseTypeSig(Tokens.returns)
+
+        # Cast operations
         else:
-            name = self.expect(Tokens.identifier, tokens).data
-            arguments, default_values = self.parseMethodArguments()
+            self.expect(Tokens.self_kwd, tokens)
 
-        return_type = self.parseTypeSig(Tokens.returns)
+            # Explicit casts
+            if self.lookAhead().type == Tokens.as_kwd:
+                tokens.append(self.next())
+
+                name = "as"
+
+                arguments = []
+                default_values = []
+            # Implicit casts
+            else:
+                #TODO
+                raise InternalError()
+
+            return_type = self.parseSingleValue()
 
         return self.parseMethodBody(name, arguments, default_values, return_type, tokens)
 
@@ -664,7 +687,7 @@ class Parser:
         else:
             self.next()
 
-        return lekvar.Call(called, arguments, tokens)
+        return lekvar.Call(called, arguments, None, tokens)
 
     # Parse a return statement
     def parseReturn(self):
@@ -695,6 +718,13 @@ class Parser:
 
         attribute = self.expect(Tokens.identifier, tokens).data
         return lekvar.Attribute(value, attribute, tokens)
+
+    def parseCast(self, value):
+        token = self.next()
+        assert token.type == Tokens.as_kwd
+
+        type = self.parseSingleValue()
+        return lekvar.Call(lekvar.Attribute(value, token.data), [], type, [token])
 
     def parseImport(self):
         tokens = [self.next()]
