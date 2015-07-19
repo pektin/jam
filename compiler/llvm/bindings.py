@@ -2,11 +2,23 @@ from ctypes import *
 import traceback
 import logging
 
-_lib = CDLL("libLLVM-3.6.so.1")
+#TODO: Support other operating systems/distributions
+try:
+    _lib = CDLL("libLLVM-3.6.so.1")
+except OSError:
+    try:
+        _lib = CDLL("libLLVM-3.5.so.1")
+        print("WARNING: Using unsupported LLVM version: 3.5")
+    except OSError:
+        _lib = CDLL("libLLVM-3.4.so.1")
+        print("WARNING: Using unsupported LLVM version: 3.4")
 
 c_bool = c_int
 
 class NullException(Exception):
+    pass
+
+class VerificationError(Exception):
     pass
 
 class State:
