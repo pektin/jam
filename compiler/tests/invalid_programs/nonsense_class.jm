@@ -1,0 +1,5 @@
+!SyntaxError
+
+class Foo
+  !*=foo bar
+end
