@@ -55,7 +55,8 @@ class State:
                 break
     @classmethod
     def getSoftScope(cls, condition):
-        return cls.getSoftScopeState(condition).scope
+        state = cls.getSoftScopeState(condition)
+        return state.scope if state is not None else None
 
     @classmethod
     @contextmanager
