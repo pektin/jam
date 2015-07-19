@@ -1,0 +1,4 @@
+!SyntaxError
+
+if True
+  puts("bar")
