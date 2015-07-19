@@ -86,7 +86,11 @@ class MethodType(Type):
         raise InternalError("Not Implemented")
 
     def verify(self):
-        pass
+        raise InternalError("Not Implemented")
+
+    @property
+    def local_context(self):
+        raise InternalError("Not Implemented")
 
     def checkCompatibility(self, other:Type):
         return False #TODO: Check for identical overloads
