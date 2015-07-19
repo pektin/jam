@@ -35,7 +35,7 @@ class Module(BoundObject):
             self.context.verify()
 
     def resolveType(self):
-        if self.type is not None:
+        if self.type is None:
             self.type = ModuleType([child.resolveType() for child in self.context])
         return self.type
 
