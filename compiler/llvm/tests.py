@@ -3,9 +3,11 @@ from subprocess import check_output
 
 import pytest
 
+from ..errors import ExecutionError
+
 from .bindings import *
 from .builtins import builtins
-from .emitter import emit
+from .emitter import emit, run
 
 BUILD_PATH = "build/tests"
 
@@ -47,8 +49,16 @@ def test_module_verification_handling():
     hello = builder.globalString("Hello World!", "temp.0")
     builder.call(puts, [hello], "")
 
-    with pytest.raises(Exception) as info:
+    with pytest.raises(Exception):
         module.verify()
+
+def test_lli_failure():
+    source = b"""
+def rec() { ret rec() }
+"""
+
+    with pytest.raises(ExecutionError):
+        run(source)
 
 def test_builtin_lib():
     source = emit(builtins())
