@@ -1,3 +1,5 @@
+from ..errors import *
+
 from .state import State
 from .core import Context, Object, BoundObject, Type
 from .function import Function, FunctionType
