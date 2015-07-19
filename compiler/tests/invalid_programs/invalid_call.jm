@@ -1,0 +1,4 @@
+!SyntaxError
+
+foo = "foo"
+puts(foo"bar"
