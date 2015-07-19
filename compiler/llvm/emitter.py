@@ -483,8 +483,6 @@ lekvar.FunctionType.emitType = FunctionType_emitType
 # class ExternalFunction
 #
 
-lekvar.ExternalFunction.llvm_closure_type = None
-
 def ExternalFunction_emit(self):
     if self.llvm_value is not None: return
 
