@@ -90,8 +90,8 @@ class Wrappable:
 
     @classmethod
     def wrapInstanceProp(cls, cls_name:str, get_name:str, set_name:str, type, check_null = True):
+        # Create getter
         setTypes(get_name, [cls], type)
-        @property
         @logged(cls_name, get_name, check_null)
         def get(self):
             value = getattr(_lib, get_name)(self)
@@ -102,13 +102,15 @@ class Wrappable:
 
             return value
 
-        if set_name:
+        # Create Setter
+        set = None
+        if set_name is not None:
             setTypes(set_name, [cls, type], None)
-            @get.setter
             @logged(cls_name, set_name, False)
             def set(self, val:type):
                 getattr(_lib, set_name)(self, val)
-        setattr(cls, cls_name, get)
+
+        setattr(cls, cls_name, property(get, set))
 
     @classmethod
     def wrapDestructor(cls, name:str):
