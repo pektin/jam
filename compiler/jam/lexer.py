@@ -31,9 +31,9 @@ class Node:
         if self.verify is not None:
             value = self.verify(value)
 
-        if self.token_type is not None:
-            return Token(self.token_type, start, stop, value)
-        return None
+        assert self.token_type is not None
+
+        return Token(self.token_type, start, stop, value)
 
     def __repr__(self):
         return "Node(token:{})".format(self.token_type, self.links)
@@ -274,7 +274,6 @@ class Lexer:
             self.next()
 
             current_nodes = next_nodes
-        return None
 
     def outputNode(self, nodes, start, data):
         for node in nodes:
