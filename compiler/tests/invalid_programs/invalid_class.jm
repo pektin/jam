@@ -1,0 +1,5 @@
+!SyntaxError
+
+class "foo"
+  bar:Int
+end
