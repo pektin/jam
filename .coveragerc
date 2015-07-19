@@ -1,5 +1,6 @@
 [report]
 exclude_lines =
+    pass
     # Don't complain about debug code
     def __repr__
     InternalError
