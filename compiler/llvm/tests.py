@@ -1,6 +1,8 @@
 import os
 from subprocess import check_output
 
+import pytest
+
 from .bindings import *
 from .builtins import builtins
 from .emitter import emit
@@ -31,6 +33,22 @@ def test_llvm():
         f.write(module.toString())
 
     assert b"Hello World!\n" == check_output(["lli " + BUILD_PATH + "/llvm.ll"], shell=True)
+
+def test_module_verification_handling():
+    module = Module.fromName("test")
+    builder = Builder.new()
+
+    puts = module.addFunction("puts", Function.new(Type.void(), [Int.new(19)], False))
+    main = module.addFunction("main", Function.new(Type.void(), [], False))
+
+    entry = main.appendBlock("")
+    builder.positionAtEnd(entry)
+
+    hello = builder.globalString("Hello World!", "temp.0")
+    builder.call(puts, [hello], "")
+
+    with pytest.raises(Exception) as info:
+        module.verify()
 
 def test_builtin_lib():
     source = emit(builtins())
