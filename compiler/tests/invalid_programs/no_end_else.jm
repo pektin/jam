@@ -1,0 +1,6 @@
+!SyntaxError
+
+if True
+  puts("foo")
+else
+  puts("bar")
