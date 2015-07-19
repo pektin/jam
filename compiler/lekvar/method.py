@@ -50,12 +50,14 @@ class Method(BoundObject):
 
         # Allow only one match
         if len(matches) < 1:
-            raise TypeError(("Method does not have an overload for {}\nPossible overloads:".format(call), []),
-                (("", overload.tokens) for overload in self.overload_context)
+            raise TypeError(
+                [("Method does not have an overload for {}\nPossible overloads:".format(call), [])] +
+                [("", overload.tokens) for overload in self.overload_context]
             )
         elif len(matches) > 1 and not State.scope.dependent:
-            raise TypeError(("Ambiguous overloads for {}\nMatches:".format(call), []),
-                (("", match.tokens) for match in matches)
+            raise TypeError(
+                [("Ambiguous overloads for {}\nMatches:".format(call), [])] +
+                [("", match.tokens) for match in matches]
             )
 
         return matches[0]
