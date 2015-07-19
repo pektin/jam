@@ -1,0 +1,9 @@
+!TypeError
+
+class Foo
+  def print()
+    puts("foo")
+  end
+end
+
+f = Foo()
