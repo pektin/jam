@@ -12,9 +12,7 @@ Module = None
 def checkCompatibility(type1:Type, type2:Type):
     if type1.checkCompatibility(type2):
         return True
-    elif type2.checkCompatibility(type1):
-        return True
-    return False
+    return type2.checkCompatibility(type1)
 
 # Resolves a reference inside of a given scope.
 def resolveReference(reference:str):
