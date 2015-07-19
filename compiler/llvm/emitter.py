@@ -207,7 +207,7 @@ def Variable_emit(self):
         name = resolveName(self)
         if self.bound_context.scope.static:
             self.llvm_value = State.module.addVariable(type, name)
-            self.llvm_value.setInit(llvm.Value.undef(type))
+            self.llvm_value.initializer = llvm.Value.undef(type)
         else:
             self.llvm_value = State.builder.alloca(type, name)
 lekvar.Variable.emit = Variable_emit

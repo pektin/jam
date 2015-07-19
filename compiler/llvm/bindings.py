@@ -374,7 +374,7 @@ class TypeKind:
     X86_MMXTypeKind = 15
 
 Type.wrapInstanceFunc("dump", "LLVMDumpType")
-Type.wrapInstanceFunc("__str__", "LLVMPrintTypeToString", [], c_char_p)
+Type.wrapInstanceFunc("toString", "LLVMPrintTypeToString", [], c_char_p)
 
 #
 # Pointer Types
@@ -443,7 +443,7 @@ Value.wrapConstructor("globalStruct", "LLVMConstStruct", [[Value], c_bool])
 
 Value.wrapInstanceProp("type", "LLVMTypeOf", None, Type)
 Value.wrapInstanceFunc("dump", "LLVMDumpValue")
-Value.wrapInstanceFunc("setInit", "LLVMSetInitializer", [Value])
+Value.wrapInstanceProp("initializer", "LLVMGetInitializer", "LLVMSetInitializer", Value)
 
 FunctionValue.wrapInstanceFunc("appendBlock", "LLVMAppendBasicBlock", [c_char_p], Block)
 FunctionValue.wrapInstanceFunc("getLastBlock", "LLVMGetLastBasicBlock", [], Block)
