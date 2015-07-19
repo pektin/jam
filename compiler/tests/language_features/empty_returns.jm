@@ -1,0 +1,13 @@
+#foo\n
+
+def foo()
+  puts("foo")
+
+  if true
+    return
+  end
+
+  puts("bar")
+end
+
+foo()
