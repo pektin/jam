@@ -2,7 +2,7 @@ class _Token:
     start = 0
     end = 0
 
-def formatTokens(source:str, tokens:[_Token]):
+def _formatTokens(source:str, tokens:[_Token]):
     # a mapping of line numbers to a line and set of positions in that line
     lines = {}
 
@@ -31,12 +31,12 @@ def formatTokens(source:str, tokens:[_Token]):
 
 def _getLine(source:str, position:int):
     class Line:
-        def __init__(self, number):
-            self.number = number
+        def __init__(self):
+            self.number = 1
             self.start = 0
             self.end = 0
 
-    line = Line(1)
+    line = Line()
 
     # Get the line number and starting index of said line at the position
     for index, character in enumerate(source):
@@ -44,10 +44,9 @@ def _getLine(source:str, position:int):
             break
         elif character == "\n":
             line.number += 1
-            line.position = index + 1
 
     # Get the end index of the line
-    line.end = line.start
+    line.start = line.end = position
     for index, character in enumerate(source[line.start:]):
         line.end += 1
         if character == "\n": # Include the newline
@@ -79,7 +78,7 @@ class CompilerError(Exception):
         message = "\n".join(
             (msg if msg else "") +
             ("\n" if msg and tokens else "") +
-            (formatTokens(source, tokens) if tokens else "")
+            (_formatTokens(source, tokens) if tokens else "")
                 for msg, tokens in self.messages
         )
         self.args = (message,)
