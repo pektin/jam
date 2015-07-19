@@ -84,6 +84,10 @@ class Parser:
     # May also pass a tokens argument, to which the lexed token is appended
     def expect(self, type:Tokens, tokens:[] = None):
         token = self.next()
+
+        if token is None:
+            raise SyntaxError("Expected {} before EOF".format(type.name))
+
         if token.type != type:
             self._unexpected(token)
 
@@ -670,7 +674,11 @@ class Parser:
         assert tokens[0].type == Tokens.group_start
 
         arguments = []
-        if self.lookAhead().type != Tokens.group_end:
+        token = self.lookAhead()
+        if token is None:
+            self.expect(Tokens.group_end)
+
+        if token.type != Tokens.group_end:
 
             # Parse arguments
             while True:
