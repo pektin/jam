@@ -2,3 +2,4 @@
 exclude_lines =
     def __repr__
     InternalError
+    NullException
