@@ -1,4 +1,4 @@
-?#bar\nfoo\n
+?#bar\nfoo\nfoo\nbar\n
 
 module foo
   module bar
@@ -13,13 +13,19 @@ module foo
 end
 
 def main1()
-  import foo.bar
+  import foo.bar.print
   print()
 end
 
 def main2()
-  import foo
+  import foo.print
   print()
+end
+
+def main3()
+  import foo as boo
+  boo.print()
+  boo.bar.print()
 end
 
 main1()
