@@ -1,0 +1,4 @@
+!SyntaxError
+
+while "foo"
+  puts("bar")
