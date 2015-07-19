@@ -1,0 +1,14 @@
+#foo\nbar\n
+
+class Foo
+  new()
+    puts("foo")
+  end
+
+  new(i:String)
+    puts(i)
+  end
+end
+
+Foo()
+Foo("bar")
