@@ -2,6 +2,6 @@
 
 module foo
 
-def bar(i:String)
-  puts(i)
-end
+  def bar(i:String)
+    puts(i)
+  end
