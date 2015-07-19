@@ -135,6 +135,10 @@ class FunctionType(Type):
 
             # Only check for return type compatibility when the other has one
             if other.return_type is not None:
+                # If this return type is none, not compatible
+                if self.return_type is None:
+                    return False
+
                 return self.return_type.checkCompatibility(other.return_type)
             return True
         return False
