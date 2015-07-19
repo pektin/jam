@@ -132,11 +132,11 @@ class LLVMType(lekvar.Type):
         pass
 
     def resolveType(self):
-        return None
+        raise InternalError("LLVMTypes are typeless")
 
     @property
     def local_context(self):
-        return None
+        raise InternalError("LLVMTypes do not have a local context")
 
     def checkCompatibility(self, other:lekvar.Type):
         other = other.resolveValue()
@@ -158,4 +158,4 @@ class LLVMFunction(lekvar.ExternalFunction):
 
     @property
     def local_context(self):
-        return None
+        raise InternalError("LLVMFunctions do not have a local context")
