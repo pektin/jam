@@ -39,7 +39,7 @@ def resolveReference(reference:str):
         raise MissingReferenceError("No reference to {}".format(reference))
     elif len(found) > 1:
         raise AmbiguityError(
-            [("Ambiguous reference to {}\nMatches:".format(reference), [],)]+
+            [("Ambiguous reference to {}\nMatches:".format(reference), [])] +
             [("", match.tokens) for match in found]
         )
 
