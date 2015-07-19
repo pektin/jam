@@ -1,0 +1,7 @@
+!TypeError
+
+def foo() -> Int
+  return
+end
+
+puts(foo())
