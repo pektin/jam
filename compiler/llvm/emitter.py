@@ -1,10 +1,10 @@
 import os
 import logging
 import tempfile
+import subprocess
 from contextlib import contextmanager
 from functools import partial
 from abc import abstractmethod as abstract
-from subprocess import check_output
 
 from .. import lekvar
 from ..errors import *
@@ -26,7 +26,13 @@ def emit(module:lekvar.Module, logger = logging.getLogger()):
     return State.module.toString()
 
 def run(source:bytes):
-    return check_output("lli", input = source)
+    try:
+        return subprocess.check_output("lli",
+            input = source,
+            stderr = subprocess.STDOUT,
+        )
+    except subprocess.CalledProcessError as e:
+        raise ExecutionError(e.output)
 
 class State:
     @classmethod
