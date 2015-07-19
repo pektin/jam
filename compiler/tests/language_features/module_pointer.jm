@@ -1,0 +1,25 @@
+?#12\nfoo\n5\nbar\n
+
+def test(m)
+  puts(m.i)
+  m.print()
+end
+
+test(foo)
+test(bar)
+
+module foo
+  i = 12
+
+  def print()
+    puts("foo")
+  end
+end
+
+module bar
+  i = 5
+
+  def print()
+    puts("bar")
+  end
+end
