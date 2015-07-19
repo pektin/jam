@@ -232,32 +232,24 @@ Module.wrapInstanceFunc("addFunction", "LLVMAddFunction", [c_char_p, Function], 
 Module.wrapInstanceFunc("getFunction", "LLVMGetNamedFunction", [c_char_p], FunctionValue)
 Module.wrapInstanceFunc("addVariable", "LLVMAddGlobal", [Type, c_char_p], Value)
 
-setTypes("LLVMVerifyModule", [Module, c_uint, POINTER(c_char_p)], c_bool)
+setTypes("LLVMVerifyModule", [Module, c_int, POINTER(c_char_p)], c_bool)
 
 @logged("verify", "LLVMVerifyModule", False)
 def Module_verify(self):
     error_msg = c_char_p()
 
-    result = _lib.LLVMVerifyModule(self, FailureAction.ReturnStatusAction, byref(error_msg))
+    if _lib.LLVMVerifyModule(self, FailureAction.ReturnStatusAction, byref(error_msg)):
+        # Convert llvm string to python
+        message = "LLVM: \"{}\"".format(error_msg.value.decode("UTF-8"))
+        disposeError(error_msg)
 
-    if result == 0: # 0 means complete success, no message
-        return
-
-    message = "LLVM: \"{}\"".format(error_msg.value.decode("UTF-8"))
-    disposeError(error_msg)
-
-    if result == 1: # 1 means success with some errors
-        State.logger.warn(message)
-        return
-    # Otherwise it should be failure
-    State.logger.error(message)
-    raise InternalError("LLVM: Module verification exit code {}".format(result))
+        raise VerificationError(message)
 Module.verify = Module_verify
 
 class FailureAction:
-    AbortProcessAction = 0
-    PrintMessageAction = 1
-    ReturnStatusAction = 2
+    AbortProcessAction = 0 # verifier will print to stderr and abort()
+    PrintMessageAction = 1 # verifier will print to stderr and return 1
+    ReturnStatusAction = 2 # verifier will just return 1
 
 #
 # Builder
