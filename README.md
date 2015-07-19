@@ -21,12 +21,12 @@ compiler become part of the standard library.
 
 ## Compiler
 
-The compiler currently requires python3 and the llvm-3.4 shared library
+The compiler currently requires python3 and the llvm-3.6 shared library
 
 ### Ubuntu:
 
 See http://llvm.org/apt/ for instructions on how to set up your system to fetch
-the 3.6 packages.
+the 3.6 packages if you're still on precise.
 
 ``` bash
 sudo apt-get install python3 libllvm3.6 llvm-runtime python3-sphinx
