@@ -3,6 +3,6 @@
 class Foo
   v:String
 
-  def new(s:String)
+  new(s:String)
     v = s
   end
