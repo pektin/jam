@@ -79,24 +79,24 @@ class DependentObject(Type):
     @property
     def context(self):
         if self.dependent_context is None:
-            self.dependent_context = DependentContext()
+            self.dependent_context = DependentContext(self)
         return self.dependent_context
 
     @property
     def local_context(self):
         if self.dependent_local_context is None:
-            self.dependent_local_context = DependentContext()
+            self.dependent_local_context = DependentContext(self)
         return self.dependent_local_context
 
     @property
     def instance_context(self):
         if self.dependent_instance_context is None:
-            self.dependent_instance_context = DependentContext()
+            self.dependent_instance_context = DependentContext(self)
         return self.dependent_instance_context
 
     def resolveInstanceCall(self, call):
         if call not in self.dependent_instance_calls:
-            self.dependent_instance_calls[call] = DependentContext()
+            self.dependent_instance_calls[call] = DependentObject()
         return self.dependent_instance_calls[call]
 
     def checkCompatibility(self, other:Type):
