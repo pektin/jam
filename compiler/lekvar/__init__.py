@@ -6,7 +6,7 @@ from ..errors import CompilerError
 
 from .state import State
 from .core import Context, Object, BoundObject, Type
-from .module import Module, ModuleType
+from .module import Module
 from .function import Function, FunctionType, Return
 from .external_function import ExternalFunction
 from .call import Call
