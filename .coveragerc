@@ -1,5 +1,9 @@
 [report]
 exclude_lines =
+    # Don't complain about debug code
     def __repr__
     InternalError
+    # Don't complain about C error handling. There's a reason this code didn't get run
     NullException
+    # Don't complain about backwards compatibility hacks
+    except OSError
