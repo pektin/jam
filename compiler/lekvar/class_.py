@@ -67,8 +67,6 @@ class Class(Type):
 
 class Constructor(Function):
     def __init__(self, function:Function, constructing:Type, tokens = None):
-        if function.type.return_type is not None:
-            raise TypeError("Constructors must return nothing", function.tokens)
         function.type.return_type = constructing
 
         super().__init__(function.name, function.arguments, function.instructions, function.type.return_type, tokens)
