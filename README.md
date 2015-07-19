@@ -71,3 +71,19 @@ level is bound to the verbosity option. Simply passing in a verbosity of 1
 ``` bash
 py.test-3 -vv
 ```
+
+To check test coverage, use `pytest-cov`.
+To install:
+
+``` bash
+pip3 install pytest-cov
+```
+
+Reporting:
+
+``` bash
+# Vague Report
+py.test-3 --cov=compiler
+# Full html report
+py.test-3 --cov=compiler --cov-report=html
+```
