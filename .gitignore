@@ -13,3 +13,8 @@ docs/.build/
 *.ll
 *.s
 *.out
+
+# Test coverage
+.coverage
+htmlcov/
+!.coveragerc
