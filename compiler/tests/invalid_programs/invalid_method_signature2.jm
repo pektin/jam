@@ -1,0 +1,4 @@
+!SyntaxError
+
+def foo(bar:Int"bar")
+end
