@@ -1,0 +1,5 @@
+!SyntaxError
+
+def :self
+  puts("foo")
+end
