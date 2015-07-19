@@ -1,0 +1,7 @@
+!SyntaxError
+
+class Foo
+  new()
+    return 2
+  end
+end
