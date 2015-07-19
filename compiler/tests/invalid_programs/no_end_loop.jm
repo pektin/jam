@@ -1,0 +1,5 @@
+!SyntaxError
+
+loop
+  puts("foo")
+  break
