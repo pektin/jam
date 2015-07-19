@@ -22,8 +22,6 @@ class Loop(Object):
         return Loop(self.instructions)
 
     def verify(self):
-        if not isinstance(State.scope, (Function, Module)):
-            raise SyntaxError("Cannot loop here", self.tokens)
         self.function = State.scope
 
         with State.scoped(self, soft = True, analys = True) as state:
@@ -78,8 +76,6 @@ class Branch(Object):
         return Branch(self.condition, self.true_instructions, self.false_instructions)
 
     def verify(self):
-        if not isinstance(State.scope, (Function, Module)):
-            raise SyntaxError("Cannot branch here", self.tokens)
         self.function = State.scope
 
         self.condition.verify()
