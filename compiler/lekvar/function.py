@@ -186,7 +186,7 @@ class Return(Object):
         State.soft_scope_state.maybe_returns = True
 
     def resolveType(self):
-        return None
+        raise InternalError("Return objects do not have a type")
 
     def __repr__(self):
         return "return {}".format(self.value)
