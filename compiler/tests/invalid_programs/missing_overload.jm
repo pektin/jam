@@ -1,0 +1,7 @@
+!TypeError
+
+def foo(i:Int)
+  puts(i)
+end
+
+foo()
