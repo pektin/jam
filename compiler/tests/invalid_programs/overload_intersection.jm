@@ -1,0 +1,12 @@
+!TypeError
+
+def foo(bar:Int)
+  puts(bar)
+end
+
+def foo(f:Int)
+  puts("foo")
+  puts(f)
+end
+
+foo(12)
