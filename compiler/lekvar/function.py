@@ -160,19 +160,22 @@ class Return(Object):
 
     def verify(self):
         scope = State.soft_scope_state.scope
-        self.value.verify()
-        if hasattr(scope, "bound_context"):
-            assert scope.bound_context.scope is State.soft_scope_state.scope.bound_context.scope
 
         if not isinstance(State.scope, Function):
             raise SyntaxError("Cannot return outside of a function", self.tokens)
         self.function = State.scope
 
-        # Infer function types
-        if self.function.type.return_type is None:
-            self.function.type.return_type = self.value.resolveType()
-        else:
-            checkCompatibility(self.function.type.return_type, self.value.resolveType())
+        if self.value is not None:
+            self.value.verify()
+
+            # Infer function types
+            if self.function.type.return_type is None:
+                self.function.type.return_type = self.value.resolveType()
+        # Check function types
+            else:
+                checkCompatibility(self.function.type.return_type, self.value.resolveType())
+        elif self.function.type.return_type is not None:
+            raise TypeError("Function cannot return nothing. It must return a {}".format(self.function.type.return_type), self.tokens)
 
         # Update scope state
         State.soft_scope_state.definately_returns = True
