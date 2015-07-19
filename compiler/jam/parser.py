@@ -475,7 +475,7 @@ class Parser:
             else:
                 # Check for default arguments before a non-defaulted argument
                 if value is not None:
-                    raise SyntaxError("Cannot have non-defaulted arguments after defaulted ones", value.tokens)
+                    raise SemanticError("Cannot have non-defaulted arguments after defaulted ones", value.tokens)
 
         return lekvar.Method(name, overloads)
 
