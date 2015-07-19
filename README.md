@@ -26,10 +26,10 @@ The compiler currently requires python3 and the llvm-3.4 shared library
 ### Ubuntu:
 
 See http://llvm.org/apt/ for instructions on how to set up your system to fetch
-the 3.4 packages.
+the 3.6 packages.
 
 ``` bash
-sudo apt-get install python3 llvm-3.4-dev llvm-runtime python3-sphinx
+sudo apt-get install python3 llvm-3.6-dev llvm-runtime python3-sphinx
 ```
 
 ## Usage
