@@ -1,16 +1,16 @@
 #foo\nbar\nfoo\n
 
 module foo
-    module bar
-        def print()
-            foo.print()
-            puts("bar")
-        end
-    end
-
+  module bar
     def print()
-        puts("foo")
+      foo.print()
+      puts("bar")
     end
+  end
+
+  def print()
+    puts("foo")
+  end
 end
 
 foo.bar.print()

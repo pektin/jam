@@ -2,19 +2,19 @@
 
 i = 0
 while i < 4
-   if isEven(i)
-      puts("even")
-   else
-      puts("odd")
-   end
-   i = i + 1
+  if isEven(i)
+    puts("even")
+  else
+    puts("odd")
+  end
+  i = i + 1
 end
 
 def isEven(n:Int)
-   if (n//2)*2 == n
-      flag = true
-   else
-      flag = false
-   end
-   return flag
+  if (n//2)*2 == n
+    flag = true
+  else
+    flag = false
+  end
+  return flag
 end

@@ -1,7 +1,7 @@
 #Hello World!\n
 
 def helloWorld()
-    puts("Hello World!")
+  puts("Hello World!")
 end
 
 helloWorld()

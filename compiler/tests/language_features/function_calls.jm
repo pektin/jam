@@ -1,9 +1,9 @@
 #1\n2\n
 
 def reputs(one:String, two:String) -> String
-    puts(one)
-    return two
-    puts("3")
+  puts(one)
+  return two
+  puts("3")
 end
 
 puts(reputs("1", "2"))

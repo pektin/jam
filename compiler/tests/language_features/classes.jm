@@ -1,12 +1,12 @@
 #bar\nfoo\n
 
 class Person
-    forename:String
-    surname:String
-    new (fore:String, sur:String)
-        forename = fore
-        surname = sur
-    end
+  forename:String
+  surname:String
+  new (fore:String, sur:String)
+    forename = fore
+    surname = sur
+  end
 end
 
 v = Person("foo", "bar")

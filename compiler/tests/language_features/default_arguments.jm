@@ -1,8 +1,8 @@
 #Hello\nfoo\nHi\nbar\n
 
 def print(name:String, message:String = "Hello")
-    puts(message)
-    puts(name)
+  puts(message)
+  puts(name)
 end
 
 print("foo")

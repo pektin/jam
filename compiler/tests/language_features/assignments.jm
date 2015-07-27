@@ -1,11 +1,11 @@
 #2\n
 
 def assign()
-    foo = "1"
-    bar = "2"
-    foo = bar
-    bar = "1"
-    return foo
+  foo = "1"
+  bar = "2"
+  foo = bar
+  bar = "1"
+  return foo
 end
 
 puts(assign())

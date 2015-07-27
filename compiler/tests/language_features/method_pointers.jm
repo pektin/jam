@@ -1,7 +1,7 @@
 ?#HelloWorld\n
 
 def reprint(one:String) -> String
-    return one
+  return one
 end
 
 var = reprint
