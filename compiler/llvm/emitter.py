@@ -518,7 +518,9 @@ lekvar.Method.emit = Method_emit
 lekvar.Class.llvm_type = None
 
 def Class_emit(self):
-    self.constructor.emit()
+    if self.constructor is not None:
+        self.constructor.emit()
+
     for child in self.instance_context:
         child.emit()
 
