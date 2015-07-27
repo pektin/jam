@@ -349,6 +349,7 @@ Builder.wrapInstanceFunc("globalString", "LLVMBuildGlobalStringPtr", [c_char_p, 
 Type.wrapConstructor("void", "LLVMVoidType")
 Type.wrapConstructor("label", "LLVMLabelType")
 
+@staticmethod
 def Type_void_p(space = 0):
     return Pointer.new(Int.new(8), space)
 Type.void_p = Type_void_p
@@ -414,7 +415,10 @@ Function.wrapInstanceProp("return_type", "LLVMGetReturnType", None, Type)
 # Struct Types
 #
 
-Struct.wrapConstructor("new", "LLVMStructType", [[Type], c_bool])
+Struct.wrapConstructor("new", "LLVMStructCreateNamed", [Context, c_char_p])
+Struct.wrapConstructor("newAnonym", "LLVMStructType", [[Type], c_bool])
+
+Struct.wrapInstanceFunc("setBody", "LLVMStructSetBody", [[Type], c_bool])
 
 #
 # Block Types
@@ -441,7 +445,8 @@ Value.wrapConstructor("constInt", "LLVMConstInt", [Type, c_ulonglong, c_bool])
 Value.wrapConstructor("constFloat", "LLVMConstReal", [Type, c_double])
 Value.wrapConstructor("null", "LLVMConstNull", [Type])
 Value.wrapConstructor("undef", "LLVMGetUndef", [Type])
-Value.wrapConstructor("globalStruct", "LLVMConstStruct", [[Value], c_bool])
+Value.wrapConstructor("constUnnamedStruct", "LLVMConstStruct", [[Value], c_bool])
+Value.wrapConstructor("constStruct", "LLVMConstNamedStruct", [Struct, [Value]])
 
 Value.wrapInstanceProp("type", "LLVMTypeOf", None, Type)
 Value.wrapInstanceFunc("dump", "LLVMDumpValue")
