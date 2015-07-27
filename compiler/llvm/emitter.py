@@ -43,6 +43,7 @@ class State:
         cls.self = None
         cls.builder = llvm.Builder.new()
         cls.module = llvm.Module.fromName(name)
+        cls.context = llvm.Context.new()
 
         main_type = llvm.Function.new(llvm.Int.new(32), [], False)
         cls.main = cls.module.addFunction("main", main_type)
@@ -183,7 +184,7 @@ lekvar.Attribute.emitContext = Attribute_emitContext
 #
 
 def Literal_emitValue(self):
-    self.type.emitType()
+    struct_type = self.type.emitType()
 
     if isinstance(self.data, str):
         data = State.builder.globalString(self.data, State.getTempName())
@@ -196,7 +197,7 @@ def Literal_emitValue(self):
     else:
         raise InternalError("Not Implemented")
 
-    return llvm.Value.globalStruct([data], False)
+    return llvm.Value.constStruct(struct_type, [data])
 
 lekvar.Literal.emitValue = Literal_emitValue
 
@@ -334,7 +335,7 @@ def Context_emitType(self):
         types.append(child.resolveType().emitType())
 
     if len(types) > 0:
-        self.llvm_type = llvm.Struct.new(types, False)
+        self.llvm_type = llvm.Struct.newAnonym(types, False)
     else:
         self.llvm_type = llvm.Pointer.void_p()
 
@@ -532,7 +533,8 @@ def Class_emitType(self):
                 child.llvm_context_index = len(var_types)
                 var_types.append(child.type.emitType())
 
-        self.llvm_type = llvm.Struct.new(var_types, False)
+        self.llvm_type = llvm.Struct.new(State.context, self.name)
+        self.llvm_type.setBody(var_types, False)
 
     return self.llvm_type
 lekvar.Class.emitType = Class_emitType
