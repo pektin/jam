@@ -1,16 +1,16 @@
-#foo bar\n
+#foo\n
 
 class Person
-    name:String
+  name:String
 
-    new(n:String)
-        name = n
-    end
+  new(n:String)
+    name = n
+  end
 
-    def display()
-        puts(name)
-    end
+  def display()
+    puts(name)
+  end
 end
 
-v = Person("foo bar")
+v = Person("foo")
 v.display()
