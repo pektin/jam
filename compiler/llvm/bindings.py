@@ -448,7 +448,6 @@ Value.wrapConstructor("undef", "LLVMGetUndef", [Type])
 Value.wrapConstructor("constUnnamedStruct", "LLVMConstStruct", [[Value], c_bool])
 Value.wrapConstructor("constStruct", "LLVMConstNamedStruct", [Struct, [Value]])
 
-Value.wrapInstanceProp("type", "LLVMTypeOf", None, Type)
 Value.wrapInstanceFunc("dump", "LLVMDumpValue")
 Value.wrapInstanceProp("initializer", "LLVMGetInitializer", "LLVMSetInitializer", Value)
 
@@ -457,4 +456,7 @@ FunctionValue.wrapInstanceFunc("getLastBlock", "LLVMGetLastBasicBlock", [], Bloc
 FunctionValue.wrapInstanceFunc("getFirstBlock", "LLVMGetFirstBasicBlock", [], Block)
 FunctionValue.wrapInstanceFunc("getParam", "LLVMGetParam", [c_uint], Value)
 
+# Dirty hack. For some reason setting `type` on FunctionValue overrides
+# that on Value, but not the other way around
 FunctionValue.wrapInstanceProp("type", "LLVMTypeOf", None, Function)
+Value.wrapInstanceProp("type", "LLVMTypeOf", None, Type)
