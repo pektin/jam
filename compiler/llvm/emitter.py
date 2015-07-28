@@ -99,6 +99,14 @@ class State:
             value = cls.builder.alloca(type, name)
         return value
 
+    # Get a value which is a pointer to a value
+    # Requires an allocation
+    @classmethod
+    def pointer(cls, value):
+        variable = State.alloca(value.type, State.getTempName())
+        State.builder.store(value, variable)
+        return variable
+
 # Abstract extensions
 
 lekvar.BoundObject.llvm_value = None
@@ -168,7 +176,9 @@ def Attribute_emitValue(self):
         return self.value.emitValue()
 
     self.value.bound_context.scope.emit()
-    return self.value.emitValue(self.parent.emitAssignment())
+
+    with State.selfScope(self.parent.emitAssignment()):
+        return self.value.emitValue()
 lekvar.Attribute.emitValue = Attribute_emitValue
 
 def Attribute_emitType(self):
@@ -176,7 +186,7 @@ def Attribute_emitType(self):
 lekvar.Attribute.emitType = Attribute_emitType
 
 def Attribute_emitContext(self):
-    return self.parent.emitValue()
+    return self.parent.emitAssignment()
 lekvar.Attribute.emitContext = Attribute_emitContext
 
 #
@@ -198,8 +208,11 @@ def Literal_emitValue(self):
         raise InternalError("Not Implemented")
 
     return llvm.Value.constStruct(struct_type, [data])
-
 lekvar.Literal.emitValue = Literal_emitValue
+
+def Literal_emitAssignment(self):
+    return State.pointer(self.emitValue())
+lekvar.Literal.emitAssignment = Literal_emitAssignment
 
 #
 # class Variable
@@ -225,14 +238,7 @@ lekvar.Variable.emit = Variable_emit
 def Variable_emitValue(self, value=None):
     self.emit()
 
-    if self.llvm_context_index >= 0:
-        if value is None:
-            value = State.builder.structGEP(State.self, 0, State.getTempName())
-        return State.builder.load(State.builder.structGEP(value, self.llvm_context_index, State.getTempName()), State.getTempName())
-    elif self.llvm_value is not None:
-        return State.builder.load(self.llvm_value, State.getTempName())
-    else:
-        raise InternalError()
+    return State.builder.load(self.emitAssignment(), State.getTempName())
 lekvar.Variable.emitValue = Variable_emitValue
 
 def Variable_emitAssignment(self):
@@ -241,9 +247,7 @@ def Variable_emitAssignment(self):
     if self.llvm_value is not None:
         return self.llvm_value
 
-    #context = State.builder.load(State.self, State.getTempName())
-    self_value = State.builder.structGEP(State.self, 0, State.getTempName())
-    return State.builder.structGEP(self_value, self.llvm_context_index, State.getTempName())
+    return State.builder.structGEP(State.self, self.llvm_context_index, State.getTempName())
 lekvar.Variable.emitAssignment = Variable_emitAssignment
 
 #
@@ -306,6 +310,10 @@ def Call_emitValue(self):
     return State.builder.call(called, arguments, name)
 lekvar.Call.emitValue = Call_emitValue
 
+def Call_emitAssignment(self):
+    return State.pointer(self.emitValue())
+lekvar.Call.emitAssignment = Call_emitAssignment
+
 #
 # class Return
 #
@@ -332,12 +340,13 @@ def Context_emitType(self):
     types = []
     for index, child in self.children.items():
         child.llvm_context_index = index
-        types.append(child.resolveType().emitType())
+        child_type = child.resolveType().emitType()
+        types.append(llvm.Pointer.new(child_type, 0))
 
-    if len(types) > 0:
-        self.llvm_type = llvm.Struct.newAnonym(types, False)
-    else:
-        self.llvm_type = llvm.Pointer.void_p()
+    if len(types) == 0:
+        types = [llvm.Pointer.void_p()]
+
+    self.llvm_type = llvm.Struct.newAnonym(types, False)
 
     return self.llvm_type
 lekvar.Context.emitType = Context_emitType
@@ -391,11 +400,11 @@ def Function_emit(self):
 lekvar.Function.emit = Function_emit
 
 def Function_emitBody(self):
-    # Allocate context
-    self.llvm_context = State.builder.alloca(self.llvm_closure_type, "context")
-    State.builder.store(self.llvm_value.getParam(0), self.llvm_context)
-    self.emitPreContext()
-    with State.selfScope(self.llvm_context):
+    self.emitEntry()
+
+    self_value = State.builder.structGEP(self.llvm_context, 0, State.getTempName())
+    self_value = State.builder.load(self_value, State.getTempName())
+    with State.selfScope(self_value):
 
         # Allocate Arguments
         for index, arg in enumerate(self.arguments):
@@ -409,6 +418,11 @@ def Function_emitBody(self):
         for instruction in self.instructions:
             instruction.emitValue()
 lekvar.Function.emitBody = Function_emitBody
+
+def Function_emitEntry(self):
+    self.llvm_context = State.builder.alloca(self.llvm_closure_type, "context")
+    State.builder.store(self.llvm_value.getParam(0), self.llvm_context)
+lekvar.Function.emitEntry = Function_emitEntry
 
 def Function_emitPostContext(self):
     # Allocate Return Variable
@@ -429,10 +443,6 @@ def Function_emitValue(self):
     return self.llvm_value
 lekvar.Function.emitValue = Function_emitValue
 
-def Function_emitPreContext(self):
-    pass
-lekvar.Function.emitPreContext = Function_emitPreContext
-
 def Function_emitContext(self, self_value = None):
     if self_value is not None and len(self.closed_context) > 0:
         context = State.alloca(self.llvm_closure_type, State.getTempName())
@@ -446,12 +456,15 @@ lekvar.Function.emitContext = Function_emitContext
 # Contructor
 #
 
-def Constructor_emitPreContext(self):
-    #context = State.builder.load(context, State.getTempName())
+def Constructor_emitEntry(self):
+    lekvar.Function.emitEntry(self)
+
     self_var = State.builder.structGEP(self.llvm_context, 0, State.getTempName())
-    self_val = State.builder.load(State.builder.alloca(self.bound_context.scope.bound_context.scope.emitType(), State.getTempName()), State.getTempName())
+
+    self_val = State.builder.alloca(self.bound_context.scope.bound_context.scope.emitType(), "self")
+
     State.builder.store(self_val, self_var)
-lekvar.Constructor.emitPreContext = Constructor_emitPreContext
+lekvar.Constructor.emitEntry = Constructor_emitEntry
 
 def Constructor_emitPostContext(self):
     pass
@@ -460,6 +473,7 @@ lekvar.Constructor.emitPostContext = Constructor_emitPostContext
 def Constructor_emitReturn(self):
     context = State.builder.structGEP(self.llvm_context, 0, State.getTempName())
     value = State.builder.load(context, State.getTempName())
+    value = State.builder.load(value, State.getTempName())
     State.builder.ret(value)
 lekvar.Constructor.emitReturn = Constructor_emitReturn
 
