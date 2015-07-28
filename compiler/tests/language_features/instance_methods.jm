@@ -1,9 +1,13 @@
-#foo\n
+#foo\nbar\n
 
 class Person
   name:String
 
   new(n:String)
+    name = n
+  end
+
+  def set_name(n:String)
     name = n
   end
 
@@ -13,4 +17,6 @@ class Person
 end
 
 v = Person("foo")
+v.display()
+v.set_name("bar")
 v.display()
