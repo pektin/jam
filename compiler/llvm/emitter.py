@@ -43,7 +43,6 @@ class State:
         cls.self = None
         cls.builder = llvm.Builder.new()
         cls.module = llvm.Module.fromName(name)
-        cls.context = llvm.Context.new()
 
         main_type = llvm.Function.new(llvm.Int.new(32), [], False)
         cls.main = cls.module.addFunction("main", main_type)
@@ -549,8 +548,7 @@ def Class_emitType(self):
                 child.llvm_context_index = len(var_types)
                 var_types.append(child.type.emitType())
 
-        self.llvm_type = llvm.Struct.new(State.context, self.name)
-        self.llvm_type.setBody(var_types, False)
+        self.llvm_type = llvm.Struct.newAnonym(var_types, False)
 
     return self.llvm_type
 lekvar.Class.emitType = Class_emitType
