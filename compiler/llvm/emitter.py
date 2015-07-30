@@ -18,10 +18,8 @@ def emit(module:lekvar.Module, logger = logging.getLogger()):
     with State.begin("main", logger):
         module.emit()
 
-    try:
-        State.module.verify()
-    except llvm.VerificationError as e:
-        State.logger.error(e)
+
+    State.module.verify()
 
     return State.module.toString()
 
