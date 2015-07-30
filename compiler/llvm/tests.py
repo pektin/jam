@@ -5,19 +5,20 @@ import pytest
 
 from ..errors import ExecutionError
 
-from .bindings import *
+from . import bindings as llvm
 from .builtins import builtins
 from .emitter import emit, run
 
 BUILD_PATH = "build/tests"
 
 def test_llvm():
-    i32 = Int.new(32)
-    module = Module.fromName("test")
-    builder = Builder.new()
+    i32 = llvm.Int.new(32)
+    module = llvm.Module.fromName("test")
+    builder = llvm.Builder.new()
 
-    puts = module.addFunction("puts", Function.new(i32, [Pointer.new(Int.new(8), 0)], False))
-    main = module.addFunction("main", Function.new(i32, [], False))
+    puts_type = llvm.Function.new(i32, [llvm.Pointer.new(llvm.Int.new(8), 0)], False)
+    puts = module.addFunction("puts", puts_type)
+    main = module.addFunction("main", llvm.Function.new(i32, [], False))
 
     entry = main.appendBlock("entry")
     return_ = main.appendBlock("return")
@@ -28,7 +29,7 @@ def test_llvm():
     builder.br(return_)
 
     builder.positionAtEnd(return_)
-    builder.ret(Value.constInt(i32, 0, False))
+    builder.ret(llvm.Value.constInt(i32, 0, False))
 
     os.makedirs(BUILD_PATH, exist_ok=True)
     with open(BUILD_PATH + "/llvm.ll", "wb") as f:
@@ -37,11 +38,11 @@ def test_llvm():
     assert b"Hello World!\n" == check_output(["lli " + BUILD_PATH + "/llvm.ll"], shell=True)
 
 def test_module_verification_handling():
-    module = Module.fromName("test")
-    builder = Builder.new()
+    module = llvm.Module.fromName("test")
+    builder = llvm.Builder.new()
 
-    puts = module.addFunction("puts", Function.new(Type.void(), [Int.new(19)], False))
-    main = module.addFunction("main", Function.new(Type.void(), [], False))
+    puts = module.addFunction("puts", llvm.Function.new(llvm.Type.void(), [llvm.Int.new(19)], False))
+    main = module.addFunction("main", llvm.Function.new(llvm.Type.void(), [], False))
 
     entry = main.appendBlock("")
     builder.positionAtEnd(entry)
@@ -49,7 +50,7 @@ def test_module_verification_handling():
     hello = builder.globalString("Hello World!", "temp.0")
     builder.call(puts, [hello], "")
 
-    with pytest.raises(Exception):
+    with pytest.raises(llvm.VerificationError):
         module.verify()
 
 def test_lli_failure():
