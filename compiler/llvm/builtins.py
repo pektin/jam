@@ -99,10 +99,11 @@ PRINTF_MAP = {
 
 def llvmPrintfWrapper(type, self):
     global printf
-    func_type = llvm.Function.new(llvm.Type.void(), [LLVMType("String").emitType()], True)
 
     if printf is None:
+        func_type = llvm.Function.new(LLVMType("Int32").emitType(), [LLVMType("String").emitType()], True)
         printf = State.module.addFunction("printf", func_type)
+        printf.addAttr(llvm.AttributeKind.NoUnwind)
 
     name = resolveName(self)
     func_type = self.type.emitType()
@@ -114,6 +115,7 @@ def llvmPrintfWrapper(type, self):
         fmt_string = State.builder.globalString(fmt_str_data, State.getTempName())
 
         value = self.llvm_value.getParam(0)
+
         State.builder.call(printf, [fmt_string, value], "")
         State.builder.retVoid()
 
