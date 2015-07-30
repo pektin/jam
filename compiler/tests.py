@@ -20,11 +20,11 @@ for root, dirs, files in os.walk(TESTS_PATH):
         def test(verbosity, file=file, path=path):
             logging.basicConfig(level=logging.WARNING - verbosity*10, stream=sys.stdout)
 
-            # Get the path to the built file
-            build = os.path.join(BUILD_PATH, file.replace(".jm", ".ll"))
+            # Make the path to the build directory
+            build = os.path.join(BUILD_PATH, *os.path.normpath(path).split(os.sep)[2:])
+            os.makedirs(os.path.dirname(build), exist_ok=True)
 
-            # Make the testing directories, if needed
-            os.makedirs(BUILD_PATH, exist_ok=True)
+            build = os.path.splitext(build)[0] + ".ll"
 
             # Get output data
             with open(path, "r") as f_in:
