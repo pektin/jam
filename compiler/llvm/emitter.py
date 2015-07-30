@@ -319,12 +319,12 @@ lekvar.Call.emitAssignment = Call_emitAssignment
 
 def Return_emitValue(self):
     exit = self.function.llvm_value.getLastBlock()
-    if self.value is None:
-        State.builder.br(exit)
-    else:
+
+    if self.value is not None:
         value = self.value.emitValue()
         State.builder.store(value, self.function.llvm_return)
-        State.builder.br(exit)
+
+    return State.builder.br(exit)
 lekvar.Return.emitValue = Return_emitValue
 
 #
