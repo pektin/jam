@@ -1,0 +1,11 @@
+!AmbiguityError
+
+def foo()
+end
+
+module Foo
+  def foo()
+  end
+
+  foo()
+end
