@@ -257,7 +257,7 @@ class FailureAction:
 
 # Constructors
 Builder.wrapConstructor("new", "LLVMCreateBuilder")
-Builder.wrapConstructor("withContext", "LLVMCreateBuilderInContext", [Context])
+Builder.wrapConstructor("fromContext", "LLVMCreateBuilderInContext", [Context])
 Builder.wrapDestructor("LLVMDisposeBuilder")
 
 # Functions
@@ -455,6 +455,38 @@ FunctionValue.wrapInstanceFunc("appendBlock", "LLVMAppendBasicBlock", [c_char_p]
 FunctionValue.wrapInstanceFunc("getLastBlock", "LLVMGetLastBasicBlock", [], Block)
 FunctionValue.wrapInstanceFunc("getFirstBlock", "LLVMGetFirstBasicBlock", [], Block)
 FunctionValue.wrapInstanceFunc("getParam", "LLVMGetParam", [c_uint], Value)
+
+FunctionValue.wrapInstanceFunc("addAttr", "LLVMAddFunctionAttr", [c_uint])
+FunctionValue.wrapInstanceFunc("getAttr", "LLVMGetFunctionAttr", [], c_uint)
+FunctionValue.wrapInstanceFunc("delAttr", "LLVMRemoveFunctionAttr", [c_uint])
+
+class AttributeKind:
+    ZExt            = 1 << 0
+    SExt            = 1 << 1
+    NoReturn        = 1 << 2
+    InReg           = 1 << 3
+    StructRet       = 1 << 4
+    NoUnwind        = 1 << 5
+    NoAlias         = 1 << 6
+    ByVal           = 1 << 7
+    Nest            = 1 << 8
+    ReadNone        = 1 << 9
+    ReadOnly        = 1 << 10
+    NoInline        = 1 << 11
+    AlwaysInline    = 1 << 12
+    OptimizeForSize = 1 << 13
+    StackProtect    = 1 << 14
+    StackProtectReq = 1 << 15
+    Alignment       = 31<< 16 # WTF? (Taken from LLVM C api)
+    NoCapture       = 1 << 21
+    NoRedZone       = 1 << 22
+    NoImplicitFloat = 1 << 23
+    Naked           = 1 << 24
+    InlineHint      = 1 << 25
+    StackAlignment  = 7 << 26 # WTF?
+    ReturnsTwice    = 1 << 29
+    UWTable         = 1 << 30
+    NonLazyBind     = 1 << 31
 
 # Dirty hack. For some reason setting `type` on FunctionValue overrides
 # that on Value, but not the other way around
