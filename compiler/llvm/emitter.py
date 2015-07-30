@@ -106,6 +106,18 @@ class State:
         State.builder.store(value, variable)
         return variable
 
+    # Emits a set of instructions and returns whether or not the set has a br instruction
+    # Eliminates dead code
+    @classmethod
+    def emitInstructions(cls, instructions):
+        for instruction in instructions:
+            value = instruction.emitValue()
+
+            if value is not None and value.opcode == llvm.Opcode.Br:
+                return True
+        return False
+
+
 # Abstract extensions
 
 lekvar.BoundObject.llvm_value = None
@@ -390,8 +402,9 @@ def Function_emit(self):
         for child in self.local_context:
             child.emit()
 
-        self.emitBody()
-        State.builder.br(exit)
+        # Only emit br if it hasn't already
+        if not self.emitBody():
+            State.builder.br(exit)
 
     with State.blockScope(exit):
         self.emitReturn()
@@ -413,9 +426,7 @@ def Function_emitBody(self):
 
         self.emitPostContext()
 
-        # Emit instructions
-        for instruction in self.instructions:
-            instruction.emitValue()
+        return State.emitInstructions(self.instructions)
 lekvar.Function.emitBody = Function_emitBody
 
 def Function_emitEntry(self):
@@ -570,11 +581,11 @@ def Loop_emitValue(self):
     State.builder.br(loop_block)
     State.builder.positionAtEnd(loop_block)
 
-    for instruction in self.instructions:
-        instruction.emitValue()
-    # Loop
-    # Rely on break to end the loop
-    State.builder.br(loop_block)
+    # Only loop if we don't return
+    if not State.emitInstructions(self.instructions):
+        # Loop
+        # Rely on break to end the loop
+        State.builder.br(loop_block)
 
     # Move the after block before the last block
     self.after.moveBefore(last_block)
@@ -608,9 +619,10 @@ def Branch_emitValue(self):
 
     for block, instructions in [(if_block, self.true_instructions), (else_block, self.false_instructions)]:
         State.builder.positionAtEnd(block)
-        for instruction in instructions:
-            instruction.emitValue()
-        State.builder.br(after)
+
+        if not State.emitInstructions(instructions):
+            # Only br to after if we don't return
+            State.builder.br(after)
 
     after.moveBefore(last_block)
     State.builder.positionAtEnd(after)
