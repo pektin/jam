@@ -597,8 +597,7 @@ lekvar.Loop.emitValue = Loop_emitValue
 #
 
 def Break_emitValue(self):
-    # Branch to the after block of the loop
-    State.builder.br(self.loop.after)
+    return State.builder.br(self.loop.after)
 lekvar.Break.emitValue = Break_emitValue
 
 #
