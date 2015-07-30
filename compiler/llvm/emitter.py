@@ -94,7 +94,7 @@ class State:
         entry = cls.builder.position.function.getFirstBlock()
 
         with cls.blockScope(entry):
-            cls.builder.positionAt(entry, entry.getFirstValue())
+            cls.builder.positionAt(entry, entry.firstValue)
             value = cls.builder.alloca(type, name)
         return value
 

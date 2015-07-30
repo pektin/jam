@@ -432,8 +432,8 @@ Block.wrapInstanceFunc("insertBlock", "LLVMInsertBasicBlock", [c_char_p], Block)
 Block.wrapInstanceFunc("moveBefore", "LLVMMoveBasicBlockBefore", [Block])
 Block.wrapInstanceFunc("moveAfter", "LLVMMoveBasicBlockAfter", [Block])
 
-Block.wrapInstanceFunc("getFirstValue", "LLVMGetFirstInstruction", [], Value)
-Block.wrapInstanceFunc("getLastValue", "LLVMGetLastInstruction", [], Value)
+Block.wrapInstanceProp("firstValue", "LLVMGetFirstInstruction", None, Value)
+Block.wrapInstanceProp("lastValue", "LLVMGetLastInstruction", None, Value)
 
 Block.wrapInstanceProp("function", "LLVMGetBasicBlockParent", None, FunctionValue)
 
