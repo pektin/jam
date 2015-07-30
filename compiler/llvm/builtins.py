@@ -103,7 +103,6 @@ def llvmPrintfWrapper(type, self):
     if printf is None:
         func_type = llvm.Function.new(LLVMType("Int32").emitType(), [LLVMType("String").emitType()], True)
         printf = State.module.addFunction("printf", func_type)
-        printf.addAttr(llvm.AttributeKind.NoUnwind)
 
     name = resolveName(self)
     func_type = self.type.emitType()
