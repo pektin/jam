@@ -1,4 +1,4 @@
-.. _basics-helloworld:
+.. _tutorial-basics-helloworld:
 
 Hello World
 ###########
@@ -7,7 +7,10 @@ Hello World
 
     puts("Hello World")
 
-``puts`` is a builtin function for formatted printing to the console.
+``puts`` is a builtin function for printing to the console.
+
+.. todo::
+    Provide a better introduction to the compiler
 
 Currently, the compiler can be used to compile and execute a .jm file.
 

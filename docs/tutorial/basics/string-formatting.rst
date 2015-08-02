@@ -1,11 +1,10 @@
-.. _basics-printing:
+.. _tutorial-basics-string-formatting:
 
-Formatted print
+String Formatting
 ###############
 
-Using quotations ``" "`` with puts() will allow for standard string formatting 
-to occur. By default, a new line character ``/n`` is added at the end of every
-string.
+.. todo::
+    Introduce strings
 
 The following control characters are supported.
 
@@ -24,21 +23,21 @@ Sequence Meaning
 ``\v``   Vertical Tab
 ======== ============================
 
-String interpolation is also supported through the use of a hashtag and open 
+String interpolation is also supported through the use of a hashtag and open
 curlybrace (``#{``), followed by any value and a closing curlybrace (``}``).
 
 ::
 
     name = "Harold"
 
-    # This function will print out "My name is Harrold" with a newline
-    print("My name is #{name}")
+    # This function will print out "My name is Harrold"
+    puts("My name is #{name}")
 
-In contrast WYSIWYG strings start and end with backticks (`````) and have no 
+In contrast WYSIWYG strings start and end with backticks (`````) and have no
 special formatting.
 
 ::
-    
+
     # This will print "Hello World" with a newline
     puts(`Hello World`)
 

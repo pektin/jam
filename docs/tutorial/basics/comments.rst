@@ -1,4 +1,4 @@
-.. _basics-comments:
+.. _tutorial-basics-comments:
 
 Comments
 ########
@@ -16,7 +16,9 @@ the need for block comments.
 
 Comments are only compiled when compiling in debug mode and otherwise ignored.
 
-See more
+.. use a ..seealso thing here
+
+See also
 ========
+
 :ref:`Comments language Reference<jam-comments>`
-	

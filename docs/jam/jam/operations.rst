@@ -45,6 +45,17 @@ Unary Operator Meaning
 ``~``          Bitwise Inverse
 ============== ===============
 
+Order of Operations
+-------------------
+
+.. todo::
+    Complete this description
+
+For Binary Operations, Order of Operations is ranked using the PEDMAS system.
+The operations in descending rank order are Parenthesis, Exponents, Division,
+Multiplication, Addition, Subtraction. A group of operations of the same rank
+will be executed from left to right.
+
 Syntax
 ======
 
@@ -57,75 +68,11 @@ Syntax
     UnaryOperation: [`UnaryOperator`] `Value`
     Operation: `UnaryOperation` | `BinaryOperation`
 
-Order of Operations
-===================
-
-For Binary Operations, Order of Operations is ranked using the PEDMAS system. The operations in descending rank order are Parenthesis, Exponents, Division, Multiplication, Addition, Subtraction. A group of operations of the same rank will be executed from left to right
-
-
-Comparison Operation Examples
------------------------------
-
-Equivalence
-===========
-
-::
-
-    # Equality
-    if num_sides == 4
-        print("Shape is a square")
-    end
-
-    if user.user_name == "admin"
-        user.admin_status = true
-    end
-
-    # Inverse Equality
-    if num_eyes != 2
-        print("Not human")
-    end
-
-
-Relational
-==========
-
-::
-
-    # Smaller than
-    while count < 10
-        print(count)
-        count += 1
-    end
-
-    # Smaller than or equal to
-    TODO   
-
-    # Larger than
-    if score > high_score
-        high_score = score
-    end
-
-    # Larger than or equal to
-    TODO
-
-
-Identity
-==========
-
-::
-
-    # Identity Equivalence
-    TODO
-
-    # Inverse Identity Equivalence
-    TODO
-
-
-Binary Operation Examples
------------------------------
+Examples
+========
 
 Mathematical
-============
+------------
 
 ::
 
@@ -155,25 +102,66 @@ Mathematical
     # Modulo
     TODO
 
-
-For Boolean, String and user defined types, the following operations are undefined unless previously defined
+Equivalence
+-----------
 
 ::
 
-    full_name = "Harold" [+-//*/**%] "Banks" #=> undefined
-    probability = true [+-//*/**%] false #=> undefined
+    # Equality
+    if num_sides == 4
+        print("Shape is a square")
+    end
 
+    # Inverse Equality
+    if num_eyes != 2
+        print("Not human")
+    end
+
+
+Relational
+----------
+
+::
+
+    # Smaller than
+    while count < 10
+        print(count)
+        count += 1
+    end
+
+    # Smaller than or equal to
+    #TODO
+
+    # Larger than
+    if score > high_score
+        high_score = score
+    end
+
+    # Larger than or equal to
+    #TODO
+
+
+Identity
+--------
+
+::
+
+    # Identity Equivalence
+    #TODO
+
+    # Inverse Identity Equivalence
+    #TODO
 
 Containment
-===========
+-----------
 
 ::
-    
-    TODO
+
+    #TODO
 
 
 Logical
-=======
+-------
 
 ::
 
@@ -185,33 +173,27 @@ Logical
     end
 
     # Or
-    if rank > 5 || difficulty_setting == 2 
+    if rank > 5 || difficulty_setting == 2
         difficulty = 2
     end
 
+    # Logical Not
+    #TODO
+
 
 Bitwise
-=======
+-------
 
 ::
 
     # And
-    TODO
+    #TODO
 
     # Or
-    TODO
+    #TODO
 
     # Exclusive Or
-    TODO
-
-
-Unary Operation Examples
-------------------------
-
-::
-
-    # Logical Not
-    TODO
+    #TODO
 
     # Bitwise Inverse
     TODO

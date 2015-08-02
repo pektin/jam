@@ -1,4 +1,4 @@
-.. _basics-literals:
+.. _tutorial-basics-literals:
 
 Literals
 ###############
@@ -11,11 +11,11 @@ Signed Integers : ``Int8``, ``Int16``, ``Int32``, ``Int64``, ``Int128``
 
 Unsigned Integers : ``UInt8``, ``UInt16``, ``UInt32``, ``UInt64``, ``UInt128``
 
-By default, Integers are Signed Generic Int. The Generic ``Int`` class can 
+By default, Integers are Signed Generic Int. The Generic ``Int`` class can
 represent infinitely large numbers, limited only by physical memory.
 
 ::
-    
+
     # Standard representation
     299792458
 
@@ -28,11 +28,11 @@ Operations
 The following standard Integer operations apply
 
 ::
-    
+
     # Addition
     10 + 5 #=> 15
 
-    # Subtraction 
+    # Subtraction
     10 - 5 #=> 5
 
     # Multiplication
@@ -61,14 +61,14 @@ A Real number of built-in type ``Float``
 
 Signed Floats : ``Float32``, ``Float64``
 
-Unsigned Floats : ``UFloat32``, ``UFloat32``
+Unsigned Floats : ``UFloat32``, ``UFloat64``
 
 By default, Floats are Signed arbitrary precision. The generic ``Float`` class
 can represent infinitely large or small numbers, limited only by physical
 memory.
 
 ::
-    
+
     # Standard representation
     3.141592
 
@@ -81,11 +81,11 @@ Operations
 The following standard Integer operations apply
 
 ::
-    
+
     # Addition
     3.2 + 5.4 #=> 8.6
 
-    # Subtraction 
+    # Subtraction
     3.2 - 5.4 #=> -2.2
 
     # Multiplication
@@ -114,17 +114,3 @@ See more
 :ref:`Boolean language reference<jam-literals-boolean>`
 
 :ref:`Boolean library reference<jam-literals-boolean>`
-
-
-
-
-
-
-
-
-
-
-
-
-
-
