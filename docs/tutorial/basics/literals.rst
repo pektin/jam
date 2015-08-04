@@ -1,18 +1,47 @@
 .. _tutorial-basics-literals:
 
 Literals
-###############
+########
 
 Integers
 ========
-A whole number of the built-in type ``Int``
 
-Signed Integers : ``Int8``, ``Int16``, ``Int32``, ``Int64``, ``Int128``
+Integers directly in source code are of the generic ``Int`` type.
 
-Unsigned Integers : ``UInt8``, ``UInt16``, ``UInt32``, ``UInt64``, ``UInt128``
+::
 
-By default, Integers are Signed Generic Int. The Generic ``Int`` class can
-represent infinitely large numbers, limited only by physical memory.
+    # The number 192
+    192
+
+Other integer types also exist:
+
+=========== ====================================
+Type        Description
+=========== ====================================
+``Int``     Grows/shrinks in size when required.
+``Int8``    8 bit signed integer
+``Int16``   16 bit signed integer
+``Int32``   32 bit signed integer
+``Int64``   64 bit signed integer
+``Int128``  128 bit signed integer
+``UInt``    Unsigned version of ``Int``
+``UInt8``   8 bit unsigned integer
+``UInt16``  16 bit unsigned integer
+``UInt32``  32 bit unsigned integer
+``UInt64``  64 bit unsigned integer
+``UInt128`` 128 bit unsigned integer
+=========== ====================================
+
+For literals of a type other than ``Int`` use casting:
+
+::
+
+    127 as Int8
+
+    -52 as UInt # Invalid!
+
+Large numbers are difficult to read, so jam allows for separating groups of
+digits by an ``_``:
 
 ::
 
@@ -22,10 +51,7 @@ represent infinitely large numbers, limited only by physical memory.
     # Alternate representation
     299_792_458
 
-
-Operations
-----------
-The following standard Integer operations apply
+The following operations are supported by integers:
 
 ::
 
@@ -48,24 +74,31 @@ The following standard Integer operations apply
     # Exponentiation
     4 ** 2 #=> 16
 
+.. seealso::
 
-See more
---------
-:ref:`Integer language reference<jam-literals-integers>`
+    Language reference on :ref:`integer literals<jam-literals-integers>`
+    Language reference on :ref:`operations<jam-operations>`
 
-:ref:`Integer library reference<jam-literals-integers>`
+    Library reference on :ref:`numericals<jam-builtins-numerical>`
 
 Floats
-========
-A Real number of built-in type ``Float``
+======
 
-Signed Floats : ``Float32``, ``Float64``
+In the same way as integers, real numbers are of the type ``Float`` by default.
+The other possible types are:
 
-Unsigned Floats : ``UFloat32``, ``UFloat64``
-
-By default, Floats are Signed arbitrary precision. The generic ``Float`` class
-can represent infinitely large or small numbers, limited only by physical
-memory.
+============ =============================
+Type        Description
+============ =============================
+``Float``    Arbitrary precision float
+``Float16``  16 bit signed float
+``Float32``  32 bit signed float
+``Float64``  64 bit signed float
+``UFloat``   Unsigned version of ``Float``
+``UFloat16`` 16 bit unsigned float
+``UFloat32`` 32 bit unsigned float
+``UFloat64`` 64 bit unsigned float
+============ =============================
 
 ::
 
@@ -75,10 +108,7 @@ memory.
     # Alternate representation
     3.141_592
 
-
-Operations
-----------
-The following standard Integer operations apply
+The following operations apply to floats:
 
 ::
 
@@ -97,20 +127,21 @@ The following standard Integer operations apply
     # Exponentiation
     4.3 ** 2.1 #=> 21.3935_9435
 
+.. seealso::
 
-See more
---------
-:ref:`Float language reference<jam-literals-floats>`
+    Language reference on :ref:`float literals<jam-literals-floats>`
+    Language reference on :ref:`operations<jam-operations>`
 
-:ref:`Float library reference<jam-literals-floats>`
+    Library reference on :ref:`numericals<jam-builtins-numerical>`
 
-
-Boolean
+Booleans
 ========
-``true`` or ``false`` values. Booleans are of the built-in type ``Bool``
 
-See more
---------
-:ref:`Boolean language reference<jam-literals-boolean>`
+Booleans are of the type ``Bool``. The only valid literals are ``true`` and
+``false``.
 
-:ref:`Boolean library reference<jam-literals-boolean>`
+.. seealso::
+
+    Language reference on :ref:`boolean literals<jam-literals-booleans>`
+
+    Library reference on :ref:`constants<jam-builtins-constants>`

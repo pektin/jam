@@ -3,25 +3,28 @@
 Hello World
 ###########
 
-::
-
-    puts("Hello World")
-
-``puts`` is a builtin function for printing to the console.
-
-.. todo::
-    Provide a better introduction to the compiler
-
-Currently, the compiler can be used to compile and execute a .jm file.
+The standard "Hello World" program is easy to write in jam. The example uses the
+builtin ``puts`` function to print the string ``Hello World!`` to standard out.
 
 ::
 
-    $ ./jam.py FILE
+    puts("Hello World!")
 
-The output of our above Hello World code will print
+Jam source files generally have the extension ``.jm``. To compile and run a
+source file, use the jam compiler script ``jam.py``.
 
 ::
 
-    Hello World
+    $ ./jam.py hello_world.jm
 
-In the console.
+For further options, such as outputting a llvm-ir file, use the standard help
+option.
+
+::
+
+    $ ./jam.py --help
+
+.. note::
+    The current tooling currently only exists for debugging and is not yet
+    designed for popular usage. This will chance once the language and library
+    become more stable.

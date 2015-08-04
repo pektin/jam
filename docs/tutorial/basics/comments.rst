@@ -3,22 +3,26 @@
 Comments
 ########
 
-The only comments supported by Jam are Single-line comments as most modern
-editors have built-in shortcuts to comment out multiple lines, thus eliminating
-the need for block comments.
+Comments allow for non-jam metadata to exist alongside code. Comments should be
+used either for when the function of a line of code is not clear or as
+documentation.
+
+Jam supports only one kind of comment, which spans for a single line. Since most
+modern editors have built-in shortcuts to comment out multiple lines of code,
+this is a non-issue.
 
 ::
 
-    # This a single line comment
+    # Returns the given Fibonacci number
+    # Guaranteed to run in linear time
+    def fib(n:Int)
+        # Formula for finding the nth Fibonacci number
+        # Uses the golden ratio constant (Phi) and it's reciprocal (phi)
+        const Phi = 1.618_033_988_749_894_848_204_586
+        const phi = 1/Phi
+        return ((Phi**n - (-phi)**n) / (Phi + phi)) as Int
+    end
 
-    # This how Multi-line
-    # Comments will work
+.. seealso::
 
-Comments are only compiled when compiling in debug mode and otherwise ignored.
-
-.. use a ..seealso thing here
-
-See also
-========
-
-:ref:`Comments language Reference<jam-comments>`
+    Language reference on :ref:`comments<jam-comments>`
