@@ -1,3 +1,5 @@
+from ..errors import *
+
 from .core import Context, Object, BoundObject, Type
 from .function import FunctionType
 
@@ -22,9 +24,14 @@ class Call(Object):
 
         # Verify arguments and create the function type of the call
         arg_types = []
-        for val in self.values:
-            val.verify()
-            arg_types.append(val.resolveType())
+        for value in self.values:
+            value.verify()
+            value_type = value.resolveType()
+
+            if value_type is None:
+                raise TypeError("Cannot pass nothing as an argument", value.tokens)
+            arg_types.append(value_type)
+
         call_type = FunctionType("", arg_types, self.return_type)
         call_type.verify()
 
