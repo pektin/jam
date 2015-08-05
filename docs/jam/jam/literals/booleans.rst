@@ -1,4 +1,4 @@
-.. _jam-booleans:
+.. _jam-literals-booleans:
 
 Booleans
 ########

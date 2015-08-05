@@ -9,6 +9,6 @@ languages and straightforward to existing programmers
 
 .. toctree::
     basics/helloworld
+    basics/string-formatting
     basics/comments
-    basics/formatprinting
     basics/literals

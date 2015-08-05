@@ -88,7 +88,7 @@ In the same way as integers, real numbers are of the type ``Float`` by default.
 The other possible types are:
 
 ============ =============================
-Type        Description
+Type         Description
 ============ =============================
 ``Float``    Arbitrary precision float
 ``Float16``  16 bit signed float

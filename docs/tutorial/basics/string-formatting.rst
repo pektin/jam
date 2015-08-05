@@ -1,7 +1,7 @@
 .. _tutorial-basics-string-formatting:
 
 String Formatting
-###############
+#################
 
 .. todo::
     Introduce strings
