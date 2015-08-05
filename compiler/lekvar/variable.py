@@ -82,6 +82,11 @@ class Assignment(Object):
         self.value.verify()
         value_type = self.value.resolveType()
 
+        if value_type is None:
+            raise TypeError("Cannot assign nothing to a variable"
+                + (" of type {}".format(self.variable.type) if self.variable.type is not None else ""),
+                self.value.tokens + self.variable.tokens)
+
         # Infer the variable type if necessary
         if self.variable.type is None:
             self.variable.type = value_type
