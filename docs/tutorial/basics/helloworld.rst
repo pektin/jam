@@ -13,14 +13,14 @@ builtin ``puts`` function to print the string ``Hello World!`` to standard out.
 Jam source files generally have the extension ``.jm``. To compile and run a
 source file, use the jam compiler script ``jam.py``.
 
-::
+.. code-block:: bash
 
     $ ./jam.py hello_world.jm
 
 For further options, such as outputting a llvm-ir file, use the standard help
 option.
 
-::
+.. code-block:: bash
 
     $ ./jam.py --help
 
