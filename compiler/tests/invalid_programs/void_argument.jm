@@ -1,0 +1,7 @@
+!TypeError
+
+def foo()
+  puts("foo")
+end
+
+puts(foo())
