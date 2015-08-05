@@ -1,7 +1,0 @@
-?#foo\n
-
-def foo(bar)
-  puts(bar)
-end
-
-foo("foo")
