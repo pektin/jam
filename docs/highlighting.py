@@ -7,23 +7,23 @@ class JamLexer(RegexLexer):
     aliases = ["jam"]
     filenames = ["*.jm"]
 
-    INTEGER_REGEX = "[0-9]([0-9_]*[0-9])?"
+    INTEGER_REGEX = r"[0-9]([0-9_]*[0-9])?"
 
     tokens = {
         'root': [
-            ("#.*?$", Comment),
+            (r"#.*?$", Comment),
             include('constants'),
             include('keywords'),
             include('builtins'),
             (INTEGER_REGEX, Literal.Number),
-            ("{0}\.({0})?".format(INTEGER_REGEX), Literal.Number),
-            ("({0})?\.{0}".format(INTEGER_REGEX), Literal.Number),
-            ("\"(.*)?\"", Literal.String),
-            ("\(", Text, '#push'),
-            ("\)", Text, '#pop'),
+            (r"{0}\.({0})?".format(INTEGER_REGEX), Literal.Number),
+            (r"({0})?\.{0}".format(INTEGER_REGEX), Literal.Number),
+            (r"\"(.*)?\"", Literal.String),
+            (r"\(", Text, '#push'),
+            (r"\)", Text, '#pop'),
             (" ", Text.Whitespace),
             include('operators'),
-            ("([a-zA-Z_][a-zA-Z_0-9]*)", Name),
+            (r"([a-zA-Z_][a-zA-Z_0-9]*)", Name),
         ],
 
         'keywords': [
@@ -88,37 +88,33 @@ class JamLexer(RegexLexer):
              Name.Builtin)
         ],
 
-        'operators': [
-            (words(
-                (
-                    "~",
-                    "~",
-                    "!",
-                    "%",
-                    "\^",
-                    "&",
-                    "&&",
-                    "*",
-                    "**",
-                    "-",
-                    "-=",
-                    "+",
-                    "+=",
-                    "=",
-                    "==",
-                    "!=",
-                    "|",
-                    "||",
-                    ":",
-                    "?",
-                    "<",
-                    "<=",
-                    ">",
-                    ">=",
-                    ".",
-                    "/",
-                    "//",
-                ), suffix = r'\b'),
-             Name.Builtin)
-        ],
+        'operators': [(symbol, Operator) for symbol in (
+                r"~",
+                r"!",
+                r"%",
+                r"\^",
+                r"&",
+                r"&&",
+                r"\*",
+                r"\*\*",
+                r"-",
+                r"-=",
+                r"\+",
+                r"\+=",
+                r"=",
+                r"==",
+                r"!=",
+                r"\|",
+                r"\|\|",
+                r":",
+                r"\?",
+                r"<",
+                r"<=",
+                r">",
+                r">=",
+                r"\.",
+                r"/",
+                r"//",
+            )
+        ]
     }
