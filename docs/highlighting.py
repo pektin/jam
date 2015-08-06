@@ -1,4 +1,4 @@
-from pygments.lexer import RegexLexer, bygroups, include, combined
+from pygments.lexer import RegexLexer, bygroups, include, combined, words
 from pygments.token import *
 import sphinx
 
@@ -12,9 +12,9 @@ class JamLexer(RegexLexer):
     tokens = {
         'root': [
             ("#.*?$", Comment),
+            include('constants'),
             include('keywords'),
             include('builtins'),
-            include('constants'),
             (INTEGER_REGEX, Literal.Number),
             ("{0}\.({0})?".format(INTEGER_REGEX), Literal.Number),
             ("({0})?\.{0}".format(INTEGER_REGEX), Literal.Number),
@@ -26,58 +26,99 @@ class JamLexer(RegexLexer):
             ("([a-zA-Z_][a-zA-Z_0-9]*)", Name),
         ],
 
-        'keywords': [(i, Keyword) for i in [
-            "end",
-            "def",
-            "class",
-            "template",
-            "if",
-            "elif",
-            "else",
-            "while",
-            "for",
-            "in",
-            "as",
-            "import",
-        ]],
+        'keywords': [
+            (words(
+                (
+                    "self",
+                    "const",
+                    "end",
+                    "def",
+                    "class",
+                    "template",
+                    "if",
+                    "elif",
+                    "else",
+                    "while",
+                    "for",
+                    "in",
+                    "as",
+                    "import",
+                ), suffix = r'\b'),
+             Keyword)
+        ],
 
-        'constants': [(i, Keyword.Constant) for i in [
-            "true",
-            "false",
-            "null",
-        ]],
+        'constants': [
+            (words(
+                (
+                    "true",
+                    "false",
+                    "null",
+                    "inf",
+                    "nan",
+                ), suffix = r'\b'),
+             Name.Builtin)
+        ],
 
-        'builtins': [(i, Name.Builtin) for i in [
-            "print",
-        ]],
+        'builtins': [
+            (words(
+                (
+                    "puts",
+                    "Int",
+                    "Int8",
+                    "Int16",
+                    "Int32",
+                    "Int64",
+                    "Int128",
+                    "UInt",
+                    "UInt8",
+                    "UInt16",
+                    "UInt32",
+                    "UInt64",
+                    "UInt128",
+                    "Float",
+                    "Float16",
+                    "Float32",
+                    "Float64",
+                    "UFloat",
+                    "UFloat16",
+                    "UFloat32",
+                    "UFloat64",
+                    "Bool",
+                ), suffix = r'\b'),
+             Name.Builtin)
+        ],
 
-        'operators': [(i, Operator) for i in [
-            "~",
-            "~",
-            "!",
-            "%",
-            "\^",
-            "&",
-            "&&",
-            "\*",
-            "\*\*",
-            "-",
-            "-=",
-            "\+",
-            "\+=",
-            "=",
-            "==",
-            "!=",
-            "\|",
-            "\|\|",
-            ":",
-            "\?",
-            "<",
-            "<=",
-            ">",
-            ">=",
-            "\.",
-            "/",
-            "//",
-        ]],
+        'operators': [
+            (words(
+                (
+                    "~",
+                    "~",
+                    "!",
+                    "%",
+                    "\^",
+                    "&",
+                    "&&",
+                    "*",
+                    "**",
+                    "-",
+                    "-=",
+                    "+",
+                    "+=",
+                    "=",
+                    "==",
+                    "!=",
+                    "|",
+                    "||",
+                    ":",
+                    "?",
+                    "<",
+                    "<=",
+                    ">",
+                    ">=",
+                    ".",
+                    "/",
+                    "//",
+                ), suffix = r'\b'),
+             Name.Builtin)
+        ],
     }
