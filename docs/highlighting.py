@@ -19,6 +19,7 @@ class JamLexer(RegexLexer):
             (r"{0}\.({0})?".format(INTEGER_REGEX), Literal.Number),
             (r"({0})?\.{0}".format(INTEGER_REGEX), Literal.Number),
             (r"\"(.*)?\"", Literal.String),
+            (r"`(.*)?`", Literal.String),
             (r"\(", Text, '#push'),
             (r"\)", Text, '#pop'),
             (" ", Text.Whitespace),
