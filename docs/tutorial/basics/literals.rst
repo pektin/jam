@@ -79,7 +79,7 @@ The following operations are supported by integers:
     Language reference on :ref:`integer literals<jam-literals-integers>`
     Language reference on :ref:`operations<jam-operations>`
 
-    Library reference on :ref:`numericals<jam-builtins-numerical>`
+    Library reference on :ref:`numericals<jam-builtin-numerical>`
 
 Floats
 ======
@@ -132,7 +132,7 @@ The following operations apply to floats:
     Language reference on :ref:`float literals<jam-literals-floats>`
     Language reference on :ref:`operations<jam-operations>`
 
-    Library reference on :ref:`numericals<jam-builtins-numerical>`
+    Library reference on :ref:`numericals<jam-builtin-numerical>`
 
 Booleans
 ========
@@ -144,4 +144,4 @@ Booleans are of the type ``Bool``. The only valid literals are ``true`` and
 
     Language reference on :ref:`boolean literals<jam-literals-booleans>`
 
-    Library reference on :ref:`constants<jam-builtins-constants>`
+    Library reference on :ref:`constants<jam-builtins>`

@@ -3,13 +3,10 @@
 Builtin Functions
 #################
 
-IO Functions
-============
+::
 
-.. code-block:: Jam
-
-    print(*args:[])
+    puts(*args:[]) -> null
 
 \
 
-    Write objects to stdout. Each argument is explicitly cast to `String`.
+    Writes a number of objects to stdout, explicitly casting each to ``String``.

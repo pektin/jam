@@ -1,16 +1,14 @@
-.. _jam-builtins-numerical:
+.. _jam-builtin-types:
 
-Builtin Numerical Types
-#######################
+Builtin Types
+#############
 
-Jam provides both a set of generic numerical classes which abstract away the
-underlying implementation, as well as common numerical types bound to their
-underlying implementation.
+.. _jam-builtin-numerical:
 
 Generic Numerical Classes
 =========================
 
-.. code-block:: Jam
+::
 
     class Int
     class UInt
@@ -24,7 +22,7 @@ Generic Numerical Classes
     Note that being unrestricted has a performance impact on the class. For
     performance critical code the use of sized integer types is suggested.
 
-    .. code-block:: Jam
+    ::
 
         self + other:Int
         self - other:Int
@@ -37,7 +35,7 @@ Generic Numerical Classes
         All standard mathematical operations except normal division are
         supported by this class.
 
-    .. code-block:: Jam
+    ::
 
         self:Real
 
@@ -46,7 +44,7 @@ Generic Numerical Classes
         Ints may be implicitly cast to real numbers, resulting in normal
         divisions of integers returning reals.
 
-    .. code-block:: Jam
+    ::
 
         self as Int8
         self as Int16
@@ -60,7 +58,7 @@ Generic Numerical Classes
         resulting in an exception if the size of the integer is larger than the
         requested type.
 
-    .. code-block:: Jam
+    ::
 
         self as Byte[]
 
@@ -69,7 +67,7 @@ Generic Numerical Classes
         The underlying representation can be obtained by explicitly casting to a
         Byte array.
 
-    .. code-block:: Jam
+    ::
 
         self as UInt
 
@@ -78,7 +76,7 @@ Generic Numerical Classes
         The `Int` class may be explicitly cast to `UInt`. If the number is
         negative an exception is thrown.
 
-    .. code-block:: Jam
+    ::
 
         self:Int
 
@@ -86,7 +84,7 @@ Generic Numerical Classes
 
         The `UInt` class may be implicitly cast to `Int`.
 
-.. code-block:: Jam
+::
 
     class Real
     class UReal
@@ -96,7 +94,7 @@ Generic Numerical Classes
     A generic real number class is an arbitrary precision floating point number
     and the default type for any real number literal.
 
-    .. code-block:: Jam
+    ::
 
         self + other:Real
         self - other:Real
@@ -109,7 +107,7 @@ Generic Numerical Classes
         All standard mathematical operations except integer division are
         supported by this class.
 
-    .. code-block:: Jam
+    ::
 
         self as Float32
         self as Float64
@@ -119,7 +117,7 @@ Generic Numerical Classes
         Any real may be cast to any sized floating point type, possibly
         resulting in an exception if the sizes are incompatible.
 
-    .. code-block:: Jam
+    ::
 
         self as Int
 
@@ -128,7 +126,7 @@ Generic Numerical Classes
         Any real may also be explicitly cast to an integer. The resulting
         integer is guaranteed to be rounded to the correct integer number.
 
-    .. code-block:: Jam
+    ::
 
         self as Byte[]
 
@@ -140,7 +138,7 @@ Generic Numerical Classes
 Sized Numeric Classes
 =====================
 
-.. code-block:: Jam
+::
 
     class Int8
     class Int16
@@ -160,7 +158,7 @@ Sized Numeric Classes
     typically single instructions and thereby faster than their generic
     counterparts.
 
-    .. code-block:: Jam
+    ::
 
         self + other:T
         self - other:T
@@ -172,7 +170,7 @@ Sized Numeric Classes
 
         All operations except for normal division are supported.
 
-    .. code-block:: Jam
+    ::
 
         self:Int
 
@@ -180,7 +178,7 @@ Sized Numeric Classes
 
         Any `IntXXX` or `UIntXXX` may be implicitly cast to `Int`
 
-    .. code-block:: Jam
+    ::
 
         self:UInt
 
@@ -188,7 +186,7 @@ Sized Numeric Classes
 
         Any `UIntXXX` may be implicitly cast to `UInt`
 
-    .. code-block:: Jam
+    ::
 
         self as IntXXX
         self as UIntXXX
@@ -197,7 +195,7 @@ Sized Numeric Classes
 
         Any `T` may be explicitly cast to any other sized integer type.
 
-    .. code-block:: Jam
+    ::
 
         self as Byte[]
 
@@ -205,7 +203,7 @@ Sized Numeric Classes
 
         Any `IntXXX` or `UIntXXX` may be cast to it's underlying representation.
 
-.. code-block:: Jam
+::
 
     class Float32
     class Float64
@@ -219,7 +217,7 @@ Sized Numeric Classes
     types are typically single instructions and thereby a lot faster than their
     generic counterparts.
 
-    .. code-block:: Jam
+    ::
 
         self + other:T
         self - other:T
@@ -231,7 +229,7 @@ Sized Numeric Classes
 
         All operations except for integer division are supported.
 
-    .. code-block:: Jam
+    ::
 
         self:Real
 
@@ -239,7 +237,7 @@ Sized Numeric Classes
 
         Any `FloatXX` or `UFloatXX` may be implicitly cast to `Real`.
 
-    .. code-block:: Jam
+    ::
 
         self:UReal
 
@@ -247,7 +245,7 @@ Sized Numeric Classes
 
         Any `UFloatXX` may be implicitly cast to `UReal`
 
-    .. code-block:: Jam
+    ::
 
         self as FloatXX
         self as UFloatXX
@@ -256,7 +254,7 @@ Sized Numeric Classes
 
         Any `T` may be explicitly cast to any other sized integer type.
 
-    .. code-block:: Jam
+    ::
 
         self as Byte[]
 
