@@ -150,6 +150,29 @@ class LLVMType(lekvar.Type):
     def __repr__(self):
         return "{}<{}>".format(self.__class__.__name__, self.name)
 
+    # Emission
+
+    LLVM_MAP = None
+
+    def emit(self):
+        pass
+
+    def emitType(self):
+        if LLVMType.LLVM_MAP is None:
+            LLVMType.LLVM_MAP = {
+                "String": llvm.Pointer.new(llvm.Int.new(8), 0),
+                "Bool": llvm.Int.new(1),
+                "Int8": llvm.Int.new(8),
+                "Int16": llvm.Int.new(16),
+                "Int32": llvm.Int.new(32),
+                "Int64": llvm.Int.new(64),
+                "Int128": llvm.Int.new(128),
+                "Float16": llvm.Float.half(),
+                "Float32": llvm.Float.float(),
+                "Float64": llvm.Float.double(),
+            }
+        return LLVMType.LLVM_MAP[self.name]
+
 class LLVMFunction(lekvar.ExternalFunction):
     generator = None
 
@@ -160,3 +183,13 @@ class LLVMFunction(lekvar.ExternalFunction):
     @property
     def local_context(self):
         raise InternalError("LLVMFunctions do not have a local context")
+
+    # Emission
+
+    def emit(self):
+        if self.llvm_value is None:
+            self.generator(self)
+
+    def emitValue(self):
+        self.emit()
+        return self.llvm_value
