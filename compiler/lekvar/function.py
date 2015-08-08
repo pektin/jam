@@ -1,5 +1,6 @@
 from ..errors import *
 
+from .util import *
 from .state import State
 from .core import Context, Object, BoundObject, Type
 from .util import checkCompatibility
@@ -19,7 +20,6 @@ class Function(BoundObject):
     instructions = None
 
     type = None
-    dependent = False
     verified = False
     static = False
 
@@ -80,10 +80,9 @@ class Function(BoundObject):
             raise TypeError("Function is not callable with {}".format(call), self.tokens)
 
         # Resolve dependencies for dependent arguments
-        if self.dependent:
-            for index, arg in enumerate(self.arguments):
-                if isinstance(arg.type, DependentObject):
-                    arg.type.resolveDependency(call.arguments[index])
+        for index, arg in enumerate(self.arguments):
+            if arg.type.dependent:
+                arg.type.resolveDependency(call.arguments[index])
 
         return self
 
@@ -130,7 +129,7 @@ class FunctionType(Type):
                 return False
 
             for self_arg, other_arg in zip(self.arguments, other.arguments):
-                if not self_arg.checkCompatibility(other_arg):
+                if not checkCompatibility(other_arg, self_arg):
                     return False
 
             # Only check for return type compatibility when the other has one
@@ -139,7 +138,7 @@ class FunctionType(Type):
                 if self.return_type is None:
                     return False
 
-                return self.return_type.checkCompatibility(other.return_type)
+                return checkCompatibility(other.return_type, self.return_type)
             return True
         return False
 
