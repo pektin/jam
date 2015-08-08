@@ -151,7 +151,7 @@ def resolveName(scope:lekvar.BoundObject):
 
 # Implements
 
-# For this that don't emit anything
+# For things that don't emit anything
 def blank_emitValue(self):
     return None
 lekvar.Comment.emitValue = blank_emitValue
