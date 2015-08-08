@@ -1,10 +1,10 @@
 from functools import partial
 
-from .emitter import *
+#from .emitter import * # Do we need this?
+from .state import State
+from .util import *
 from .. import lekvar
 from . import bindings as llvm
-
-printf = None
 
 def builtins():
     global printf
