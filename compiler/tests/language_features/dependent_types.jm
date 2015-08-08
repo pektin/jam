@@ -7,14 +7,14 @@ class Foo
     bar = b
   end
 
-  def print()
-    puts(bar)
+  def self as String
+    return bar
   end
 end
 
 def print(f)
   puts(f.bar)
-  f.print()
+  puts(f as String)
 end
 
 foo = Foo("foo")
