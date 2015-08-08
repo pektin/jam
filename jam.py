@@ -7,8 +7,8 @@ import argparse
 import cProfile
 from io import StringIO
 
+import compiler as jam
 from compiler.errors import CompilerError
-from compiler.jam import compiler
 
 parser = argparse.ArgumentParser(
     prog = "jam",
@@ -27,7 +27,7 @@ parser.add_argument("--verbose", "-v",
 )
 parser.add_argument("--output", "-o",
     help="The file to compile to.",
-    type=argparse.FileType('w'),
+    type=argparse.FileType('wb'),
     required=False,
     default=None,
 )
@@ -50,9 +50,9 @@ parser.add_argument("--profile",
 def main():
     args = parser.parse_args()
 
-    output = args.output or open(os.devnull, "w")
+    output = args.output or open(os.devnull, "wb")
 
-    compile = compiler.compile if args.norun else compiler.compileRun
+    jam_fun = jam.compile if args.norun else jam.interpret
 
     logging.basicConfig(level=logging.WARNING - args.verbose*10, stream=sys.stdout)
 
@@ -62,7 +62,7 @@ def main():
 
     with args.input, output:
         try:
-            print(compile(args.input, output), end="")
+            print(jam_fun(args.input, output), end="")
         except CompilerError as e:
             message = e.args[0]
             print("{}: {}".format(type(e).__name__, message))
