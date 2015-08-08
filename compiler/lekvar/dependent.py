@@ -8,8 +8,11 @@ from .core import Context, Object, BoundObject, Type
 # This is similar to templating, but much more powerful and less context
 # dependent.
 class DependentObject(Type):
+    dependent = True
+
     # The target object which which to replace the dependent object
     target = None
+    target_switch = None
 
     # Dependencies
     dependent_type = None
@@ -19,6 +22,7 @@ class DependentObject(Type):
     dependent_instance_context = None
     dependent_instance_calls = None
     dependent_types = None
+    dependent_return_type = None
 
     def __init__(self, name:str = None, tokens = None):
         super().__init__(name or "", tokens)
@@ -26,6 +30,12 @@ class DependentObject(Type):
         self.dependent_calls = dict()
         self.dependent_instance_calls = dict()
         self.dependent_types = set()
+
+    @classmethod
+    def switch(cls, targets):
+        out = DependentObject()
+        out.target_switch = targets
+        return out
 
     def copy(self):
         raise InternalError("Not Implemented")
@@ -47,6 +57,9 @@ class DependentObject(Type):
         #TODO: Handle errors
         for call in self.dependent_calls:
             self.dependent_calls[call].resolveDependency(target.resolveCall(call))
+
+        if self.dependent_return_type is not None:
+            self.dependent_return_type.resolveDependency(target.return_type)
 
         if self.dependent_context is not None:
             self.dependent_context.resolveDependency(target.context)
@@ -94,6 +107,12 @@ class DependentObject(Type):
             self.dependent_instance_context = DependentContext(self)
         return self.dependent_instance_context
 
+    @property
+    def return_type(self):
+        if self.dependent_return_type is None:
+            self.dependent_return_type = DependentObject()
+        return self.dependent_return_type
+
     def resolveInstanceCall(self, call):
         if call not in self.dependent_instance_calls:
             self.dependent_instance_calls[call] = DependentObject()
@@ -112,6 +131,8 @@ class DependentObject(Type):
 # The dependent context compliments the dependent object with the creation
 # of dependencies for contexts.
 class DependentContext(Context):
+    dependent = True
+
     def __init__(self, scope:BoundObject):
         super().__init__(scope, [])
 
