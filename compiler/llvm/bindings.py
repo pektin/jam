@@ -2,6 +2,9 @@ from ctypes import *
 import traceback
 import logging
 
+# Dirty hack for circular import. Set by .state.State
+State = None
+
 #TODO: Support other operating systems/distributions
 try:
     _lib = CDLL("libLLVM-3.6.so.1")
@@ -20,9 +23,6 @@ class NullException(Exception):
 
 class VerificationError(Exception):
     pass
-
-class State:
-    logger = None
 
 #
 # Wrapping tools
