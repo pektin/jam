@@ -3,6 +3,7 @@ from ..errors import *
 from .state import State
 from .core import Context, Object, BoundObject, Type
 from .function import Function, FunctionType
+from .dependent import DependentObject
 
 # Python Predefines
 Method = None
@@ -50,13 +51,16 @@ class Method(BoundObject):
             if overload.resolveType().checkCompatibility(call):
                 matches.append(overload)
 
+        if State.scope.dependent:
+            return DependentObject.switch(matches)
+
         # Allow only one match
         if len(matches) < 1:
             raise TypeError(
                 [("Method does not have an overload for {}\nPossible overloads:".format(call), [])] +
                 [("", overload.tokens) for overload in self.overload_context]
             )
-        elif len(matches) > 1 and not State.scope.dependent:
+        elif len(matches) > 1:
             raise TypeError(
                 [("Ambiguous overloads for {}\nMatches:".format(call), [])] +
                 [("", match.tokens) for match in matches]
