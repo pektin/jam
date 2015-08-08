@@ -12,12 +12,13 @@ from .lexer import Lexer, Tokens
 #
 
 def parseFile(source:IOBase, logger=logging.getLogger()):
-    try:
-        return Parser(Lexer(source), logger).parseModule(False)
-    except CompilerError as e:
-        source.seek(0)
-        e.format(source.read())
-        raise e
+    with lekvar.source(source):
+        try:
+            return Parser(Lexer(source), logger).parseModule(False)
+        except CompilerError as e:
+            source.seek(0)
+            e.format(source.read())
+            raise e
 
 #
 # Parser
