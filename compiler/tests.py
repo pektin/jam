@@ -4,8 +4,8 @@ import logging
 
 import pytest
 
+from . import jam
 from . import errors
-from .jam.compiler import compile, compileRun
 
 TESTS_PATH = os.path.join("compiler", "tests")
 BUILD_PATH = os.path.join("build", "tests")
@@ -37,14 +37,14 @@ for root, dirs, files in os.walk(TESTS_PATH):
                 # The first line is the output
                 output = f_in.readline()[:-1].encode("UTF-8").decode("unicode-escape")
 
-                with open(build, "w") as f_out:
+                with open(build, "wb") as f_out:
                     # Check if the output was correct
                     if type == "#":
-                        assert output == compileRun(f_in, f_out)
+                        assert output == jam.interpret(f_in, f_out)
                     # Check if the correct exception was thrown
                     elif type == "!":
                         with pytest.raises(getattr(errors, output)):
-                            compile(f_in, f_out)
+                            jam.compile(f_in, f_out)
                     else:
                         raise errors.InternalError("Invalid Test Output Type: {}".format(type))
 
