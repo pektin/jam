@@ -1,0 +1,7 @@
+!SemanticError
+
+if false
+  var = 12
+end
+
+puts(var)
