@@ -52,9 +52,6 @@ def Reference_emitAssignment(self):
 
 @patch
 def Attribute_emitValue(self):
-    if self.value.static:
-        return self.value.emitValue()
-
     self.value.bound_context.scope.emit()
 
     with State.selfScope(self.parent.emitAssignment()):

@@ -1,6 +1,5 @@
 from functools import partial
 
-#from .emitter import * # Do we need this?
 from .state import State
 from .util import *
 from .. import lekvar
@@ -189,7 +188,3 @@ class LLVMFunction(lekvar.ExternalFunction):
     def emit(self):
         if self.llvm_value is None:
             self.generator(self)
-
-    def emitValue(self):
-        self.emit()
-        return self.llvm_value
