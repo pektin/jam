@@ -19,7 +19,7 @@ in the local context as. This is useful for avoiding ambiguities, especially for
 external packages.
 
 Syntax
-------
+======
 
 .. productionlist::
     ImportPath: [ "."+ ] `Identifier` [ "." `Identifier` ]*

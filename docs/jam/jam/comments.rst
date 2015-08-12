@@ -20,17 +20,17 @@ Syntax
            : )
 
 Examples
---------
+========
 
 Single Line Comments
-~~~~~~~~~~~~~~~~~~~~
+--------------------
 ::
 
     # Find the distance using pythag
     dist = (x**2 + y**2)**0.5
 
 Multi-line Comments
-~~~~~~~~~~~~~~~~~~~
+-------------------
 ::
 
 	# This is how Multi-line Comments will be written

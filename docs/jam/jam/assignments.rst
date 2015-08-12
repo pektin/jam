@@ -16,10 +16,10 @@ Syntax
     Assignment: [`AssignmentVars` "="]* `AssignmentVars` "=" [`Value` ","]* `Value`
 
 Examples
---------
+========
 
 Single Variable
-~~~~~~~~~~~~~~~~~~~~
+---------------
 ::
 
     width = 5
@@ -30,20 +30,20 @@ Single Variable
 
 
 Multi Variable
-~~~~~~~~~~~~~~~~~~~
+--------------
 ::
-    
+
     # Defines a Rectangular Prism
     width, length, height = 5, 10, 6
 
 
-    # The upperLimit is set to the currentPosition, then 
+    # The upperLimit is set to the currentPosition, then
     # The currentPosition is set to the lowerLimit
     upperLimit, currentPosition = currentPosition, lowerLimit
 
 
     # velocity is equal to speed which is equal to 55.25, and
-    # mass is equal to weight which is 100 
+    # mass is equal to weight which is 100
     velocity, mass = speed, weight = 55.25, 100
 
 

@@ -17,7 +17,7 @@ Syntax
             : "end"
 
 Examples
---------
+========
 
 ::
 
