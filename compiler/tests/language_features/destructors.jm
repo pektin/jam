@@ -1,0 +1,27 @@
+?#foo\nfoo\nbar\nbar\nbar\nbar\n
+
+class Person
+  name:String
+
+  new(n:String)
+    name = n
+    puts(name)
+  end
+
+  def drop()
+    puts(name)
+  end
+end
+
+def foo(v:Person)
+  puts(v.name)
+  return v
+end
+
+def main()
+  v = Person("foo")
+  v = Person("bar")
+  foo(v)
+end
+
+main()
