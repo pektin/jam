@@ -17,39 +17,45 @@ INTERACTIVE_STARTUP = "{} interactive compiler".format(VERSION)
 
 parser = argparse.ArgumentParser(
     prog = "jam",
-    description = "The Jam Compiler",
+    description = "Jam language tool suite",
 )
-parser.add_argument("--version", "-V",
-    help="Prints the version of the program.",
+parser.add_argument("-V", "--version",
+    help="print the jam version number and terminate",
     action='version',
     version=VERSION,
 )
-parser.add_argument("--profile",
-    help="Uses cProfile to profile the compiler.",
+parser.add_argument("-p", "--profile",
+    help="run the profiler, printing profiling data after completion",
     action='store_true',
 )
-parser.add_argument("--verbose", "-v",
-    help="Enable debug logging at a specific level.",
+parser.add_argument("-v", "--verbose",
+    help="use verbose logging. Supply multiple times to increase verbosity",
     action='count',
     default=0,
 )
 subparsers = parser.add_subparsers(dest='subparser_name')
 
-run_parser = subparsers.add_parser("run", aliases=["r"])
+run_parser = subparsers.add_parser("run", aliases=["r"],
+    help="(default) run jam source code either interactively or from a file",
+)
 run_parser.add_argument("source",
+    help="the source file to run. Leave out for interactive mode",
     type=argparse.FileType('r'),
     default=None,
     nargs='?',
 )
 
-compile_parser = subparsers.add_parser("compile", aliases=["c"])
+compile_parser = subparsers.add_parser("compile", aliases=["c"],
+    help="compile jam source code to an executable",
+)
 compile_parser.add_argument("source",
+    help="the source file to compile. Leave out to read from stdin",
     type=argparse.FileType('r'),
     default=sys.stdin,
     nargs='?'
 )
-compile_parser.add_argument("--output", "-o",
-    help="The file to compile to.",
+compile_parser.add_argument("-o", "--output", metavar="FILE",
+    help="the file to write the executable to. Leave out to let jam guess the name",
     type=argparse.FileType('wb'),
     default=None,
 )
@@ -62,9 +68,9 @@ def compile(args):
         if os.path.isfile(args.source.name):
             name = os.path.basename(args.source.name)
             name = os.path.splitext(name)[0]
-            args.output = open(name, 'wb')
         else:
-            args.output = open("a.out", 'wb')
+            name = "a.out"
+        args.output = open(name, 'wb')
 
     # Try to ensure the output file is executable
     if os.path.isfile(args.output.name):
