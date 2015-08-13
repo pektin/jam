@@ -86,7 +86,9 @@ def main(argv):
         profiler.enable()
 
     if args.subparser_name is None:
-        args.subparser_name = "run"
+        # hack for default subparser
+        argv.insert(0, "run")
+        args = parser.parse_args(argv)
 
     {
         "r": run,
