@@ -228,6 +228,7 @@ class Token:
 class Lexer:
     source = None
     current = None
+    position = 0
 
     def __init__(self, source:IOBase):
         self.source = source
@@ -236,11 +237,7 @@ class Lexer:
     # Read the next character into current
     def next(self):
         self.current = self.source.read(1)
-
-    # Returns the current position in source
-    @property
-    def pos(self):
-        return self.source.tell()
+        self.position += 1
 
     #
     # Lexing Methods
@@ -248,7 +245,7 @@ class Lexer:
 
     # Lex a single token
     def lex(self):
-        token_start = self.pos - 1
+        token_start = self.position - 1
         token_data = ""
         current_nodes = [TREE]
 
@@ -266,7 +263,7 @@ class Lexer:
 
             elif len(next_nodes) == 1 and next_nodes[0] is TREE:
                 # Restart
-                token_start = self.pos
+                token_start = self.position
                 token_data = ""
                 current_nodes = [TREE]
             else:
@@ -278,7 +275,7 @@ class Lexer:
     def outputNode(self, nodes, start, data):
         for node in nodes:
             if node.token_type is not None:
-                return node.getToken(start, self.pos - 1, data)
+                return node.getToken(start, self.position - 1, data)
             elif node is TREE and not self.current:
                 return None
-        raise SyntaxError("Unexpected Character `{}`".format(self.current), [Token(None, self.pos - 1, self.pos)])
+        raise SyntaxError("Unexpected Character `{}`".format(self.current), [Token(None, self.position - 1, self.position)])
