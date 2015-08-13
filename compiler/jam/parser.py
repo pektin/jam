@@ -32,7 +32,7 @@ BINARY_OPERATIONS = [
     {Tokens.multiplication, Tokens.division, Tokens.integer_division},
 ]
 
-BINARY_OPERATION_TOKENS = {type for operation in BINARY_OPERATIONS for type in operation }
+BINARY_OPERATION_TOKENS = { type for operation in BINARY_OPERATIONS for type in operation }
 
 UNARY_OPERATIONS = [
     Tokens.addition,
