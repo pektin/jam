@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import logging
+import argparse
+import cProfile
+from io import StringIO
+
+from compiler import jam, llvm
+
+parser = argparse.ArgumentParser(
+    prog = "jam",
+    description = "The Jam Compiler",
+)
+parser.add_argument("--version", "-V",
+    help="Prints the version of the program.",
+    action='version',
+    version="Jam Compiler V0.1a",
+)
+parser.add_argument("--profile",
+    help="Uses cProfile to profile the compiler.",
+    action='store_true',
+)
+parser.add_argument("--verbose", "-v",
+    help="Enable debug logging at a specific level.",
+    action='count',
+    default=0,
+)
+subparsers = parser.add_subparsers(dest='subparser_name')
+
+run_parser = subparsers.add_parser("run", aliases=["r"],
+)
+run_parser.add_argument("source",
+    type=argparse.FileType('r'),
+    default=None,
+    nargs='?',
+)
+
+compile_parser = subparsers.add_parser("compile", aliases=["c"],
+)
+compile_parser.add_argument("source",
+    type=argparse.FileType('r'),
+    default=sys.stdin,
+    nargs='?'
+)
+compile_parser.add_argument("--output", "-o",
+    help="The file to compile to.",
+    type=argparse.FileType('wb'),
+    default=None,
+)
+
+def compile(args):
+    ir = llvm.emit(jam.parse(args.source))
+    exe = llvm.compile(ir)
+
+    if args.output is None:
+        if os.path.isfile(args.source.name):
+            name = os.path.basename(args.source.name)
+            name = os.path.splitext(name)[0]
+            args.output = open(name, 'wb')
+        else:
+            args.output = open("a.out", 'wb')
+
+    # Try to ensure the output file is executable
+    if os.path.isfile(args.output.name):
+        os.chmod(args.output.name, 0o775)
+
+    args.output.write(exe)
+
+def run(args):
+    if args.source is not None:
+        ir = llvm.emit(jam.parse(args.source))
+        print(llvm.run(ir).decode("UTF-8"), end="")
+        return
+
+    #TODO: Interactive mode
+
+def main(argv):
+    args = parser.parse_args(argv)
+
+    logging.basicConfig(level=logging.WARNING - args.verbose*10, stream=sys.stdout)
+
+    if args.profile:
+        profiler = cProfile.Profile()
+        profiler.enable()
+
+    if args.subparser_name is None:
+        args.subparser_name = "run"
+
+    {
+        "r": run,
+        "run": run,
+        "c": compile,
+        "compile": compile,
+    }[args.subparser_name](args)
+
+    if args.profile:
+        profiler.disable()
+        profiler.print_stats()
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
