@@ -15,27 +15,30 @@ VERSION = "Jam v0.1a"
 INTERACTIVE_PROMPT = "#| "
 INTERACTIVE_STARTUP = "{} interactive compiler".format(VERSION)
 
-parser = argparse.ArgumentParser(
-    prog = "jam",
-    description = "Jam language tool suite",
-)
-parser.add_argument("-V", "--version",
+common_parser = argparse.ArgumentParser(add_help=False)
+common_parser.add_argument("-V", "--version",
     help="print the jam version number and terminate",
     action='version',
     version=VERSION,
 )
-parser.add_argument("-p", "--profile",
+common_parser.add_argument("-p", "--profile",
     help="run the profiler, printing profiling data after completion",
     action='store_true',
 )
-parser.add_argument("-v", "--verbose",
+common_parser.add_argument("-v", "--verbose",
     help="use verbose logging. Supply multiple times to increase verbosity",
     action='count',
     default=0,
 )
+
+parser = argparse.ArgumentParser(parents=[common_parser],
+    prog = "jam",
+    description = "Jam language tool suite",
+)
+
 subparsers = parser.add_subparsers(dest='subparser_name')
 
-run_parser = subparsers.add_parser("run", aliases=["r"],
+run_parser = subparsers.add_parser("run", aliases=["r"], parents=[common_parser],
     help="(default) run jam source code either interactively or from a file",
 )
 run_parser.add_argument("source",
@@ -45,7 +48,7 @@ run_parser.add_argument("source",
     nargs='?',
 )
 
-compile_parser = subparsers.add_parser("compile", aliases=["c"],
+compile_parser = subparsers.add_parser("compile", aliases=["c"], parents=[common_parser],
     help="compile jam source code to an executable",
 )
 compile_parser.add_argument("source",
@@ -113,7 +116,19 @@ def run(args):
             print("ERROR: ", e)
             print()
 
+COMMANDS = {
+    "r": run,
+    "run": run,
+    "c": compile,
+    "compile": compile,
+}
+
 def main(argv):
+
+    # hack for default subparser
+    if not any(arg in COMMANDS for arg in argv):
+        argv.insert(0, "run")
+
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.WARNING - args.verbose*10, stream=sys.stdout)
@@ -122,17 +137,7 @@ def main(argv):
         profiler = cProfile.Profile()
         profiler.enable()
 
-    if args.subparser_name is None:
-        # hack for default subparser
-        argv.insert(0, "run")
-        args = parser.parse_args(argv)
-
-    {
-        "r": run,
-        "run": run,
-        "c": compile,
-        "compile": compile,
-    }[args.subparser_name](args)
+    COMMANDS[args.subparser_name](args)
 
     if args.profile:
         profiler.disable()
