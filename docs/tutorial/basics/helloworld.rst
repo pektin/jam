@@ -10,19 +10,28 @@ builtin ``puts`` function to print the string ``Hello World!`` to standard out.
 
     puts("Hello World!")
 
-Jam source files generally have the extension ``.jm``. To compile and run a
-source file, use the jam compiler script ``jam.py``.
+Jam source files generally have the extension ``.jm``. To run a source file, use
+the jam compiler script ``jam``:
 
 .. code-block:: bash
 
-    $ ./jam.py hello_world.jm
+    $ ./jam hello_world.jm
+    # or
+    $ ./jam run hello_world.jm
 
-For further options, such as outputting a llvm-ir file, use the standard help
-option.
+You can also compile to an executable:
 
 .. code-block:: bash
 
-    $ ./jam.py --help
+    $ ./jam c hello_world.jm
+    # or
+    $ ./jam compile hello_world.jm
+
+For further options, such as verbosity and profiling run:
+
+.. code-block:: bash
+
+    $ ./jam --help
 
 .. note::
     The current tooling currently only exists for debugging and is not yet

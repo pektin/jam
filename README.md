@@ -35,16 +35,16 @@ sudo apt-get install python3 libllvm3.6 llvm-runtime python3-sphinx
 ## Usage
 
 The compiler is currently built as a python library, however it can also be
-directly run through the `jam.py` script:
+directly run through the `jam` python script:
 
 ``` bash
-./jam.py FILE
+./jam FILE
 ```
 
 For further help run:
 
 ``` bash
-./jam.py --help
+./jam --help
 ```
 
 ## Development
