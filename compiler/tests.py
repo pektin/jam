@@ -4,14 +4,14 @@ import logging
 
 import pytest
 
-from . import jam, llvm
+from . import jam, lekvar, llvm
 from . import errors
 
 TESTS_PATH = os.path.join("compiler", "tests")
 BUILD_PATH = os.path.join("build", "tests")
 
 def compile(f_in):
-    return llvm.emit(jam.parse(f_in))
+    return lekvar.compile(f_in, jam, llvm)
 
 def interpret(f_in, f_out):
     ir = compile(f_in)

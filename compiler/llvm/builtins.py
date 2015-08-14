@@ -1,3 +1,4 @@
+import logging
 from functools import partial
 
 from .state import State
@@ -5,7 +6,7 @@ from .util import *
 from .. import lekvar
 from . import bindings as llvm
 
-def builtins():
+def builtins(logger = logging.getLogger()):
     global printf
     printf = None
 

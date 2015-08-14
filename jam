@@ -64,7 +64,7 @@ compile_parser.add_argument("-o", "--output", metavar="FILE",
 )
 
 def compile(args):
-    ir = llvm.emit(jam.parse(args.source))
+    ir = lekvar.compile(args.source, jam, llvm)
     exe = llvm.compile(ir)
 
     if args.output is None:
@@ -83,7 +83,7 @@ def compile(args):
 
 def run(args):
     if args.source is not None:
-        ir = llvm.emit(jam.parse(args.source))
+        ir = lekvar.compile(args.source, jam, llvm)
         print(llvm.run(ir).decode("UTF-8"), end="")
         return
 
@@ -110,7 +110,7 @@ def run(args):
     print(INTERACTIVE_STARTUP)
     while True:
         try:
-            ir = llvm.emit(jam.parse(INWrapper()))
+            ir = lekvar.compile(INWrapper(), jam, llvm)
             print(llvm.run(ir).decode("UTF-8"))
         except compiler.CompilerError as e:
             print("{}: {}".format(e.__class__.__name__, e))

@@ -19,6 +19,17 @@ from .literal import Literal
 from .branches import Loop, Break, Branch
 from .comment import Comment
 
+def compile(source, frontend, backend, logger = logging.getLogger()):
+    module = frontend.parse(source, logger)
+
+    builtins = frontend.builtins(logger)
+    # Hack backend builtins into frontend builtins
+    builtins.context.addChild(backend.builtins(logger))
+
+    verify(module, builtins, logger)
+
+    return backend.emit(module)
+
 def verify(module:Module, builtin:Module, logger = logging.getLogger()):
     # Set up the initial state before verifying
     State.init(builtin, logger.getChild("lekvar"))

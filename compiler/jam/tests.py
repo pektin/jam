@@ -4,9 +4,7 @@ from io import StringIO
 import pytest
 import logging
 
-from .. import jam
-from .. import lekvar
-from ..llvm import emitter as llvm
+from .. import jam, lekvar, llvm
 
 from .lexer import Tokens, Lexer
 
@@ -66,7 +64,8 @@ defend+_- end"""
 def test_builtin_lib(verbosity):
     logging.basicConfig(level=logging.WARNING - verbosity*10, stream=sys.stdout)
 
-    ir = jam._builtins()
+    ir = jam.builtins()
+    ir.context.addChild(llvm.builtins())
 
     lekvar.verify(ir, ir)
 
