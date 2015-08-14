@@ -4,7 +4,7 @@ from .state import State
 from .core import Context, Object, BoundObject, Type
 from .function import Function
 
-class Module(Type):
+class Module(Type, BoundObject):
     verified = False
     context = None
     static = True

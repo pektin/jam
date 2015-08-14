@@ -126,7 +126,7 @@ class BoundObject(Object):
         return "{}({})".format(self.__class__.__name__, self.name)
 
 # A type object that is used to describe certain behaviour of an object.
-class Type(BoundObject):
+class Type(Object):
     # The attributes available on an instance
     @property
     def instance_context(self):

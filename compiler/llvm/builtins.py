@@ -121,7 +121,7 @@ def llvmPrintfWrapper(type, self):
 # Temporary
 #
 
-class LLVMType(lekvar.Type):
+class LLVMType(lekvar.Type, lekvar.BoundObject):
     def __init__(self, name:str):
         super().__init__(name)
 

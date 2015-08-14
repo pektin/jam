@@ -37,7 +37,7 @@ class Function(BoundObject):
                 arg.type = DependentObject()
                 self.dependent = True
 
-        self.type = FunctionType(name, [arg.type for arg in arguments], return_type)
+        self.type = FunctionType([arg.type for arg in arguments], return_type)
 
     @property
     def local_context(self):
@@ -96,13 +96,13 @@ class FunctionType(Type):
 
     verified = False
 
-    def __init__(self, name:str, arguments:[Type], return_type:Type = None, tokens = None):
-        super().__init__(name, tokens)
+    def __init__(self, arguments:[Type], return_type:Type = None, tokens = None):
+        super().__init__(tokens)
         self.arguments = arguments
         self.return_type = return_type
 
     def copy(self):
-        return FunctionType(self.name, list(map(copy, self.arguments)), copy(self.return_type))
+        return FunctionType(list(map(copy, self.arguments)), copy(self.return_type))
 
     def verify(self):
         if self.verified: return

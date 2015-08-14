@@ -14,7 +14,7 @@ class ExternalFunction(BoundObject):
     def __init__(self, name:str, external_name:str, arguments:[Type], return_type:Type, tokens = None):
         super().__init__(name, tokens)
         self.external_name = external_name
-        self.type = FunctionType(external_name, arguments, return_type)
+        self.type = FunctionType(arguments, return_type)
 
     def copy(self):
         raise InternalError("Not Implemented")

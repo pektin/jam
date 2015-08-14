@@ -32,7 +32,7 @@ class Call(Object):
                 raise TypeError("Cannot pass nothing as an argument", value.tokens)
             arg_types.append(value_type)
 
-        call_type = FunctionType("", arg_types, self.return_type)
+        call_type = FunctionType(arg_types, self.return_type)
         call_type.verify()
 
         # Resolve the call

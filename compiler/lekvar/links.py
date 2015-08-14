@@ -7,9 +7,13 @@ from .function import Function, FunctionType
 class Link(Type):
     value = None
 
-    def __init__(self, name:str, value:Object = None, tokens = None):
-        super().__init__(name, tokens)
+    def __init__(self, value:Object = None, tokens = None):
+        super().__init__(tokens)
         self.value = value
+
+    @property
+    def dependent(self):
+        return self.value.dependent
 
     # Dispatch all functions to the linked value
 
@@ -22,10 +26,6 @@ class Link(Type):
     @property
     def context(self):
         return self.value.context
-
-    @property
-    def local_context(self):
-        return self.value.local_context
 
     @property
     def instance_context(self):
@@ -44,13 +44,12 @@ class Link(Type):
         return self.value.resolveCompatibility(other)
 
 class Reference(Link):
+    reference = None
     verified = False
-    # The reference is the name
-    @property
-    def reference(self): return self.name
 
     def __init__(self, reference:str, tokens = None):
-        super().__init__(reference, None, tokens)
+        super().__init__(None, tokens)
+        self.reference = reference
 
     def copy(self):
         return Reference(self.reference, self.tokens)
@@ -73,15 +72,13 @@ class Reference(Link):
 class Attribute(Link):
     # The object the value belongs to
     parent = None
-    # The reference is the name
-    @property
-    def reference(self): return self.name
-
+    reference = None
     verified = False
 
     def __init__(self, parent:Object, reference:str, tokens = None):
-        super().__init__(reference, None, tokens)
+        super().__init__(None, tokens)
         self.parent = parent
+        self.reference = reference
 
     def copy(self):
         return Attribute(self.parent, self.reference, self.tokens)

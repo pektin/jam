@@ -6,7 +6,7 @@ from .function import Function, FunctionType, Return
 from .method import Method, MethodType
 from .variable import Variable
 
-class Class(Type):
+class Class(Type, BoundObject):
     constructor = None
     instance_context = None
 
