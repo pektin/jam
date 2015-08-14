@@ -113,7 +113,7 @@ def run(args):
             ir = llvm.emit(jam.parse(INWrapper()))
             print(llvm.run(ir).decode("UTF-8"))
         except compiler.CompilerError as e:
-            print("ERROR: ", e)
+            print("{}: {}".format(e.__class__.__name__, e))
             print()
 
 COMMANDS = {
