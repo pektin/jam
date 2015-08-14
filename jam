@@ -115,6 +115,9 @@ def run(args):
         except compiler.CompilerError as e:
             print("{}: {}".format(e.__class__.__name__, e))
             print()
+        except (KeyboardInterrupt, EOFError):
+            print("\nExiting...")
+            break
 
 COMMANDS = {
     "r": run,
