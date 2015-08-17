@@ -11,13 +11,14 @@ from .function import Function, FunctionType, Return
 from .external_function import ExternalFunction
 from .call import Call
 from .method import Method, MethodType
-from .links import Reference, Attribute
+from .links import Link, Reference, Attribute
 from .variable import Variable, Assignment
 from .class_ import Class, Constructor
 from .dependent import DependentObject
 from .literal import Literal
 from .branches import Loop, Break, Branch
 from .comment import Comment
+from . import util
 
 def compile(source, frontend, backend, logger = logging.getLogger()):
     module = frontend.parse(source, logger)
