@@ -1,4 +1,4 @@
-?#bar\nfoo\nfoo\nbar\n
+#bar\nfoo\nfoo\nbar\n
 
 module foo
   module bar
@@ -30,3 +30,4 @@ end
 
 main1()
 main2()
+main3()
