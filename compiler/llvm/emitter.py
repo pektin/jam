@@ -31,19 +31,19 @@ lekvar.Comment.emitValue = blankEmit
 #
 
 @patch
-def Reference_emit(self):
+def Link_emit(self):
     return self.value.emit()
 
 @patch
-def Reference_emitValue(self):
+def Link_emitValue(self):
     return self.value.emitValue()
 
 @patch
-def Reference_emitType(self):
+def Link_emitType(self):
     return self.value.emitType()
 
 @patch
-def Reference_emitAssignment(self):
+def Link_emitAssignment(self):
     return self.value.emitAssignment()
 
 #
@@ -56,10 +56,6 @@ def Attribute_emitValue(self):
 
     with State.selfScope(self.parent.emitAssignment()):
         return self.value.emitValue()
-
-@patch
-def Attribute_emitType(self):
-    return self.value.emitType()
 
 @patch
 def Attribute_emitContext(self):
@@ -166,10 +162,9 @@ def Call_emitValue(self):
     if self.called.resolveValue().static:
         context = self.function.emitContext()
     else:
-        context = self.called.emitContext()
+        context = self.function.emitContext(self.called.emitContext())
 
     if context is not None:
-        context = self.function.emitContext(context)
         arguments = [context]
     else:
         arguments = []
