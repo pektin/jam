@@ -97,6 +97,17 @@ class Parser:
 
         return token
 
+    def parseInstructionOrChild(self, instructions:[lekvar.Object], children:{str: lekvar.BoundObject}):
+        value = self.parseLine()
+        if value is None: return None
+
+        if isinstance(value, lekvar.BoundObject):
+            self.addChild(children, value)
+        else:
+            instructions.append(value)
+
+        return value
+
     def addChild(self, children:{str: lekvar.BoundObject}, value:lekvar.BoundObject):
         name = value.name
 
@@ -131,17 +142,8 @@ class Parser:
                     tokens.append(self.next())
                     break
 
-            value = self.parseLine()
-
-            # EOF escape
-            if value is None: break
-
-            if isinstance(value, lekvar.BoundObject):
-                # Scopes are automatically added as children
-                self.addChild(children, value)
-            else:
-                # Other values are added as instructions
-                instructions.append(value)
+            if self.parseInstructionOrChild(instructions, children) is None:
+                break
 
         return lekvar.Module(module_name, list(children.values()), instructions, tokens)
 
@@ -438,6 +440,7 @@ class Parser:
     def parseMethodBody(self, name, arguments, default_values, return_type, tokens):
         # Parse instructions
         instructions = []
+        children = {}
 
         while True:
             token = self.lookAhead()
@@ -448,10 +451,10 @@ class Parser:
             if token.type == Tokens.end_kwd:
                 tokens.append(self.next())
                 break
-            instructions.append(self.parseLine())
+            self.parseInstructionOrChild(instructions, children)
 
         # Create method with default arguments
-        overloads = [lekvar.Function("", arguments, instructions, return_type, tokens)]
+        overloads = [lekvar.Function("", arguments, instructions, list(children.values()), return_type, tokens)]
 
         in_defaults = True
         for index, value in enumerate(reversed(default_values)):
@@ -471,7 +474,7 @@ class Parser:
                                 # Add non-default arguments with the default value
                                 args + [default_values[index]],
                             )
-                        ], return_type, tokens)
+                        ], list(children.values()), return_type, tokens)
                     )
             else:
                 # Check for default arguments before a non-defaulted argument
@@ -746,7 +749,6 @@ class Parser:
             tokens.append(self.next())
 
             name = self.expect(Tokens.identifier, tokens).data
-
         return lekvar.Import(path, name, tokens)
 
     def parseImportPath(self, tokens):
