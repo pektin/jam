@@ -240,7 +240,7 @@ def Module_verify(self):
 
     if _lib.LLVMVerifyModule(self, FailureAction.ReturnStatusAction, byref(error_msg)):
         # Convert llvm string to python
-        message = "LLVM: \"{}\"".format(error_msg.value.decode("UTF-8"))
+        message = "LLVM: \"{}\"\n\nfor:\n{}".format(error_msg.value.decode("UTF-8"), self.toString().decode("UTF-8"))
         disposeError(error_msg)
 
         raise VerificationError(message)
