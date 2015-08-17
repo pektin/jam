@@ -13,7 +13,7 @@ FunctionType = None
 # A function is a single callable entity. It is defined through a set of inputs,
 # a set of instructions, and a singular output.
 class Function(BoundObject):
-    _local_context = None
+    local_context = None
     closed_context = None
 
     arguments = None
@@ -23,10 +23,10 @@ class Function(BoundObject):
     verified = False
     static = False
 
-    def __init__(self, name:str, arguments:[Variable], instructions:[Object], return_type:Type = None, tokens = None):
+    def __init__(self, name:str, arguments:[Variable], instructions:[Object], children:[Object], return_type:Type = None, tokens = None):
         super().__init__(name, tokens)
 
-        self._local_context = Context(self, arguments)
+        self.local_context = Context(self, arguments + children)
         self.closed_context = Context(self, [])
 
         self.arguments = arguments
@@ -38,10 +38,6 @@ class Function(BoundObject):
                 self.dependent = True
 
         self.type = FunctionType([arg.type for arg in arguments], return_type)
-
-    @property
-    def local_context(self):
-        return self._local_context
 
     def copy(self):
         fn = Function(self.name, list(map(copy, self.arguments)), list(map(copy, self.instructions)), self.type.return_type)

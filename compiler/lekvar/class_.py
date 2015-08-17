@@ -67,9 +67,8 @@ class Class(Type, BoundObject):
 
 class Constructor(Function):
     def __init__(self, function:Function, constructing:Type, tokens = None):
-        function.type.return_type = constructing
-
-        super().__init__(function.name, function.arguments, function.instructions, function.type.return_type, tokens)
+        super().__init__(function.name, function.arguments, function.instructions, [], constructing, tokens)
+        self.local_context = function.local_context
 
     def verifySelf(self):
         # Constructors may not return
