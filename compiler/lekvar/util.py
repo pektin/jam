@@ -15,7 +15,7 @@ def checkCompatibility(type1:Type, type2:Type):
     return type2.checkCompatibility(type1)
 
 # Resolves a reference inside of a given scope.
-def resolveReference(reference:str):
+def resolveReference(reference:str, exclude = None):
     # Collect all objects with a name matching reference up the tree of scopes
     found = []
 
@@ -31,6 +31,8 @@ def resolveReference(reference:str):
             break
         else:
             scope = scope.bound_context.scope if (scope.bound_context is not None) else State.builtins
+
+    found = [scope for scope in found if scope is not exclude]
 
     # Only a single found object is valid
     if len(found) < 1:

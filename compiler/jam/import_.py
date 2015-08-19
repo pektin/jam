@@ -28,7 +28,7 @@ class Import(lekvar.Link, lekvar.BoundObject):
         if self.value is not None: return
 
         try:
-            self.value = lekvar.util.resolveReference(self.path[0])
+            self.value = lekvar.util.resolveReference(self.path[0], self)
             self.path.pop(0)
         except MissingReferenceError:
             raise InternalError("Not Implemented")
