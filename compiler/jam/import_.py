@@ -1,5 +1,8 @@
-from ..errors import *
+import os
 
+from . import parser
+
+from ..errors import *
 from .. import lekvar
 
 class Import(lekvar.Link, lekvar.BoundObject):

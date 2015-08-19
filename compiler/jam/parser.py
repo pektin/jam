@@ -4,7 +4,6 @@ from io import IOBase
 from .. errors import *
 from .. import lekvar
 
-from . import import_
 from .lexer import Lexer, Tokens
 
 #
