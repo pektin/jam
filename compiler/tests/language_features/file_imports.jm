@@ -1,9 +1,9 @@
-?#bar\nfoo\nfoo\nbar\n
+#foo\nfoo\nbar\nbar\n
 
-import .file_imported
+import file_imported
 
 def bar()
-  import .file_imported.foo
+  import file_imported.foo
 
   foo()
   puts("bar")

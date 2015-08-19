@@ -104,6 +104,9 @@ class AmbiguityError(SemanticError):
 class MissingReferenceError(SemanticError):
     pass
 
+class ImportError(SemanticError):
+    pass
+
 class ExecutionError(Exception):
     pass
 

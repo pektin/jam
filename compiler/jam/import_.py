@@ -30,8 +30,22 @@ class Import(lekvar.Link, lekvar.BoundObject):
         try:
             self.value = lekvar.util.resolveReference(self.path[0], self)
             self.path.pop(0)
-        except MissingReferenceError:
-            raise InternalError("Not Implemented")
+        except MissingReferenceError as e:
+            if not hasattr(self.source, "name"):
+                raise ImportError(e.messages + [("Cannot import from non-file source.", self.tokens)])
+
+            # Start from the path of the source
+            path = os.path.dirname(self.source.name)
+
+            while len(self.path) > 0:
+                path = os.path.join(path, self.path.pop(0))
+                if os.path.isfile(path + ".jm"):
+                    with open(path + ".jm", "r") as f:
+                        self.value = parser.parseFile(f, lekvar.State.logger)
+                        break
+
+            if self.value is None:
+                raise ImportError("Cannot find file to import", self.tokens)
 
         for name in self.path:
             self.value = lekvar.Attribute(self.value, name)
