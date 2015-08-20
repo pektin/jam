@@ -24,6 +24,8 @@ def parseFile(source:IOBase, logger=logging.getLogger()):
 #
 
 BINARY_OPERATIONS = [
+    {Tokens.logical_and},
+    {Tokens.logical_or},
     {Tokens.equality, Tokens.inequality,
      Tokens.smaller_than, Tokens.smaller_than_or_equal_to,
      Tokens.greater_than, Tokens.greater_than_or_equal_to},
@@ -32,6 +34,11 @@ BINARY_OPERATIONS = [
 ]
 
 BINARY_OPERATION_TOKENS = { type for operation in BINARY_OPERATIONS for type in operation }
+
+BINARY_OPERATION_FUNCTIONS = {
+    Tokens.logical_and: "&&",
+    Tokens.logical_or: "||",
+}
 
 UNARY_OPERATIONS = [
     Tokens.addition,
@@ -224,7 +231,12 @@ class Parser:
         lhs = operation_values[0]
         for index, operation in enumerate(operation_operations):
             rhs = operation_values[index + 1]
-            lhs = lekvar.Call(lekvar.Attribute(lhs, operation.data), [rhs], None, operation)
+
+            # Some operations are attributes of the lhs, others are global functions
+            if operation.type in BINARY_OPERATION_FUNCTIONS:
+                lhs = lekvar.Call(lekvar.Reference(BINARY_OPERATION_FUNCTIONS[operation.type]), [lhs, rhs], None, operation)
+            else:
+                lhs = lekvar.Call(lekvar.Attribute(lhs, operation.data), [rhs], None, operation)
 
         return lhs
 
