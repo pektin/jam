@@ -756,7 +756,8 @@ class Parser:
         path = self.parseImportPath(tokens)
 
         name = None
-        if self.lookAhead().type == Tokens.as_kwd:
+        token = self.lookAhead()
+        if token is not None and token.type == Tokens.as_kwd:
             tokens.append(self.next())
 
             name = self.expect(Tokens.identifier, tokens).data
@@ -777,7 +778,7 @@ class Parser:
 
             token = self.lookAhead()
             # Check for next path element
-            if token.type == Tokens.dot:
+            if token is not None and token.type == Tokens.dot:
                 tokens.append(self.next())
             # Otherwise stop parsing for a path
             else:
