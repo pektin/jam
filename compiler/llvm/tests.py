@@ -9,7 +9,12 @@ from ..llvm import bindings as c
 
 BUILD_PATH = "build/tests"
 
-def test_llvm():
+@pytest.yield_fixture(autouse=True)
+def setup_teardown():
+    os.makedirs(BUILD_PATH, exist_ok=True)
+    yield
+
+def hello_world():
     i32 = c.Int.new(32)
     module = c.Module.fromName("test")
     builder = c.Builder.new()
@@ -22,18 +27,34 @@ def test_llvm():
     return_ = main.appendBlock("return")
 
     builder.positionAtEnd(entry)
-    hello = builder.globalString("Hello World!", "temp.0")
+    hello = builder.globalString("Hello World!", "")
     builder.call(puts, [hello], "")
     builder.br(return_)
 
     builder.positionAtEnd(return_)
     builder.ret(c.Value.constInt(i32, 0, False))
 
-    os.makedirs(BUILD_PATH, exist_ok=True)
-    with open(BUILD_PATH + "/llvm.ll", "wb") as f:
-        f.write(module.toString())
+    module.verify()
+    return module.toString()
 
-    assert b"Hello World!\n" == check_output(["lli " + BUILD_PATH + "/llvm.ll"], shell=True)
+def test_llvm_running():
+    source = hello_world()
+
+    path = os.path.join(BUILD_PATH, "llvm_running.ll")
+    with open(path, 'wb') as f:
+        f.write(source)
+
+    assert b"Hello World!\n" == llvm.run(source)
+
+def test_llvm_compiling():
+    source = hello_world()
+
+    path = os.path.join(BUILD_PATH, "llvm_compiling.out")
+    with open(path, 'wb') as f:
+        f.write(llvm.compile(source))
+
+    os.chmod(path, 0o775)
+    assert b"Hello World!\n" == check_output(["./" + path])
 
 def test_module_verification_handling():
     module = c.Module.fromName("test")
@@ -51,17 +72,20 @@ def test_module_verification_handling():
     with pytest.raises(c.VerificationError):
         module.verify()
 
-def test_lli_failure():
-    source = b"""
+INVALID_SOURCE = b"""
 def rec() { ret rec() }
 """
 
+def test_lli_failure():
     with pytest.raises(ExecutionError):
-        llvm.run(source)
+        llvm.run(INVALID_SOURCE)
+
+def test_llc_failure():
+    with pytest.raises(ExecutionError):
+        llvm.compile(INVALID_SOURCE)
 
 def test_builtin_lib():
     source = llvm.emit(llvm.builtins())
 
-    os.makedirs(BUILD_PATH, exist_ok=True)
     with open(BUILD_PATH + "/builtins.ll", "wb") as f:
         f.write(source)
