@@ -15,7 +15,6 @@ class Import(lekvar.Link, lekvar.BoundObject):
         super().__init__(None, name)
         self.tokens = tokens
         self.path = path
-        print(self.value, self.tokens, self.name, self.path)
 
     @property
     def local_context(self):
@@ -31,11 +30,12 @@ class Import(lekvar.Link, lekvar.BoundObject):
             self.value = lekvar.util.resolveReference(self.path[0], self)
             self.path.pop(0)
         except MissingReferenceError as e:
-            if not hasattr(self.source, "name"):
-                raise ImportError(e.messages + [("Cannot import from non-file source.", self.tokens)])
-
-            # Start from the path of the source
-            path = os.path.dirname(self.source.name)
+            if hasattr(self.source, "name"):
+                # Start from the path of the source
+                path = os.path.dirname(self.source.name)
+            else:
+                # Otherwise use the cwd
+                path = "."
 
             while len(self.path) > 0:
                 path = os.path.join(path, self.path.pop(0))
