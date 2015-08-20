@@ -1,0 +1,19 @@
+#foo\nbar\nfoo\n
+
+if true || true
+  puts("foo")
+end
+
+if true || false
+  puts("bar")
+end
+
+if false || true
+  puts("foo")
+end
+
+if false || false
+  puts("bar")
+end
+
+#TODO: Non-boolean expressions
