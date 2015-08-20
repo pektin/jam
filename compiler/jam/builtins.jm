@@ -120,3 +120,11 @@ end
 def puts(value:Real)
   _builtins.puts(value.value)
 end
+
+def puts(value:Bool)
+  if value
+    puts("true")
+  else
+    puts("false")
+  end
+end
