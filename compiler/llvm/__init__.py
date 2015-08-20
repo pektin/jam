@@ -42,4 +42,4 @@ def compile(source:bytes):
             return f_out.read()
     except subprocess.CalledProcessError as e:
         output = e.output.decode("UTF-8")
-        raise InternalError("llc error compiling source {}".format(output))
+        raise ExecutionError("clang error compiling source {}".format(output))
