@@ -10,7 +10,6 @@ Method = None
 
 class Method(BoundObject):
     overload_context = None
-    verified = False
     type = None
 
     def __init__(self, name:str, overloads:[Function], tokens = None):
@@ -32,9 +31,6 @@ class Method(BoundObject):
             self.addOverload(overload)
 
     def verify(self):
-        if self.verified: return
-        self.verified = True
-
         with State.scoped(self):
             self.overload_context.verify()
 
