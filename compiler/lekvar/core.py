@@ -28,7 +28,7 @@ class Context:
 
     # Verifies all child objects
     def verify(self):
-        for child in self.children.values():
+        for child in self:
             child.verify()
 
     # Doubly link a child to the context
