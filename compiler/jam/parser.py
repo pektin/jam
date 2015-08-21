@@ -769,7 +769,7 @@ class Parser:
         # Paths can start with any number of dots
         while self.lookAhead().type == Tokens.dot:
             tokens.append(self.next())
-            path.append(".")
+            path.append("..")
 
         # Then identifiers separated by dots
         while True:
