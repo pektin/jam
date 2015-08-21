@@ -1,0 +1,4 @@
+!TypeError
+
+var:String = "foo"
+var:String = "bar"
