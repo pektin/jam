@@ -7,7 +7,7 @@ from .core import Context, Object, BoundObject, Type
 # Which is then checked for all the dependencies,
 # This is similar to templating, but much more powerful and less context
 # dependent.
-class DependentObject(Type):
+class DependentObject(Type, BoundObject):
     dependent = True
 
     # The target object which which to replace the dependent object
