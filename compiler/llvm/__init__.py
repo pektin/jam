@@ -34,12 +34,15 @@ def run(source:bytes):
 #TODO: Replace with direct calls to llvm
 def compile(source:bytes):
     try:
-        with NamedTemporaryFile('wb', suffix=".ll") as f_in, NamedTemporaryFile('rb') as f_out:
-            f_in.write(source)
-            f_in.flush()
-            subprocess.check_output(["clang", "-o", f_out.name, f_in.name],
+        # Leave cleaning these up to python. Breaks circleci otherwise...
+        f_in = NamedTemporaryFile('wb', suffix=".ll")
+        f_in.write(source)
+        f_in.flush()
+
+        f_out = NamedTemporaryFile('rb')
+        subprocess.check_output(["clang", "-o", f_out.name, f_in.name],
                                     stderr = subprocess.STDOUT)
-            return f_out.read()
+        return f_out.read()
     except subprocess.CalledProcessError as e:
         output = e.output.decode("UTF-8")
         raise ExecutionError("clang error compiling source {}".format(output))
