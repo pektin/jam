@@ -30,7 +30,7 @@ BINARY_OPERATIONS = [
      Tokens.smaller_than, Tokens.smaller_than_or_equal_to,
      Tokens.greater_than, Tokens.greater_than_or_equal_to},
     {Tokens.addition, Tokens.subtraction},
-    {Tokens.multiplication, Tokens.division, Tokens.integer_division},
+    {Tokens.multiplication, Tokens.division, Tokens.integer_division, Tokens.mod},
 ]
 
 BINARY_OPERATION_TOKENS = { type for operation in BINARY_OPERATIONS for type in operation }
