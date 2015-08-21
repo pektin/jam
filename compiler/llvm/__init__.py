@@ -40,8 +40,9 @@ def compile(source:bytes):
         f_in.flush()
 
         f_out = NamedTemporaryFile('rb')
-        subprocess.check_output(["clang-" + bindings.LLVM_VERSION,
-            "-v", "-o", f_out.name, f_in.name
+        subprocess.check_output([
+                "clang-" + bindings.LLVM_VERSION,
+                "-v", "-o", f_out.name, f_in.name
             ], stderr = subprocess.STDOUT)
         return f_out.read()
     except subprocess.CalledProcessError as e:
