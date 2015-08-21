@@ -1,0 +1,4 @@
+!TypeError
+
+var = "Foo"
+var = 12
