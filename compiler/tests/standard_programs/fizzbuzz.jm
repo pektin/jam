@@ -1,0 +1,15 @@
+#1\n2\nFizz\n4\nBuzz\nFizz\n7\n8\nFizz\nBuzz\n11\nFizz\n13\n14\nFizzBuzz\n
+
+i = 1
+while i <= 15
+  if i % 15 == 0
+    puts("FizzBuzz")
+  elif i % 3 == 0
+    puts("Fizz")
+  elif i % 5 == 0
+    puts("Buzz")
+  else
+    puts(i)
+  end
+  i = i + 1
+end
