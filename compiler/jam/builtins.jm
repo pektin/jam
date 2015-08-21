@@ -32,6 +32,10 @@ class Int
     return Int(_builtins.intDiv(value, other.value))
   end
 
+  def self % other:Int
+    return Int(_builtins.intRem(value, other.value))
+  end
+
   def self == other:Int
     return Bool(_builtins.intEqual(value, other.value))
   end
@@ -79,6 +83,10 @@ class Real
 
   def self / other:Real
     return Real(_builtins.floatDiv(value, other.value))
+  end
+
+  def self % other:Real
+    return Real(_builtins.floatRem(value, other.value))
   end
 end
 
