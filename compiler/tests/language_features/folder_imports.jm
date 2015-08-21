@@ -1,0 +1,5 @@
+#foo\nbar\n
+
+import .language_features.file_imported
+
+file_imported.foo()
