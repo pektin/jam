@@ -57,6 +57,7 @@ Tokens = Enum("Tokens", [
     "break_kwd",
     "self_kwd",
     "if_kwd",
+    "elif_kwd",
     "else_kwd",
     "import_kwd",
 
@@ -173,6 +174,7 @@ DIRECT_MAP = [
     ("in", Tokens.in_kwd),
     ("break", Tokens.break_kwd),
     ("self", Tokens.self_kwd),
+    ("elif", Tokens.elif_kwd),
     ("if", Tokens.if_kwd),
     ("else", Tokens.else_kwd),
     ("import", Tokens.import_kwd),

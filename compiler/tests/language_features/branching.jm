@@ -1,4 +1,4 @@
-#foo\nbar\nfoo\nbar\n
+#foo\nbar\nfoo\nbar\nbaz\nboo\n
 
 if true
   puts("foo")
@@ -18,4 +18,22 @@ end
 
 if !false
   puts("bar")
+end
+
+if false
+  puts("foo")
+elif false
+  puts("bar")
+elif true
+  puts("baz")
+end
+
+if false
+  puts("foo")
+elif false
+  puts("bar")
+elif false
+  puts("baz")
+else
+  puts("boo")
 end

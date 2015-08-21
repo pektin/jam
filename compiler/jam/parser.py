@@ -621,9 +621,9 @@ class Parser:
 
         return lekvar.Break([token])
 
-    def parseBranch(self):
+    def parseBranch(self, start_kwd = Tokens.if_kwd):
         tokens = [self.next()]
-        assert tokens[0].type == Tokens.if_kwd
+        assert tokens[0].type == start_kwd
 
         condition = self.parseValue()
 
@@ -642,6 +642,10 @@ class Parser:
             elif token.type == Tokens.else_kwd:
                 tokens.append(self.next())
                 break
+
+            elif token.type == Tokens.elif_kwd:
+                tokens.append(token)
+                return lekvar.Branch(condition, if_instructions, [self.parseBranch(Tokens.elif_kwd)], tokens)
 
             if_instructions.append(self.parseLine())
 
