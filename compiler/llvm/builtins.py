@@ -33,6 +33,7 @@ def builtins(logger = logging.getLogger()):
         (ints, "intSub", llvm.Builder.iSub, []),
         (ints, "intMul", llvm.Builder.iMul, []),
         (ints, "intDiv", llvm.Builder.siDiv, []),
+        (ints, "intRem", llvm.Builder.siRem, []),
         (ints, "intEqual", llvm.Builder.iCmp, [llvm.IntPredicate.equal]),
         (ints, "intUnequal", llvm.Builder.iCmp, [llvm.IntPredicate.unequal]),
         (ints, "intGreaterThan", llvm.Builder.iCmp, [llvm.IntPredicate.signed_greater_than]),
@@ -43,6 +44,7 @@ def builtins(logger = logging.getLogger()):
         (floats, "floatSub", llvm.Builder.fSub, []),
         (floats, "floatMul", llvm.Builder.fMul, []),
         (floats, "floatDiv", llvm.Builder.fDiv, []),
+        (floats, "floatRem", llvm.Builder.fRem, []),
     ]
 
     for types, name, instruction, arguments in methods:
