@@ -23,7 +23,7 @@ def emit(module:lekvar.Module, logger = logging.getLogger()):
 #TODO: Replace with direct calls to llvm
 def run(source:bytes):
     try:
-        return subprocess.check_output("lli",
+        return subprocess.check_output("lli-" + bindings.LLVM_VERSION,
             input = source,
             stderr = subprocess.STDOUT,
         )
@@ -40,8 +40,9 @@ def compile(source:bytes):
         f_in.flush()
 
         f_out = NamedTemporaryFile('rb')
-        subprocess.check_output(["clang", "-v", "-o", f_out.name, f_in.name],
-                                    stderr = subprocess.STDOUT)
+        subprocess.check_output(["clang-" + bindings.LLVM_VERSION,
+            "-v", "-o", f_out.name, f_in.name
+            ], stderr = subprocess.STDOUT)
         return f_out.read()
     except subprocess.CalledProcessError as e:
         output = e.output.decode("UTF-8")

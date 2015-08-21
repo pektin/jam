@@ -8,13 +8,16 @@ State = None
 #TODO: Support other operating systems/distributions
 try:
     _lib = CDLL("libLLVM-3.6.so.1")
+    LLVM_VERSION = '3.6'
 except OSError:
     try:
         _lib = CDLL("libLLVM-3.5.so.1")
         print("WARNING: Using unsupported LLVM version: 3.5")
+        LLVM_VERSION = '3.5'
     except OSError:
         _lib = CDLL("libLLVM-3.4.so.1")
         print("WARNING: Using unsupported LLVM version: 3.4")
+        LLVM_VERSION = '3.4'
 
 c_bool = c_int
 
