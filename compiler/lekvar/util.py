@@ -51,7 +51,8 @@ def resolveAttribute(object:Object, reference:str):
 
     if context is not None and reference in context:
         return context[reference]
-    return None
+
+    raise MissingReferenceError("{} does not have an attribute {}".format(object, reference), object.tokens)
 
 # More general copy function which handles None
 def copy(obj):

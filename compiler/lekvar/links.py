@@ -89,11 +89,12 @@ class Attribute(Link):
 
         self.parent.verify()
         # Resolve the attribute using the values attribute resolution
-        self.value = resolveAttribute(self.parent, self.reference)
+        try:
+            self.value = resolveAttribute(self.parent, self.reference)
+        except MissingReferenceError as e:
+            e.addMessage("", self.tokens)
+            raise e
         self.value.verify()
-
-        if self.value is None:
-            raise MissingReferenceError("{} does not have an attribute {}".format(self.parent, self.reference), self.parent.tokens + self.tokens)
 
     def __repr__(self):
         return "{}.{}".format(self.parent, self.reference)
