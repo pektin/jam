@@ -1,8 +1,5 @@
-class _Token:
-    start = 0
-    end = 0
 
-def _formatTokens(source:str, tokens:[_Token]):
+def _formatTokens(source:str, tokens:[]):
     # a mapping of line numbers to a line and set of positions in that line
     lines = {}
 
@@ -35,6 +32,7 @@ def _getLine(source:str, position:int):
             self.number = 1
             self.start = 0
             self.end = 0
+        def __repr__(self): return "({},{},{})".format(self.number, self.start, self.end)
 
     line = Line()
 
@@ -44,10 +42,11 @@ def _getLine(source:str, position:int):
             break
         elif character == "\n":
             line.number += 1
+            line.start = index + 1
 
     # Get the end index of the line
-    line.start = line.end = position
-    for index, character in enumerate(source[line.start:]):
+    line.end = position
+    for character in source[position:]:
         line.end += 1
         if character == "\n": # Include the newline
             break
@@ -61,7 +60,7 @@ class CompilerError(Exception):
     # A compiler error takes a single error message and a list of tokens.
     # When displayed, the error will contain the specified message along with
     # nicely formatted source code extracts, highlighting the specified tokens
-    def __init__(self, message:str, tokens:[_Token] = None):
+    def __init__(self, message:str, tokens:[] = None):
         super().__init__("")
         self.messages = []
         if isinstance(message, list):
@@ -70,9 +69,11 @@ class CompilerError(Exception):
         else:
             self.addMessage(message, tokens)
 
-    def addMessage(self, message:str, tokens:[_Token]):
-        if message or tokens:
+    def addMessage(self, message:str, tokens:[]):
+        if message:
             self.messages.append((message, tokens))
+        else:
+            self.messages[-1] = (self.messages[-1][0], self.messages[-1][1] + tokens)
 
     def format(self, source:str):
         message = "\n".join(
