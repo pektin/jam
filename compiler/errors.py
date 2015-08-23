@@ -73,7 +73,12 @@ class CompilerError(Exception):
         if message:
             self.messages.append((message, tokens))
         else:
-            self.messages[-1] = (self.messages[-1][0], self.messages[-1][1] + tokens)
+            msg = self.messages[-1]
+            if msg[1]:
+                msg = (msg[0], msg[1] + tokens)
+            else:
+                msg = (msg[0], tokens)
+            self.messages[-1] = msg
 
     def format(self, source:str):
         message = "\n".join(
