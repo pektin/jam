@@ -1,0 +1,8 @@
+#foo\nbar\n
+
+import circular_imports
+
+def foobar()
+  circular_imports.foo()
+  puts("bar")
+end
