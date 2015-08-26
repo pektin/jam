@@ -21,11 +21,11 @@ class Import(lekvar.Link, lekvar.BoundObject):
         return self.value.local_context
 
     def verify(self):
-        if self.value is not None: return
+        index = 0
 
         try:
-            self.value = lekvar.util.resolveReference(self.path[0], self)
-            self.path.pop(0)
+            self.value = lekvar.util.resolveReference(self.path[index], self)
+            index += 1
         except MissingReferenceError as e:
             if hasattr(self.source, "name"):
                 # Start from the path of the source
@@ -34,19 +34,44 @@ class Import(lekvar.Link, lekvar.BoundObject):
                 # Otherwise use the cwd
                 path = "."
 
-            while len(self.path) > 0:
-                path = os.path.join(path, self.path.pop(0))
+            while index < len(self.path):
+                path = os.path.join(path, self.path[index])
+                index += 1
                 if os.path.isfile(path + ".jm"):
                     with open(path + ".jm", "r") as f:
-                        self.value = parser.parseFile(f, lekvar.State.logger)
+                        self.parseSource(f)
                         break
 
             if self.value is None:
                 raise ImportError("Cannot find file to import", self.tokens)
 
-        for name in self.path:
+        for name in self.path[index:]:
             self.value = lekvar.Attribute(self.value, name)
 
         super().verify()
+
+    def parseSource(self, file):
+        previous_sources = lekvar.State.sources
+
+        if lekvar.State.sources is None:
+            parent = self
+            while parent.bound_context is not None:
+                parent = parent.bound_context.scope
+            lekvar.State.sources = ((self.source, parent),)
+
+        # Check if we have already parsed the file
+        if hasattr(file, "fileno"):
+            for src, module in lekvar.State.sources:
+                if hasattr(src, "fileno") and os.path.sameopenfile(file.fileno(), src.fileno()):
+                    self.value = module
+                    break
+
+        if self.value is None:
+            self.value = parser.parseFile(file, lekvar.State.logger)
+            lekvar.State.sources = tuple(list(lekvar.State.sources) + [(file, module)])
+            # Must verify the module here, or imports in said module may use a closed file (self.source)
+            self.value.verify()
+
+        lekvar.State.sources = previous_sources
 
 lekvar.Import = Import
