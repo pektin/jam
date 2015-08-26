@@ -1,5 +1,4 @@
 import logging
-from io import IOBase
 from contextlib import contextmanager
 
 from ..errors import CompilerError
@@ -44,10 +43,3 @@ def verify(module:Module, builtin:Module, logger = logging.getLogger()):
             module.source.seek(0)
             e.format(module.source.read())
         raise e
-
-@contextmanager
-def source(source:IOBase):
-    previous = State.source
-    State.source = source
-    yield
-    State.source = previous

@@ -1,4 +1,5 @@
 import logging
+from io import IOBase
 from contextlib import contextmanager
 
 from .. errors import *
@@ -18,8 +19,10 @@ class classproperty:
 # The global state for the verifier
 class State:
     source = None
+    sources = None
     builtins = None
     logger = None
+
     scope_stack = None
 
     @classmethod
@@ -27,6 +30,7 @@ class State:
         cls.builtins = builtins
         cls.logger = logger
         cls.scope_stack = []
+        cls.sources = None
 
     @classproperty
     def scope_state(cls):
@@ -67,6 +71,14 @@ class State:
         cls.scope_stack.append(scope_state)
         yield scope_state
         cls.scope_stack.pop()
+
+    @classmethod
+    @contextmanager
+    def ioSource(cls, source:IOBase):
+        previous_source = cls.source
+        cls.source = source
+        yield
+        cls.source = previous_source
 
 class ScopeState:
     soft = False
