@@ -18,9 +18,6 @@ class Loop(Object):
 
         self.instructions = instructions
 
-    def copy(self):
-        return Loop(self.instructions)
-
     def verify(self):
         self.function = State.scope
 
@@ -43,9 +40,6 @@ class Break(Object):
 
     def __init__(self, tokens = None):
         super().__init__(tokens)
-
-    def copy(self):
-        return Break()
 
     def verify(self):
         self.loop = State.getSoftScope(lambda a: isinstance(a, Loop))
@@ -71,9 +65,6 @@ class Branch(Object):
         self.condition = condition
         self.true_instructions = true_instructions
         self.false_instructions = false_instructions
-
-    def copy(self):
-        return Branch(self.condition, self.true_instructions, self.false_instructions)
 
     def verify(self):
         self.function = State.scope

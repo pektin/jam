@@ -128,9 +128,6 @@ class LLVMType(lekvar.Type, lekvar.BoundObject):
     def __init__(self, name:str):
         super().__init__(name)
 
-    def copy(self):
-        raise InternalError("Cannot copy LLVMType")
-
     def verify(self):
         pass
 

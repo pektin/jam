@@ -1,10 +1,10 @@
 from ..errors import *
 
 from .state import State
-from .core import Context, Object, BoundObject, Type
+from .core import Context, Object, BoundObject, Scope, Type
 from .function import Function
 
-class Module(Type, BoundObject):
+class Module(Type, Scope):
     verified = False
     context = None
     static = True
@@ -19,10 +19,6 @@ class Module(Type, BoundObject):
         # All inherit static-ness
         for child in self.context:
             child.static = True
-
-    # Singletons can't be copied
-    def copy(self):
-        return self
 
     def verify(self):
         if self.verified: return

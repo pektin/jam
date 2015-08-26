@@ -7,9 +7,6 @@ class Comment(Object):
         super().__init__(tokens)
         self.contents = contents
 
-    def copy(self):
-        return Comment(self.contents)
-
     def verify(self):
         pass
 

@@ -1,7 +1,7 @@
 from ..errors import *
 
 from .state import State
-from .util import resolveReference, checkCompatibility, copy
+from .util import resolveReference, checkCompatibility
 from .core import Context, Object, BoundObject, Type
 
 #
@@ -19,11 +19,6 @@ class Variable(BoundObject):
         super().__init__(name, tokens)
         self.type = type
         self.constant = constant
-
-    def copy(self):
-        var = Variable(self.name, copy(self.type), self.constant)
-        var.static = self.static
-        return var
 
     def verify(self):
         self.type.verify()
@@ -57,9 +52,6 @@ class Assignment(Object):
         super().__init__(tokens)
         self.variable = variable
         self.value = value
-
-    def copy(self):
-        return Assignment(copy(self.variable), copy(self.value))
 
     def verify(self):
         self.scope = State.scope

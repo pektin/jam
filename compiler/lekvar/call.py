@@ -16,9 +16,6 @@ class Call(Object):
         self.return_type = return_type
         self.function = None
 
-    def copy(self):
-        return Call(copy(self.called), list(map(copy, self.values)))
-
     def verify(self):
         self.called.verify()
 

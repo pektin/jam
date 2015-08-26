@@ -20,9 +20,6 @@ class Import(lekvar.Link, lekvar.BoundObject):
     def local_context(self):
         return self.value.local_context
 
-    def copy(self):
-        raise InternalError("Not Implemented")
-
     def verify(self):
         if self.value is not None: return
 

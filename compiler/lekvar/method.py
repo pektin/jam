@@ -19,9 +19,6 @@ class Method(BoundObject):
         for overload in overloads:
             self.addOverload(overload)
 
-    def copy(self):
-        return Method(self.name, list(map(copy, self.overload_context.children.values())))
-
     def addOverload(self, overload:Function):
         overload.name = str(len(self.overload_context.children))
         self.overload_context.addChild(overload)
@@ -77,10 +74,6 @@ class MethodType(Type):
     def __init__(self, name:str, overloads:[FunctionType], tokens = None):
         super().__init__(name, tokens)
         self.overloads = overloads
-
-    # Method types are singletons
-    def copy(self):
-        return self
 
     def resolveType(self):
         raise InternalError("Not Implemented")

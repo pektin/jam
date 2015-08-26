@@ -51,9 +51,6 @@ class Reference(Link):
         super().__init__(None, tokens)
         self.reference = reference
 
-    def copy(self):
-        return Reference(self.reference, self.tokens)
-
     def verify(self):
         if self.verified: return
         self.verified = True
@@ -79,9 +76,6 @@ class Attribute(Link):
         super().__init__(None, tokens)
         self.parent = parent
         self.reference = reference
-
-    def copy(self):
-        return Attribute(self.parent, self.reference, self.tokens)
 
     def verify(self):
         if self.verified: return

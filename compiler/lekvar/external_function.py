@@ -16,9 +16,6 @@ class ExternalFunction(BoundObject):
         self.external_name = external_name
         self.type = FunctionType(arguments, return_type)
 
-    def copy(self):
-        raise InternalError("Not Implemented")
-
     def verify(self):
         if self.verified: return
         self.verified = True

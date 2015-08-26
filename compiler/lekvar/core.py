@@ -5,13 +5,12 @@ from ..errors import *
 from .state import State
 
 # Python predefines
-Context = None
 Object = None
 BoundObject = None
+Scope = None
 Type = None
 Function = None
 FunctionType = None
-
 
 # A context provides a useful wrapper around the mapping of child objects
 # to their scope.
@@ -69,11 +68,6 @@ class Object(ABC):
         self.source = State.source
         self.tokens = tokens
 
-    # Should return a unverified deep copy of the object
-    @abstract
-    def copy(self):
-        pass
-
     # The main verification function. Should raise a CompilerError on failure
     @abstract
     def verify(self):
@@ -108,22 +102,24 @@ class Object(ABC):
 # other objects bound to it through a context must also be a bound object.
 class BoundObject(Object):
     name = None
-    bound_context = None
     static = False
     dependent = False
+    bound_context = None
 
     def __init__(self, name, tokens = None):
         super().__init__(tokens)
         self.name = name
 
+    def __repr__(self):
+        return "{}({})".format(self.__class__.__name__, self.name)
+
+# A bound object that has a local context of all of its children
+class Scope(BoundObject):
     # The local context provides the context accessible objects bound to a
     # context whose scope is this object.
     @abstractproperty
     def local_context(self):
         pass
-
-    def __repr__(self):
-        return "{}({})".format(self.__class__.__name__, self.name)
 
 # A type object that is used to describe certain behaviour of an object.
 class Type(Object):

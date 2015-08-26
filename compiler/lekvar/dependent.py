@@ -37,9 +37,6 @@ class DependentObject(Type, BoundObject):
         out.target_switch = targets
         return out
 
-    def copy(self):
-        raise InternalError("Not Implemented")
-
     def verify(self):
         pass
 

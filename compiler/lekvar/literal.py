@@ -9,9 +9,6 @@ class Literal(Object):
         self.data = data
         self.type = type
 
-    def copy(self):
-        return self
-
     def verify(self):
         super().verify()
 

@@ -475,7 +475,8 @@ class Parser:
                     in_defaults = False
                 else:
                     # Copy arguments
-                    args = [arg.copy() for arg in arguments[:index]]
+                    args = [lekvar.Variable(arg.name, arg.type, arg.constant, arg.tokens)
+                              for arg in arguments[:index]]
 
                     # Add an overload calling the previous overload with the default argument
                     overloads.append(

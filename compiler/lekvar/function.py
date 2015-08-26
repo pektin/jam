@@ -2,7 +2,7 @@ from ..errors import *
 
 from .util import *
 from .state import State
-from .core import Context, Object, BoundObject, Type
+from .core import Context, Object, BoundObject, Scope, Type
 from .util import checkCompatibility
 from .variable import Variable
 from .dependent import DependentObject
@@ -12,7 +12,7 @@ FunctionType = None
 
 # A function is a single callable entity. It is defined through a set of inputs,
 # a set of instructions, and a singular output.
-class Function(BoundObject):
+class Function(Scope):
     local_context = None
     closed_context = None
 
@@ -38,11 +38,6 @@ class Function(BoundObject):
                 self.dependent = True
 
         self.type = FunctionType([arg.type for arg in arguments], return_type)
-
-    def copy(self):
-        fn = Function(self.name, list(map(copy, self.arguments)), list(map(copy, self.instructions)), self.type.return_type)
-        fn.static = self.static
-        return fn
 
     def verify(self):
         if self.verified: return
@@ -97,9 +92,6 @@ class FunctionType(Type):
         self.arguments = arguments
         self.return_type = return_type
 
-    def copy(self):
-        return FunctionType(list(map(copy, self.arguments)), copy(self.return_type))
-
     def verify(self):
         if self.verified: return
         self.verified = True
@@ -153,9 +145,6 @@ class Return(Object):
     def __init__(self, value:Object = None, tokens = None):
         super().__init__(tokens)
         self.value = value
-
-    def copy(self):
-        return Return(copy(self.value))
 
     def verify(self):
         scope = State.soft_scope_state.scope

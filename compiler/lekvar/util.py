@@ -53,7 +53,3 @@ def resolveAttribute(object:Object, reference:str):
         return context[reference]
 
     raise MissingReferenceError("{} does not have an attribute {}".format(object, reference), object.tokens)
-
-# More general copy function which handles None
-def copy(obj):
-    return obj.copy() if obj else None

@@ -1,12 +1,12 @@
 from ..errors import *
 
 from .state import State
-from .core import Context, Object, BoundObject, Type
+from .core import Context, Object, BoundObject, Scope, Type
 from .function import Function, FunctionType, Return
 from .method import Method, MethodType
 from .variable import Variable
 
-class Class(Type, BoundObject):
+class Class(Type, Scope):
     constructor = None
     instance_context = None
 
@@ -32,9 +32,6 @@ class Class(Type, BoundObject):
             if isinstance(child, Method):
                 for overload in child.overload_context:
                     overload.closed_context.addChild(Variable("self", self))
-
-    def copy(self):
-        return Class(self.name, copy(self.constructor), list(map(copy, self.constructor.overload_context.children.values())))
 
     def verify(self):
         if self.verified: return
