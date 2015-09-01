@@ -13,7 +13,9 @@ from .lexer import Lexer, Tokens
 def parseFile(source:IOBase, logger=logging.getLogger()):
     with lekvar.State.ioSource(source):
         try:
-            return Parser(Lexer(source), logger).parseModule(False)
+            module = Parser(Lexer(source), logger).parseModule(False)
+            if hasattr(source, "name"): module.name = source.name
+            return module
         except CompilerError as e:
             source.seek(0)
             e.format(source.read())
