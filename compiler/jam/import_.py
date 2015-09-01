@@ -8,7 +8,6 @@ from .. import lekvar
 class Import(lekvar.Link, lekvar.BoundObject):
     static = True
     path = None
-    verified = False
 
     def __init__(self, path:[str], name:str = None, tokens = None):
         if name is None:
@@ -22,9 +21,9 @@ class Import(lekvar.Link, lekvar.BoundObject):
         return self.value.local_context
 
     def verify(self):
-        if self.verified: return
+        if self.value is not None: return
 
-        index = 0
+        index = 0 # in path
 
         try:
             self.value = lekvar.util.resolveReference(self.path[index], self)
@@ -67,13 +66,11 @@ class Import(lekvar.Link, lekvar.BoundObject):
             for src, module in lekvar.State.sources:
                 if hasattr(src, "fileno") and os.path.sameopenfile(file.fileno(), src.fileno()):
                     self.value = module
-                    self.verified = True
                     break
 
         if self.value is None:
             self.value = parser.parseFile(file, lekvar.State.logger)
             lekvar.State.sources = tuple(list(lekvar.State.sources) + [(file, module)])
-            self.verified = True
             # Must verify the module here, or imports in said module may use a closed file (self.source)
             self.value.verify()
 
