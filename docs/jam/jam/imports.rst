@@ -22,5 +22,6 @@ Syntax
 ======
 
 .. productionlist::
-    ImportPath: [ "."+ ] `Identifier` [ "." `Identifier` ]*
-    Import: "import" `ImportPath` [ "as" `Identifier` ]
+    ImportPath: `Identifier` [ "." `Identifier` ]*
+    RelativeImportPath: [ "."* ] `ImportPath`
+    Import: "import" `RelativeImportPath` [ "as" `Identifier` ]
