@@ -46,6 +46,10 @@ def Link_emitType(self):
 def Link_emitAssignment(self):
     return self.value.emitAssignment()
 
+@patch
+def Link_emitContext(self):
+    return self.value.emitContext()
+
 #
 # class Attribute
 #
