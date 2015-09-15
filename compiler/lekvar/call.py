@@ -1,5 +1,6 @@
 from ..errors import *
 
+from .state import State
 from .core import Context, Object, BoundObject, Type
 from .function import FunctionType
 
@@ -33,7 +34,8 @@ class Call(Object):
         call_type.verify()
 
         # Resolve the call
-        self.function = self.called.resolveCall(call_type)
+        with State.type_switch():
+            self.function = self.called.resolveCall(call_type)
 
     def resolveType(self):
         return self.function.resolveType().return_type
