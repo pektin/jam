@@ -25,6 +25,9 @@ class State:
 
     scope_stack = None
 
+    # Other global state
+    type_switching = False
+
     @classmethod
     def init(cls, builtins:Module, logger:logging.Logger):
         cls.builtins = builtins
@@ -71,6 +74,15 @@ class State:
         cls.scope_stack.append(scope_state)
         yield scope_state
         cls.scope_stack.pop()
+
+    @classmethod
+    @contextmanager
+    def type_switch(cls):
+        cls.type_switch_cleanups = []
+        cls.type_switching = True
+        yield
+        cls.type_switching = False
+        for fn in cls.type_switch_cleanups: fn()
 
     @classmethod
     @contextmanager
