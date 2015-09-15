@@ -1,0 +1,12 @@
+#12\n-183\n
+
+def foo(i:Int)
+  puts(i)
+end
+
+def bar(i)
+  foo(i)
+end
+
+bar(12)
+bar(-183)
