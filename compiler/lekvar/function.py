@@ -69,12 +69,6 @@ class Function(Scope):
     def resolveCall(self, call:FunctionType):
         if not checkCompatibility(self.resolveType(), call):
             raise TypeError("Function is not callable with {}".format(call), self.tokens)
-
-        # Resolve dependencies for dependent arguments
-        for index, arg in enumerate(self.arguments):
-            if arg.type.dependent:
-                arg.type.resolveDependency(call.arguments[index])
-
         return self
 
     def __repr__(self):
