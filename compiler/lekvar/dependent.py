@@ -1,10 +1,15 @@
+from contextlib import contextmanager, ExitStack
+
 from ..errors import *
+
+from .state import State
 from .core import Context, Object, BoundObject, Type
+from .links import Link
 
 # A dependent object is a collector for behaviour
 # Initially the object is used like any other, creating dependencies
 # Later a object can be chosen to "replace" the dependent object,
-# Which is then checked for all the dependencies,
+# Which is then checked for all the dependencies.
 # This is similar to templating, but much more powerful and less context
 # dependent.
 class DependentObject(Type, BoundObject):
@@ -12,112 +17,131 @@ class DependentObject(Type, BoundObject):
 
     # The target object which which to replace the dependent object
     target = None
-    target_switch = None
 
-    # Dependencies
-    dependent_type = None
-    dependent_calls = None
-    dependent_context = None
-    dependent_local_context = None
-    dependent_instance_context = None
-    dependent_instance_calls = None
-    dependent_types = None
-    dependent_return_type = None
+    # Child Dependencies
+    _context = None
+    _instance_context = None
+    resolved_type = None
+    resolved_calls = None
+    resolved_instance_calls = None
+
+    # Object Dependencies
+    target_switch = None
+    compatible_types = None
+    compatible_type_switch = None
+
+    # Hack for dependent functions
+    _return_type = None
 
     def __init__(self, name:str = None, tokens = None):
         super().__init__(name or "", tokens)
 
-        self.dependent_calls = dict()
-        self.dependent_instance_calls = dict()
-        self.dependent_types = set()
+        self.resolved_calls = dict()
+        self.resolved_instance_calls = dict()
+        self.compatible_types = set()
 
     @classmethod
-    def switch(cls, targets):
+    def switch(self, targets:[Object]):
         out = DependentObject()
         out.target_switch = targets
         return out
 
+    @classmethod
+    def targeted(self, target):
+        out = DependentObject()
+        out.target = target
+        return out
+
     def verify(self):
-        pass
+        if self.target: self.target.verify()
 
     # alias to the target if it exists
     def resolveValue(self):
-        if self.target is not None:
-            return self.target
-        return self
+        return self.target or self
 
     # Check whether an object matches the dependencies of this object
-    def resolveDependency(self, target):
-        if self.dependent_type is not None:
-            self.dependent_type.resolveDependency(target.resolveType())
+    @contextmanager
+    def target_at(self, target):
+        with ExitStack() as stack:
+            #TODO: Handle errors
 
-        #TODO: Handle errors
-        for call in self.dependent_calls:
-            self.dependent_calls[call].resolveDependency(target.resolveCall(call))
+            # Pass on dependency checks
+            if self._context is not None:
+                stack.enter_context(self.context.target(target.context))
 
-        if self.dependent_return_type is not None:
-            self.dependent_return_type.resolveDependency(target.return_type)
+            if self._instance_context is not None:
+                stack.enter_context(self.instance_context.target(target.instance_context))
 
-        if self.dependent_context is not None:
-            self.dependent_context.resolveDependency(target.context)
+            if self.resolved_type is not None:
+                stack.enter_context(self.resolved_type.target(target.resolveType()))
 
-        if self.dependent_local_context is not None:
-            self.dependent_local_context.resolveDependency(target.local_context)
+            for call, obj in self.resolved_calls.items():
+                stack.enter_context(obj.target(target.resolveCall(call)))
 
-        if self.dependent_instance_context is not None:
-            self.dependent_instance_context.resolveDependency(target.instance_context)
+            for call, obj in self.resolved_instance_calls.items():
+                stack.enter_context(obj.target(target.resolveInstanceCall(call)))
 
-        for call in self.dependent_instance_calls:
-            self.dependent_instance_calls[call].resolveDependency(target.resolveCall(call))
+            # Local checks
+            if self.target_switch is not None:
+                assert target.resolveValue() in self.target_switch
 
-        for type in self.dependent_types:
-            if not target.checkCompatibility(type):
-                raise DependencyError("Dependent target type is not compatible with {}".format(type), target.tokens)
+            for types in self.compatible_types:
+                matches = []
+                for type in types:
+                    if target.checkCompatibility(type):
+                        matches.append(type)
+
+                if len(matches) != 1:
+                    raise TypeError("TODO: Write this")
+
+            #TOOD: Return type
+
+            previous_target = self.target
+            self.target = target
+            yield
+            self.target = previous_target
 
     # Create and cache dependencies for standard object functionality
 
-    def resolveType(self):
-        if self.dependent_type is None:
-            self.dependent_type = DependentObject()
-        return self.dependent_type
-
-    def resolveCall(self, call):
-        if call not in self.dependent_calls:
-            self.dependent_calls[call] = DependentObject()
-        return self.dependent_calls[call]
-
     @property
     def context(self):
-        if self.dependent_context is None:
-            self.dependent_context = DependentContext(self)
-        return self.dependent_context
-
-    @property
-    def local_context(self):
-        if self.dependent_local_context is None:
-            self.dependent_local_context = DependentContext(self)
-        return self.dependent_local_context
+        self._context = self._context or DependentContext(self)
+        return self._context
 
     @property
     def instance_context(self):
-        if self.dependent_instance_context is None:
-            self.dependent_instance_context = DependentContext(self)
-        return self.dependent_instance_context
+        self._instance_context = self._instance_context or DependentContext(self)
+        return self._instance_context
 
+    def resolveType(self):
+        self.resolved_type = self.resolved_type or DependentObject()
+        return self.resolved_type
+
+    def resolveCall(self, call):
+        return self.resolved_calls.setdefault(call, DependentObject())
+
+    # Hack!
     @property
     def return_type(self):
-        if self.dependent_return_type is None:
-            self.dependent_return_type = DependentObject()
-        return self.dependent_return_type
+        self._return_type = self._return_type or DependentObject()
+        return self._return_type
 
     def resolveInstanceCall(self, call):
-        if call not in self.dependent_instance_calls:
-            self.dependent_instance_calls[call] = DependentObject()
-        return self.dependent_instance_calls[call]
+        return self.dependent_instance_calls.setdefault(call, DependentObject())
 
     def checkCompatibility(self, other:Type):
-        self.dependent_types.add(other)
+        if State.type_switching:
+            self.compatible_type_switch = self.compatible_type_switch or []
+            self.compatible_type_switch.append(other)
+            State.type_switch_cleanups.append(self.typeSwitchCleanup)
+        else:
+            self.compatible_types.add(other)
         return True
+
+    def typeSwitchCleanup(self):
+        if self.compatible_type_switch is None: return
+        self.compatible_types.add(tuple(self.compatible_type_switch))
+        self.compatible_type_switch = None
 
     def __repr__(self):
         if self.target is None:
