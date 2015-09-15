@@ -3,33 +3,43 @@ from ..errors import *
 from .state import State
 from .core import Context, Object, BoundObject, Type
 from .function import Function, FunctionType
-from .dependent import DependentObject
+from .dependent import DependentObject, DependentTarget
 
 # Python Predefines
 Method = None
 
 class Method(BoundObject):
     overload_context = None
+    dependent_overload_context = None
     type = None
 
     def __init__(self, name:str, overloads:[Function], tokens = None):
         super().__init__(name, tokens)
 
         self.overload_context = Context(self, [])
+        self.dependent_overload_context = Context(self, [])
         for overload in overloads:
             self.addOverload(overload)
 
     def addOverload(self, overload:Function):
-        overload.name = str(len(self.overload_context.children))
-        self.overload_context.addChild(overload)
+        context = self.overload_context
+        if overload.dependent:
+            context = self.dependent_overload_context
+
+        overload.name = str(len(context.children))
+        context.addChild(overload)
 
     def assimilate(self, other:Method):
         for overload in other.overload_context:
             self.addOverload(overload)
 
+        for overload in other.dependent_overload_context:
+            self.addOverload(overload)
+
     def verify(self):
         with State.scoped(self):
             self.overload_context.verify()
+            self.dependent_overload_context.verify()
 
     def resolveType(self):
         if self.type is None:
@@ -44,14 +54,26 @@ class Method(BoundObject):
             if overload.resolveType().checkCompatibility(call):
                 matches.append(overload)
 
-        if State.scope.dependent:
+        # Check dependent types if no other ones were found
+        if len(matches) == 0:
+            with State.type_switch():
+                for overload in self.dependent_overload_context:
+                    if overload.resolveType().checkCompatibility(call):
+                        matches.append(overload)
+            if len(matches) == 1:
+                args = [(matches[0].type.arguments[i], call.arguments[i])
+                            for i in range(len(call.arguments))
+                                if isinstance(matches[0].type.arguments[i], DependentObject)]
+                return DependentTarget(overload, args)
+        elif len(matches) > 1 and State.scope.dependent:
             return DependentObject.switch(matches)
 
         # Allow only one match
         if len(matches) < 1:
             raise TypeError(
                 [("Method does not have an overload for {}\nPossible overloads:".format(call), [])] +
-                [("", overload.tokens) for overload in self.overload_context]
+                [("", overload.tokens) for overload in self.overload_context] +
+                [("", overload.tokens) for overload in self.dependent_overload_context]
             )
         elif len(matches) > 1:
             raise TypeError(
