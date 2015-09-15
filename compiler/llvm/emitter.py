@@ -230,16 +230,44 @@ def Context_emitType(self):
 # class DependentObject
 #
 
-lekvar.DependentObject.llvm_type = None
+@patch
+def DependentObject_emit(self):
+    assert self.target is not None
+    self.target.emit()
+
+@patch
+def DependentObject_emitValue(self):
+    assert self.target is not None
+    return self.target.emitValue()
 
 @patch
 def DependentObject_emitType(self):
-    if self.llvm_type is None:
-        if self.target is None:
-            raise InternalError("Invalid dependent type target")
-        else:
-            self.llvm_type = self.target.emitType()
-    return self.llvm_type
+    assert self.target is not None
+    return self.target.emitType()
+
+#
+# class DependentTarget
+#
+
+@patch
+def DependentTarget_emit(self):
+    with self.target():
+        self.value.emit()
+
+@patch
+def DependentTarget_emitValue(self):
+    with self.target():
+        return self.value.emitValue()
+
+@patch
+def DependentTarget_emitType(self):
+    with self.target():
+        return self.value.emitType()
+
+@patch
+def DependentTarget_emitContext(self):
+    with self.target():
+        return self.value.emitContext()
 
 #
 # class Function
@@ -250,7 +278,6 @@ lekvar.Function.llvm_context = None
 
 @patch
 def Function_emit(self):
-    if self.dependent: raise InternalError("Not Implemented")
     if self.llvm_value is not None: return
 
     self.llvm_closure_type = self.closed_context.emitType()
