@@ -146,8 +146,26 @@ class DependentObject(Type, BoundObject):
     def __repr__(self):
         if self.target is None:
             return "{}".format(self.__class__.__name__)
-        else:
-            return "{} as {}".format(self.__class__.__name__, self.target)
+        return "{} as {}".format(self.__class__.__name__, self.target)
+
+
+class DependentTarget(Link):
+    dependencies = None
+
+    def __init__(self, value:Object, dependencies:[(DependentObject, Object)], tokens = None):
+        super().__init__(value, tokens)
+        self.dependencies = dependencies
+
+    @contextmanager
+    def target(self):
+        with ExitStack() as stack:
+            for object, target in self.dependencies:
+                stack.enter_context(object.target_at(target))
+            yield
+
+    def verify(self):
+        with self.target():
+            super().verify()
 
 # The dependent context compliments the dependent object with the creation
 # of dependencies for contexts.
