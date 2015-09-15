@@ -2,7 +2,6 @@ from ..errors import *
 
 from .core import Context, Object, BoundObject, Type
 from .util import resolveReference, resolveAttribute
-from .function import Function, FunctionType
 
 class Link(Type):
     value = None
@@ -31,7 +30,7 @@ class Link(Type):
     def instance_context(self):
         return self.value.instance_context
 
-    def resolveCall(self, call:FunctionType):
+    def resolveCall(self, call):
         return self.value.resolveCall(call)
 
     def resolveValue(self):
