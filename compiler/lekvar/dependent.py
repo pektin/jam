@@ -27,8 +27,10 @@ class DependentObject(Type, BoundObject):
 
     # Object Dependencies
     target_switch = None
+    target_switch_determiner = None
     compatible_types = None
     compatible_type_switch = None
+    switches = None
 
     # Hack for dependent functions
     _return_type = None
@@ -39,11 +41,13 @@ class DependentObject(Type, BoundObject):
         self.resolved_calls = dict()
         self.resolved_instance_calls = dict()
         self.compatible_types = set()
+        self.switches = []
 
     @classmethod
-    def switch(self, targets:[Object]):
+    def switch(self, targets:[Object], determiner:(lambda Object: bool)):
         out = DependentObject()
         out.target_switch = targets
+        out.target_switch_determiner = determiner
         return out
 
     @classmethod
@@ -103,6 +107,25 @@ class DependentObject(Type, BoundObject):
             self.target = target
             yield
             self.target = previous_target
+
+    # Same as targetAt but for switches
+    @contextmanager
+    def resolveTarget(self):
+        matches = []
+        for possibility in self.target_switch:
+            if self.target_switch_determiner(possibility):
+                matches.append(possibility)
+
+        if len(matches) < 1:
+            raise InternalError("Target switch has impossible value")
+        elif len(matches) > 1:
+            raise TypeError("TODO: Write this")
+        target = matches[0]
+
+        previous_target = self.target
+        self.target = target
+        yield
+        self.target = previous_target
 
     # Create and cache dependencies for standard object functionality
 
