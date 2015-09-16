@@ -189,11 +189,11 @@ class DependentContext(Context):
     def __setitem__(self, name:str, value:BoundObject):
         raise InternalError("Not Implemented.")
 
-    def resolveDependency(self, target:Context):
-        # Check whether target has the same children
-        for name in self.children:
-            if name not in target.children:
-                raise DependencyError("Dependent target context does not have attribute {}".format(name), target.scope.tokens)
-
-            # Resolve dependency for child
-            self[name].resolveDependency(target[name])
+    @contextmanager
+    def target_at(self, target):
+        with ExitStack() as stack:
+            for name in self.children:
+                if name not in target.children:
+                    raise DependencyError("Dependent target context does not have attribute {}".format(name), target.scope.tokens)
+            stack.enter_context(self[name].target_at(target[name]))
+            yield
