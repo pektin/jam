@@ -67,19 +67,22 @@ class DependentObject(Type, BoundObject):
 
             # Pass on dependency checks
             if self._context is not None:
-                stack.enter_context(self.context.target(target.context))
+                stack.enter_context(self.context.target_at(target.context))
 
             if self._instance_context is not None:
-                stack.enter_context(self.instance_context.target(target.instance_context))
+                stack.enter_context(self.instance_context.target_at(target.instance_context))
 
             if self.resolved_type is not None:
-                stack.enter_context(self.resolved_type.target(target.resolveType()))
+                stack.enter_context(self.resolved_type.target_at(target.resolveType()))
 
             for call, obj in self.resolved_calls.items():
-                stack.enter_context(obj.target(target.resolveCall(call)))
+                stack.enter_context(obj.target_at(target.resolveCall(call)))
 
             for call, obj in self.resolved_instance_calls.items():
-                stack.enter_context(obj.target(target.resolveInstanceCall(call)))
+                stack.enter_context(obj.target_at(target.resolveInstanceCall(call)))
+
+            for switch in self.switches:
+                stack.enter_context(switch.resolveTarget())
 
             # Local checks
             if self.target_switch is not None:
