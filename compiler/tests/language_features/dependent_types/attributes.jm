@@ -1,0 +1,16 @@
+#foo\n
+
+class Foo
+  new()
+  end
+
+  def foo()
+    puts("foo")
+  end
+end
+
+def bar(i)
+  i.foo()
+end
+
+bar(Foo())
