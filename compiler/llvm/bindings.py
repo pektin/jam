@@ -149,7 +149,8 @@ class Wrappable:
     constructor_args = tuple()
     def __repr__(self):
         if self.constructor_name is not None:
-            return "{}{}".format(self.constructor_name, self.constructor_args)
+            return "{}({})".format(self.constructor_name,
+                                   ', '.join(map(str, self.constructor_args)))
         else:
             return super().__repr__()
 
