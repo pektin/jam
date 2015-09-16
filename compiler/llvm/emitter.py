@@ -162,6 +162,7 @@ def Module_emitValue(self):
 @patch
 def Call_emitValue(self):
     called = self.function.emitValue()
+
     # Only use the function's context if it is static
     if self.called.resolveValue().static:
         context = self.function.emitContext()
@@ -245,6 +246,11 @@ def DependentObject_emitType(self):
     assert self.target is not None
     return self.target.emitType()
 
+@patch
+def DependentObject_emitContext(self, *args):
+    assert self.target is not None
+    return self.target.emitContext(*args)
+
 #
 # class DependentTarget
 #
@@ -263,6 +269,11 @@ def DependentTarget_emitValue(self):
 def DependentTarget_emitType(self):
     with self.target():
         return self.value.emitType()
+
+@patch
+def DependentTarget_emitAssignment(self):
+    with self.target():
+        return self.value.emitAssignment()
 
 @patch
 def DependentTarget_emitContext(self):
