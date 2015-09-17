@@ -78,12 +78,14 @@ class Function(Scope):
 class FunctionType(Type):
     arguments = None
     return_type = None
+    dependent = False
 
     verified = False
 
     def __init__(self, arguments:[Type], return_type:Type = None, tokens = None):
         super().__init__(tokens)
         self.arguments = arguments
+        self.dependent = any(isinstance(arg, DependentObject) for arg in arguments)
         self.return_type = return_type
 
     def verify(self):
