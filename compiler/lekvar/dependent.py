@@ -158,6 +158,7 @@ class DependentObject(Type, BoundObject):
         return self.dependent_instance_calls.setdefault(call, DependentObject())
 
     def checkCompatibility(self, other:Type):
+        if self.target is not None: return self.target.checkCompatibility(other)
         if State.type_switching:
             self.compatible_type_switch = self.compatible_type_switch or []
             self.compatible_type_switch.append(other)
