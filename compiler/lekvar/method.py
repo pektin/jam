@@ -65,8 +65,13 @@ class Method(BoundObject):
                             for i in range(len(call.arguments))
                                 if isinstance(matches[0].type.arguments[i], DependentObject)]
                 return DependentTarget(overload, args)
-        elif len(matches) > 1 and State.scope.dependent:
-            return DependentObject.switch(matches)
+        elif len(matches) > 1 and call.dependent:
+            fn = DependentObject.switch(matches, lambda overload: overload.resolveType().checkCompatibility(call))
+            # Find last argument that is dependent (the last one whose target is resolved)
+            for arg in reversed(call.arguments):
+                if isinstance(arg, DependentObject):
+                    arg.switches.append(fn)
+                    return fn
 
         # Allow only one match
         if len(matches) < 1:
