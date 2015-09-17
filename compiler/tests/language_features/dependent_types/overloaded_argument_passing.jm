@@ -1,0 +1,7 @@
+#foo\n
+
+def print(o)
+  puts(o)
+end
+
+print("foo")
