@@ -69,6 +69,23 @@ class DependentObject(Type, BoundObject):
         with ExitStack() as stack:
             #TODO: Handle errors
 
+            # Local checks
+            if self.target_switch is not None:
+                assert target.resolveValue() in self.target_switch
+
+            for types in self.compatible_types:
+                matches = []
+                for type in types:
+                    if target.checkCompatibility(type):
+                        matches.append(type)
+
+                if len(matches) != 1:
+                    raise TypeError("TODO: Write this")
+
+            # Set target
+            previous_target = self.target
+            self.target = target
+
             # Pass on dependency checks
             if self._context is not None:
                 stack.enter_context(self.context.target_at(target.context))
@@ -88,23 +105,8 @@ class DependentObject(Type, BoundObject):
             for switch in self.switches:
                 stack.enter_context(switch.resolveTarget())
 
-            # Local checks
-            if self.target_switch is not None:
-                assert target.resolveValue() in self.target_switch
-
-            for types in self.compatible_types:
-                matches = []
-                for type in types:
-                    if target.checkCompatibility(type):
-                        matches.append(type)
-
-                if len(matches) != 1:
-                    raise TypeError("TODO: Write this")
-
             #TOOD: Return type
 
-            previous_target = self.target
-            self.target = target
             yield
             self.target = previous_target
 
