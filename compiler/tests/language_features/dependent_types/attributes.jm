@@ -1,4 +1,4 @@
-#foo\n
+#foo\nbar\n
 
 class Foo
   new()
@@ -9,8 +9,18 @@ class Foo
   end
 end
 
+class Bar
+  new()
+  end
+
+  def foo()
+    puts("bar")
+  end
+end
+
 def bar(i)
   i.foo()
 end
 
 bar(Foo())
+bar(Bar())
