@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from ..errors import *
 
 from .state import State
-from .core import Object, BoundObject, Type
+from .core import Object, BoundObject, Scope, Type
 
 # Python predefines
 Module = None
@@ -53,3 +53,11 @@ def resolveAttribute(object:Object, reference:str):
         return context[reference]
 
     raise MissingReferenceError("{} does not have an attribute {}".format(object, reference), object.tokens)
+
+# Check whether a object is within a scope
+def inScope(object:BoundObject, scope:Scope):
+    while scope is not None:
+        if object == scope:
+            return True
+        scope = scope.bound_context.scope if scope.bound_context else None
+    return False
