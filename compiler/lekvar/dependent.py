@@ -3,7 +3,8 @@ from contextlib import contextmanager, ExitStack
 from ..errors import *
 
 from .state import State
-from .core import Context, Object, BoundObject, Type
+from .core import Context, Object, BoundObject, Scope, Type
+from .util import inScope
 from .links import Link
 
 # A dependent object is a collector for behaviour
@@ -17,6 +18,8 @@ class DependentObject(Type, BoundObject):
 
     # The target object which which to replace the dependent object
     target = None
+    # The scope in which the dependent object is mutable
+    scope = None
 
     # Child Dependencies
     _context = None
@@ -35,8 +38,9 @@ class DependentObject(Type, BoundObject):
     # Hack for dependent functions
     _return_type = None
 
-    def __init__(self, name:str = None, tokens = None):
+    def __init__(self, scope:Scope, name:str = None, tokens = None):
         super().__init__(name or "", tokens)
+        self.scope = scope
 
         self.resolved_calls = dict()
         self.resolved_instance_calls = dict()
@@ -44,8 +48,8 @@ class DependentObject(Type, BoundObject):
         self.switches = []
 
     @classmethod
-    def switch(self, targets:[Object], determiner:(lambda Object: bool)):
-        out = DependentObject()
+    def switch(self, scope:Scope, targets:[Object], determiner:(lambda Object: bool)):
+        out = DependentObject(scope)
         out.target_switch = targets
         out.target_switch_determiner = determiner
         return out

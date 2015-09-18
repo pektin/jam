@@ -34,7 +34,7 @@ class Function(Scope):
 
         for arg in self.arguments:
             if arg.type is None:
-                arg.type = DependentObject()
+                arg.type = DependentObject(self)
                 self.dependent = True
 
         self.type = FunctionType([arg.type for arg in arguments], return_type)
