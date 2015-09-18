@@ -255,30 +255,25 @@ def DependentObject_emitContext(self, *args):
 # class DependentTarget
 #
 
+lekvar.DependentTarget.emitted = False
+
+@patch
+def DependentTarget_checkEmission(self):
+    if not self.emitted:
+        self.value.resetEmission()
+        self.emitted = True
+
 @patch
 def DependentTarget_emit(self):
+    self.checkEmission()
     with self.target():
         self.value.emit()
 
 @patch
 def DependentTarget_emitValue(self):
+    self.checkEmission()
     with self.target():
         return self.value.emitValue()
-
-@patch
-def DependentTarget_emitType(self):
-    with self.target():
-        return self.value.emitType()
-
-@patch
-def DependentTarget_emitAssignment(self):
-    with self.target():
-        return self.value.emitAssignment()
-
-@patch
-def DependentTarget_emitContext(self):
-    with self.target():
-        return self.value.emitContext()
 
 #
 # class Function
@@ -286,6 +281,11 @@ def DependentTarget_emitContext(self):
 
 lekvar.Function.llvm_closure_type = None
 lekvar.Function.llvm_context = None
+
+@patch
+def Function_resetEmission(self):
+    self.llvm_value = None
+    self.llvm_closure_type = None
 
 @patch
 def Function_emit(self):
