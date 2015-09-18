@@ -43,14 +43,16 @@ class State:
                 return scope_state
     @classproperty
     def scope(cls):
-        return cls.scope_state.scope
+        state = cls.scope_state
+        return state.scope if state else None
 
     @classproperty
     def soft_scope_state(cls):
         return cls.scope_stack[-1]
     @classproperty
     def soft_scope(cls):
-        return cls.soft_scope_state.scope
+        state = cls.soft_scope_state
+        return state.scope if state else None
 
     @classmethod
     def getSoftScopeState(cls, condition):
