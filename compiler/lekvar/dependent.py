@@ -54,11 +54,9 @@ class DependentObject(Type, BoundObject):
         out.target_switch_determiner = determiner
         return out
 
-    @classmethod
-    def targeted(self, target):
-        out = DependentObject()
-        out.target = target
-        return out
+    @property
+    def locked(self):
+        return not inScope(self.scope, State.scope)
 
     def verify(self):
         if self.target: self.target.verify()
@@ -77,14 +75,8 @@ class DependentObject(Type, BoundObject):
             if self.target_switch is not None:
                 assert target.resolveValue() in self.target_switch
 
-            for types in self.compatible_types:
-                matches = []
-                for type in types:
-                    if target.checkCompatibility(type):
-                        matches.append(type)
-
-                if len(matches) != 1:
-                    raise TypeError("TODO: Write this")
+            if not self.checkLockedCompatibility(target):
+                raise TypeError("TODO: Write this")
 
             # Set target
             previous_target = self.target
@@ -146,29 +138,42 @@ class DependentObject(Type, BoundObject):
         return self._instance_context
 
     def resolveType(self):
-        self.resolved_type = self.resolved_type or DependentObject()
+        self.resolved_type = self.resolved_type or DependentObject(self.scope)
         return self.resolved_type
 
     def resolveCall(self, call):
-        return self.resolved_calls.setdefault(call, DependentObject())
+        return self.resolved_calls.setdefault(call, DependentObject(self.scope))
 
     # Hack!
     @property
     def return_type(self):
-        self._return_type = self._return_type or DependentObject()
+        self._return_type = self._return_type or DependentObject(self.scope)
         return self._return_type
 
     def resolveInstanceCall(self, call):
-        return self.dependent_instance_calls.setdefault(call, DependentObject())
+        return self.dependent_instance_calls.setdefault(call, DependentObject(self.scope))
 
     def checkCompatibility(self, other:Type):
         if self.target is not None: return self.target.checkCompatibility(other)
+        if self.locked: return self.checkLockedCompatibility(other)
         if State.type_switching:
             self.compatible_type_switch = self.compatible_type_switch or []
             self.compatible_type_switch.append(other)
             State.type_switch_cleanups.append(self.typeSwitchCleanup)
         else:
             self.compatible_types.add(other)
+        return True
+
+    def checkLockedCompatibility(self, other:Type):
+        for types in self.compatible_types:
+            matches = []
+            for type in types:
+                if other.checkCompatibility(type):
+                    matches.append(type)
+
+            if len(matches) != 1:
+                print(other, matches, self.compatible_types)
+                return False
         return True
 
     def typeSwitchCleanup(self):
@@ -209,11 +214,12 @@ class DependentContext(Context):
         super().__init__(scope, [])
 
     def __contains__(self, name:str):
+        if self.scope.locked: return super().__contains__(name)
         return True
 
     def __getitem__(self, name:str):
-        if name not in self.children:
-            self.addChild(DependentObject(name))
+        if not self.scope.locked and name not in self.children:
+            self.addChild(DependentObject(self.scope.scope, name))
         return self.children[name]
 
     def __setitem__(self, name:str, value:BoundObject):
