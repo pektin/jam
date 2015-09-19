@@ -1,0 +1,8 @@
+#17\n10\n
+
+def add(a, b)
+  return a + b
+end
+
+puts(add(12, 5))
+puts(add(9.5, 0.5))
