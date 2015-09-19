@@ -67,7 +67,7 @@ class DependentObject(Type, BoundObject):
 
     # Check whether an object matches the dependencies of this object
     @contextmanager
-    def target_at(self, target):
+    def targetAt(self, target):
         with ExitStack() as stack:
             #TODO: Handle errors
 
@@ -84,19 +84,19 @@ class DependentObject(Type, BoundObject):
 
             # Pass on dependency checks
             if self._context is not None:
-                stack.enter_context(self.context.target_at(target.context))
+                stack.enter_context(self.context.targetAt(target.context))
 
             if self._instance_context is not None:
-                stack.enter_context(self.instance_context.target_at(target.instance_context))
+                stack.enter_context(self.instance_context.targetAt(target.instance_context))
 
             if self.resolved_type is not None:
-                stack.enter_context(self.resolved_type.target_at(target.resolveType()))
+                stack.enter_context(self.resolved_type.targetAt(target.resolveType()))
 
             for call, obj in self.resolved_calls.items():
-                stack.enter_context(obj.target_at(target.resolveCall(call)))
+                stack.enter_context(obj.targetAt(target.resolveCall(call)))
 
             for call, obj in self.resolved_instance_calls.items():
-                stack.enter_context(obj.target_at(target.resolveInstanceCall(call)))
+                stack.enter_context(obj.targetAt(target.resolveInstanceCall(call)))
 
             for switch in self.switches:
                 stack.enter_context(switch.resolveTarget())
@@ -198,7 +198,7 @@ class DependentTarget(Link):
     def target(self):
         with ExitStack() as stack:
             for object, target in self.dependencies:
-                stack.enter_context(object.target_at(target))
+                stack.enter_context(object.targetAt(target))
             yield
 
     def verify(self):
@@ -226,10 +226,10 @@ class DependentContext(Context):
         raise InternalError("Not Implemented.")
 
     @contextmanager
-    def target_at(self, target):
+    def targetAt(self, target):
         with ExitStack() as stack:
             for name in self.children:
                 if name not in target.children:
                     raise DependencyError("Dependent target context does not have attribute {}".format(name), target.scope.tokens)
-            stack.enter_context(self[name].target_at(target[name]))
+            stack.enter_context(self[name].targetAt(target[name]))
             yield
