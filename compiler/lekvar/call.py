@@ -1,8 +1,11 @@
+from contextlib import ExitStack
+
 from ..errors import *
 
 from .state import State
 from .core import Context, Object, BoundObject, Type
 from .function import FunctionType
+from .dependent import DependentTarget
 
 class Call(Object):
     called = None
@@ -38,7 +41,11 @@ class Call(Object):
             self.function = self.called.resolveCall(call_type)
 
     def resolveType(self):
-        return self.function.resolveType().return_type
+        # Hack for dependent types
+        context = self.function.target() if isinstance(self.function, DependentTarget) else ExitStack()
+        with context:
+            type = self.function.resolveType().return_type
+            return type.resolveValue() if type is not None else None
 
     def __repr__(self):
         return "{}({})".format(self.called, ", ".join(repr(val) for val in self.values))
