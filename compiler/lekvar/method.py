@@ -65,7 +65,7 @@ class Method(BoundObject):
                             for i in range(len(call.arguments))
                                 if isinstance(matches[0].type.arguments[i], DependentObject)]
                 return DependentTarget(overload, args)
-        elif len(matches) > 1 and call.dependent:
+        elif len(matches) > 1 and call.dependent and State.scope.dependent:
             fn = DependentObject.switch(self, matches, lambda overload: overload.resolveType().checkCompatibility(call))
             # Find last argument that is dependent (the last one whose target is resolved)
             for arg in reversed(call.arguments):
@@ -82,7 +82,7 @@ class Method(BoundObject):
             )
         elif len(matches) > 1:
             raise TypeError(
-                [("Ambiguous overloads for {}\nMatches:".format(call), [])] +
+                [("Ambiguous overloads for {}\nMatches ({}):".format(call, len(matches)), [])] +
                 [("", match.tokens) for match in matches]
             )
 
