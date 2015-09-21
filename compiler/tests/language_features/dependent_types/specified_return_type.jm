@@ -1,0 +1,8 @@
+#15\n0\n
+
+def foo(a) -> Int
+  return a + 12
+end
+
+puts(foo(3))
+puts(foo(-12))
