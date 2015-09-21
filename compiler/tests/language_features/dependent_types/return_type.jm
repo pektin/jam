@@ -1,0 +1,9 @@
+#12\n5.9\nHello World!\n
+
+def foo(a)
+  return a
+end
+
+puts(foo(12))
+puts(foo(5.9))
+puts(foo("Hello World!"))
