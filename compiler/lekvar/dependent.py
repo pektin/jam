@@ -101,7 +101,10 @@ class DependentObject(Type, BoundObject):
             for switch in self.switches:
                 stack.enter_context(switch.resolveTarget())
 
-            #TOOD: Return type
+            if self._return_type is not None:
+                if not hasattr(target, "return_type"):
+                    raise TypeError("TODO: Write this")
+                stack.enter_context(self._return_type.targetAt(target.return_type))
 
             yield
             self.target = previous_target
