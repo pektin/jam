@@ -164,7 +164,7 @@ class DependentObject(Type, BoundObject):
             self.compatible_type_switch.append(other)
             State.type_switch_cleanups.append(self.typeSwitchCleanup)
         else:
-            self.compatible_types.add(other)
+            self.compatible_types.add((other,))
         return True
 
     def checkLockedCompatibility(self, other:Type):
