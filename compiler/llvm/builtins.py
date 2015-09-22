@@ -73,9 +73,6 @@ def builtins(logger = logging.getLogger()):
     return lekvar.Module("_builtins", builtin_objects)
 
 def llvmInstructionWrapper(instruction, self, additional_arguments = []):
-    name = resolveName(self)
-    func_type = self.type.emitType()
-    self.llvm_value = State.module.addFunction(name, func_type)
     entry = self.llvm_value.appendBlock("")
 
     with State.blockScope(entry):
@@ -105,10 +102,6 @@ def llvmPrintfWrapper(type, self):
     if printf is None:
         func_type = llvm.Function.new(LLVMType("Int32").emitType(), [LLVMType("String").emitType()], True)
         printf = State.module.addFunction("printf", func_type)
-
-    name = resolveName(self)
-    func_type = self.type.emitType()
-    self.llvm_value = State.module.addFunction(name, func_type)
     entry = self.llvm_value.appendBlock("")
 
     with State.blockScope(entry):
@@ -187,4 +180,5 @@ class LLVMFunction(lekvar.ExternalFunction):
 
     def emit(self):
         if self.llvm_value is None:
+            super().emit()
             self.generator(self)
