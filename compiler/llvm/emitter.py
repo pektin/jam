@@ -416,8 +416,9 @@ def FunctionType_emitType(self, context_type = None):
 def ExternalFunction_emit(self):
     if self.llvm_value is not None: return
 
+    name = resolveName(self)
     func_type = self.type.emitType()
-    self.llvm_value = State.module.addFunction(self.external_name, func_type)
+    self.llvm_value = State.module.addFunction(name, func_type)
 
 @patch
 def ExternalFunction_emitValue(self):
