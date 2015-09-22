@@ -1,0 +1,11 @@
+!TypeError
+
+def bar(i:Int)
+  puts(i)
+end
+
+def foo(o)
+  bar(o)
+end
+
+foo("Hello World!")
