@@ -171,11 +171,10 @@ class DependentObject(Type, BoundObject):
         for types in self.compatible_types:
             matches = []
             for type in types:
-                if other.checkCompatibility(type):
+                if type.checkCompatibility(other.resolveValue()):
                     matches.append(type)
 
             if len(matches) != 1:
-                print(other, matches, self.compatible_types)
                 return False
         return True
 
