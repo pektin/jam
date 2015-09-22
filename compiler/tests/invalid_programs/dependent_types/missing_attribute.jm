@@ -1,0 +1,7 @@
+!TypeError
+
+def foo(o)
+  puts(o.bar)
+end
+
+foo(12)
