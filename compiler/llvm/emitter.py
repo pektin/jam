@@ -100,16 +100,13 @@ lekvar.Variable.llvm_context_index = -1
 def Variable_emit(self):
     if self.llvm_value is not None or self.llvm_context_index >= 0: return
 
-    if isinstance(self.bound_context.scope, lekvar.Class):
-        self.bound_context.scope.emit()
+    type = self.type.emitType()
+    name = resolveName(self)
+    if self.bound_context.scope.static:
+        self.llvm_value = State.module.addVariable(type, name)
+        self.llvm_value.initializer = llvm.Value.undef(type)
     else:
-        type = self.type.emitType()
-        name = resolveName(self)
-        if self.bound_context.scope.static:
-            self.llvm_value = State.module.addVariable(type, name)
-            self.llvm_value.initializer = llvm.Value.undef(type)
-        else:
-            self.llvm_value = State.builder.alloca(type, name)
+        self.llvm_value = State.builder.alloca(type, name)
 
 @patch
 def Variable_emitValue(self, value=None):
