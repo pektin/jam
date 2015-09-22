@@ -22,11 +22,9 @@ class DependentObject(Type, BoundObject):
     scope = None
 
     # Child Dependencies
-    _context = None
     _instance_context = None
     resolved_type = None
     resolved_calls = None
-    resolved_instance_calls = None
 
     # Object Dependencies
     target_switch = None
@@ -43,7 +41,6 @@ class DependentObject(Type, BoundObject):
         self.scope = scope
 
         self.resolved_calls = dict()
-        self.resolved_instance_calls = dict()
         self.compatible_types = set()
         self.switches = []
 
@@ -72,9 +69,6 @@ class DependentObject(Type, BoundObject):
             #TODO: Handle errors
 
             # Local checks
-            if self.target_switch is not None:
-                assert target.resolveValue() in self.target_switch
-
             if not self.checkLockedCompatibility(target):
                 raise TypeError("TODO: Write this")
 
@@ -83,8 +77,6 @@ class DependentObject(Type, BoundObject):
             self.target = target
 
             # Pass on dependency checks
-            if self._context is not None:
-                stack.enter_context(self.context.targetAt(target.context))
 
             if self._instance_context is not None:
                 stack.enter_context(self.instance_context.targetAt(target.instance_context))
@@ -94,9 +86,6 @@ class DependentObject(Type, BoundObject):
 
             for call, obj in self.resolved_calls.items():
                 stack.enter_context(obj.targetAt(target.resolveCall(call)))
-
-            for call, obj in self.resolved_instance_calls.items():
-                stack.enter_context(obj.targetAt(target.resolveInstanceCall(call)))
 
             for switch in self.switches:
                 stack.enter_context(switch.resolveTarget())
@@ -112,16 +101,11 @@ class DependentObject(Type, BoundObject):
     # Same as targetAt but for switches
     @contextmanager
     def resolveTarget(self):
-        matches = []
+        # It should already be verified that only one switch matches
         for possibility in self.target_switch:
             if self.target_switch_determiner(possibility):
-                matches.append(possibility)
-
-        if len(matches) < 1:
-            raise InternalError("Target switch has impossible value")
-        elif len(matches) > 1:
-            raise TypeError("TODO: Write this")
-        target = matches[0]
+                target = possibility
+                break
 
         previous_target = self.target
         self.target = target
@@ -129,11 +113,6 @@ class DependentObject(Type, BoundObject):
         self.target = previous_target
 
     # Create and cache dependencies for standard object functionality
-
-    @property
-    def context(self):
-        self._context = self._context or DependentContext(self)
-        return self._context
 
     @property
     def instance_context(self):
@@ -147,14 +126,16 @@ class DependentObject(Type, BoundObject):
     def resolveCall(self, call):
         return self.resolved_calls.setdefault(call, DependentObject(self.scope))
 
+    # Both of these are superseded by instance_context and resolveCall respectively
+    @property
+    def context(self): pass
+    def resolveInstanceCall(self, call): pass
+
     # Hack!
     @property
     def return_type(self):
         self._return_type = self._return_type or DependentObject(self.scope)
         return self._return_type
-
-    def resolveInstanceCall(self, call):
-        return self.dependent_instance_calls.setdefault(call, DependentObject(self.scope))
 
     def checkCompatibility(self, other:Type):
         if self.target is not None: return self.target.checkCompatibility(other)
@@ -202,10 +183,6 @@ class DependentTarget(Link):
             for object, target in self.dependencies:
                 stack.enter_context(object.targetAt(target))
             yield
-
-    def verify(self):
-        with self.target():
-            super().verify()
 
 # The dependent context compliments the dependent object with the creation
 # of dependencies for contexts.
