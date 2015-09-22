@@ -1,0 +1,17 @@
+#12\nfoo\nfoo\nfoo\nbar\n
+
+def foo(o)
+  i = 0
+  while i < 3
+    bar(o)
+    i = i + 1
+  end
+end
+
+def bar(o)
+  puts(o)
+end
+
+bar(12)
+foo("foo")
+bar("bar")
