@@ -6,7 +6,7 @@ String Formatting
 .. todo::
     Introduce strings
 
-The following control characters are supported.
+The following control characters are supported:
 
 ======== ============================
 Sequence Meaning
@@ -42,6 +42,6 @@ special formatting.
     puts(`Hello World`)
 
 
-See more
-========
-:ref:`Strings language reference<jam-literals-strings>`
+.. seealso::
+
+    :ref:`Strings language reference<jam-literals-strings>`

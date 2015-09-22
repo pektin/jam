@@ -10,6 +10,10 @@ builtin ``puts`` function to print the string ``Hello World!`` to standard out.
 
     puts("Hello World!")
 
+.. seealso::
+
+    :ref:`Builtin Functions <jam-builtin-functions>`
+
 Jam source files generally have the extension ``.jm``. To run a source file, use
 the jam compiler script ``jam``:
 
@@ -32,8 +36,3 @@ For further options, such as verbosity and profiling run:
 .. code-block:: bash
 
     $ ./jam --help
-
-.. note::
-    The current tooling currently only exists for debugging and is not yet
-    designed for popular usage. This will chance once the language and library
-    become more stable.
