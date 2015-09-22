@@ -1,0 +1,12 @@
+!TypeError
+
+def foo(o)
+  puts(o)
+end
+
+def foo(o)
+  puts(o)
+  puts(o)
+end
+
+foo("Hello World!")
