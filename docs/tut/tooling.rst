@@ -61,3 +61,38 @@ Use the ``-o`` option to specify an output file name.
     $ jam c hello_world.jm -o a.out
     $ ./a.out
     Hello World!
+
+Further Options
+===============
+
+.. code-block:: bash
+
+    $ jam r --help
+    usage: jam run [-h] [-V] [-p] [-v] [source]
+
+    positional arguments:
+      source         the source file to run. Leave out for interactive mode
+
+    optional arguments:
+      -h, --help     show this help message and exit
+      -V, --version  print the jam version number and terminate
+      -p, --profile  run the profiler, printing profiling data after completion
+      -v, --verbose  use verbose logging. Supply multiple times to increase
+                     verbosity
+    $ jam c --help
+    usage: jam compile [-h] [-V] [-p] [-v] [-o FILE] [source]
+
+    positional arguments:
+      source                the source file to compile. Leave out to read from
+                            stdin
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -V, --version         print the jam version number and terminate
+      -p, --profile         run the profiler, printing profiling data after
+                            completion
+      -v, --verbose         use verbose logging. Supply multiple times to increase
+                            verbosity
+      -o FILE, --output FILE
+                            the file to write the executable to. Leave out to let
+                            jam guess the name
