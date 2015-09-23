@@ -8,7 +8,11 @@ The Jam Tutorial
     :numbered:
     :titlesonly:
 
-    basics
+    tooling
+    helloworld
+    comments
+    string-formatting
+    basics/literals
 
 Introduction
 ============

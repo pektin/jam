@@ -1,11 +1,7 @@
-.. _tutorial-basics-comments:
+.. _tut-comments:
 
 Comments
 ########
-
-Comments allow for non-jam metadata to exist alongside code. Comments should be
-used either for when the function of a line of code is not clear or as
-documentation.
 
 Jam supports only one kind of comment, which spans for a single line. Since most
 modern editors have built-in shortcuts to comment out multiple lines of code,
@@ -14,7 +10,7 @@ this is a non-issue.
 ::
 
     # Returns the given Fibonacci number
-    # Guaranteed to run in linear time
+    # Guaranteed to run in constant time
     def fib(n:Int)
         # Formula for finding the nth Fibonacci number
         # Uses the golden ratio constant (Phi) and it's reciprocal (phi)

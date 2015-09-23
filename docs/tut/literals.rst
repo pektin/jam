@@ -1,4 +1,4 @@
-.. _tutorial-basics-literals:
+.. _tut-literals:
 
 Literals
 ########
