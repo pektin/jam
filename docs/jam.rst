@@ -1,4 +1,4 @@
-.. _jam-index:
+.. _jam:
 
 The Jam Language Reference
 ##########################
@@ -43,5 +43,5 @@ verifications and serialized formats.
     :titlesonly:
     :glob:
 
-    lekvar/introduction
-    lekvar/builtins
+    jam/lekvar/introduction
+    jam/lekvar/builtins

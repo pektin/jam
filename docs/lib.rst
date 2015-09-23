@@ -1,4 +1,4 @@
-.. _lib-index:
+.. _lib:
 
 #################
 Library Reference
@@ -8,4 +8,4 @@ Library Reference
     :numbered: 3
     :titlesonly:
 
-    builtins
+    lib/builtins
