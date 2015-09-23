@@ -5,6 +5,7 @@ import sys
 import logging
 import argparse
 import cProfile
+import readline
 from io import StringIO
 
 import compiler
