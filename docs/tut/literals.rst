@@ -6,42 +6,7 @@ Literals
 Integers
 ========
 
-Integers directly in source code are of the generic ``Int`` type.
-
-::
-
-    # The number 192
-    192
-
-Other integer types also exist:
-
-=========== ====================================
-Type        Description
-=========== ====================================
-``Int``     Grows/shrinks in size when required.
-``Int8``    8 bit signed integer
-``Int16``   16 bit signed integer
-``Int32``   32 bit signed integer
-``Int64``   64 bit signed integer
-``Int128``  128 bit signed integer
-``UInt``    Unsigned version of ``Int``
-``UInt8``   8 bit unsigned integer
-``UInt16``  16 bit unsigned integer
-``UInt32``  32 bit unsigned integer
-``UInt64``  64 bit unsigned integer
-``UInt128`` 128 bit unsigned integer
-=========== ====================================
-
-For literals of a type other than ``Int`` use casting:
-
-::
-
-    127 as Int8
-
-    -52 as UInt # Invalid!
-
-Large numbers are difficult to read, so jam allows for separating groups of
-digits by an ``_``:
+Integers may be separated by an ``_`` for readability.
 
 ::
 
@@ -51,7 +16,7 @@ digits by an ``_``:
     # Alternate representation
     299_792_458
 
-The following operations are supported by integers:
+Jam supports a variety of operations on integers.
 
 ::
 
@@ -81,24 +46,11 @@ The following operations are supported by integers:
 
     Library reference on :ref:`numericals<jam-builtin-numerical>`
 
-Floats
-======
+Floating Point
+==============
 
-In the same way as integers, real numbers are of the type ``Float`` by default.
-The other possible types are:
-
-============ =============================
-Type         Description
-============ =============================
-``Float``    Arbitrary precision float
-``Float16``  16 bit signed float
-``Float32``  32 bit signed float
-``Float64``  64 bit signed float
-``UFloat``   Unsigned version of ``Float``
-``UFloat16`` 16 bit unsigned float
-``UFloat32`` 32 bit unsigned float
-``UFloat64`` 64 bit unsigned float
-============ =============================
+Floating point numbers have the same ``_`` support and support the same set of
+operations.
 
 ::
 
@@ -107,10 +59,6 @@ Type         Description
 
     # Alternate representation
     3.141_592
-
-The following operations apply to floats:
-
-::
 
     # Addition
     3.2 + 5.4 #=> 8.6
@@ -132,13 +80,10 @@ The following operations apply to floats:
     Language reference on :ref:`float literals<jam-literals-floats>`
     Language reference on :ref:`operations<jam-operations>`
 
-    Library reference on :ref:`numericals<jam-builtin-numerical>`
-
 Booleans
 ========
 
-Booleans are of the type ``Bool``. The only valid literals are ``true`` and
-``false``.
+The only valid boolean values are ``true`` and ``false``.
 
 .. seealso::
 
