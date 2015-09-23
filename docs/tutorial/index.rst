@@ -1,4 +1,4 @@
-.. _tutorial-index:
+.. _tut-index:
 
 ################
 The Jam Tutorial

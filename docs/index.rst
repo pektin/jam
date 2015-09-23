@@ -25,7 +25,7 @@ Contents:
     * :ref:`Library Reference <lib-index>`
         *the documentation to the standard library*
 
-    * :ref:`Tutorial <tutorial-index>`
+    * :ref:`Tutorial <tut-index>`
         *the official tutorial to the jam language*
 
 
