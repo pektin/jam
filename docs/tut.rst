@@ -13,6 +13,7 @@ The Jam Tutorial
     tut/comments
     tut/string-formatting
     tut/literals
+    tut/variables
 
 Introduction
 ============
