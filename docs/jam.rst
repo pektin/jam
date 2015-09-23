@@ -31,17 +31,3 @@ The Jam Language Reference describes the syntax, grammar and compilation of Jam.
     jam/foreign-language-interface
     jam/templates
     jam/unittests
-
-The Lekvar Reference
-====================
-
-Additionally, the lekvar reference describes lekvar objects, their
-verifications and serialized formats.
-
-.. toctree::
-    :numbered:
-    :titlesonly:
-    :glob:
-
-    jam/lekvar/introduction
-    jam/lekvar/builtins
