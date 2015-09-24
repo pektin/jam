@@ -10,14 +10,21 @@ from .builtins import builtins
 from . import emitter
 from . import bindings
 
-def emit(module:lekvar.Module, logger = logging.getLogger()):
+def emit(module:lekvar.Module, logger = logging.getLogger(), opt_level = 1):
     State.logger = logger.getChild("llvm")
 
     with State.begin("main", logger):
         module.emit()
 
     State.module.verify()
+    _optimise(State.module, opt_level, opt_level)
     return State.module.toString()
+
+def _optimise(module:bindings.Module, level:int, size_level:int):
+    manager = bindings.PassManager.new()
+    manager.setOptLevel(level)
+    manager.setOptSizeLevel(size_level)
+    return bool(manager.run(module))
 
 # Wrapping around lli
 #TODO: Replace with direct calls to llvm
