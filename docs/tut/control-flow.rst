@@ -3,6 +3,10 @@
 Control Flow
 ############
 
+.. toctree::
+
+    control-flow/if-elif-else
+
 A key part of any programming language is the ability to alter control flow.
 
 Control flow constructs often make use of blocks. A block in jam is a group of
