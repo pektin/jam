@@ -14,6 +14,7 @@ The Jam Tutorial
     tut/string-formatting
     tut/literals
     tut/variables
+    tut/control-flow
 
 Introduction
 ============
