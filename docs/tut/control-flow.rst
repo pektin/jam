@@ -7,6 +7,7 @@ Control Flow
 
     control-flow/if-elif-else
     control-flow/loop
+    control-flow/while
 
 A key part of any programming language is the ability to alter control flow.
 
