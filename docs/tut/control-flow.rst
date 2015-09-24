@@ -6,6 +6,7 @@ Control Flow
 .. toctree::
 
     control-flow/if-elif-else
+    control-flow/loop
 
 A key part of any programming language is the ability to alter control flow.
 
