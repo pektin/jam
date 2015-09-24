@@ -31,3 +31,12 @@ recommended that the tutorial be followed sequentially.
 .. note::
     This is currently a work in progress and is highly subject to change. It is
     definitely not yet comprehensive.
+
+Installing
+==========
+
+Currently Jam is only provided as a python module. In order to install the Jam
+compiler tool clone the source repository from Github_. Once downloaded, run
+``make install`` to symlink all tools into your ``/usr/bin`` directory.
+
+.. _Github: https://github.com/pektin/jam
