@@ -106,7 +106,7 @@ def llvmPrintfWrapper(type, self):
 
     with State.blockScope(entry):
         fmt_str_data = "%{}\n".format(PRINTF_MAP[type.name])
-        fmt_string = State.builder.globalString(fmt_str_data, State.getTempName())
+        fmt_string = State.builder.globalString(fmt_str_data, "")
 
         value = self.llvm_value.getParam(0)
 

@@ -58,10 +58,6 @@ class State:
         yield
         cls.self = previous_self
 
-    @classmethod
-    def getTempName(self):
-        return "temp"
-
     # Emmit an allocation as an instruction
     # Enforces allocation to happen early
     @classmethod
@@ -78,7 +74,7 @@ class State:
     # Requires an allocation
     @classmethod
     def pointer(cls, value):
-        variable = State.alloca(value.type, State.getTempName())
+        variable = State.alloca(value.type, "")
         State.builder.store(value, variable)
         return variable
 

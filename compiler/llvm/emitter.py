@@ -74,7 +74,7 @@ def Literal_emitValue(self):
     struct_type = self.type.emitType()
 
     if isinstance(self.data, str):
-        data = State.builder.globalString(self.data, State.getTempName())
+        data = State.builder.globalString(self.data, "")
     elif isinstance(self.data, bool):
         data = llvm.Value.constInt(llvm.Int.new(1), self.data, False)
     elif isinstance(self.data, int):
@@ -112,7 +112,7 @@ def Variable_emit(self):
 def Variable_emitValue(self, value=None):
     self.emit()
 
-    return State.builder.load(self.emitAssignment(), State.getTempName())
+    return State.builder.load(self.emitAssignment(), "")
 
 @patch
 def Variable_emitAssignment(self):
@@ -121,7 +121,7 @@ def Variable_emitAssignment(self):
     if self.llvm_value is not None:
         return self.llvm_value
 
-    return State.builder.structGEP(State.self, self.llvm_context_index, State.getTempName())
+    return State.builder.structGEP(State.self, self.llvm_context_index, "")
 
 #
 # class Assignment
@@ -175,13 +175,7 @@ def Call_emitValue(self):
     # Get the llvm function type
     function_type = llvm.cast(llvm.cast(called.type, llvm.Pointer).element_type, llvm.Function)
 
-    # Check the return type
-    if function_type.return_type.kind == llvm.TypeKind.VoidTypeKind:
-        name = ""
-    else:
-        name = State.getTempName()
-
-    return State.builder.call(called, arguments, name)
+    return State.builder.call(called, arguments, "")
 
 @patch
 def Call_emitAssignment(self):
@@ -313,8 +307,8 @@ def Function_emit(self):
 def Function_emitBody(self):
     self.emitEntry()
 
-    self_value = State.builder.structGEP(self.llvm_context, 0, State.getTempName())
-    self_value = State.builder.load(self_value, State.getTempName())
+    self_value = State.builder.structGEP(self.llvm_context, 0, "")
+    self_value = State.builder.load(self_value, "")
     with State.selfScope(self_value):
 
         # Allocate Arguments
@@ -341,7 +335,7 @@ def Function_emitPostContext(self):
 @patch
 def Function_emitReturn(self):
     if self.llvm_return is not None:
-        val = State.builder.load(self.llvm_return, State.getTempName())
+        val = State.builder.load(self.llvm_return, "")
         State.builder.ret(val)
     else:
         State.builder.retVoid()
@@ -354,10 +348,10 @@ def Function_emitValue(self):
 @patch
 def Function_emitContext(self, self_value = None):
     if self_value is not None and len(self.closed_context) > 0:
-        context = State.alloca(self.llvm_closure_type, State.getTempName())
-        self_ptr = State.builder.structGEP(context, 0, State.getTempName())
+        context = State.alloca(self.llvm_closure_type, "")
+        self_ptr = State.builder.structGEP(context, 0, "")
         State.builder.store(self_value, self_ptr)
-        return State.builder.load(context, State.getTempName())
+        return State.builder.load(context, "")
     return llvm.Value.null(self.llvm_closure_type)
 
 #
@@ -368,7 +362,7 @@ def Function_emitContext(self, self_value = None):
 def Constructor_emitEntry(self):
     lekvar.Function.emitEntry(self)
 
-    self_var = State.builder.structGEP(self.llvm_context, 0, State.getTempName())
+    self_var = State.builder.structGEP(self.llvm_context, 0, "")
 
     self_val = State.builder.alloca(self.bound_context.scope.bound_context.scope.emitType(), "self")
 
@@ -380,9 +374,9 @@ def Constructor_emitPostContext(self):
 
 @patch
 def Constructor_emitReturn(self):
-    context = State.builder.structGEP(self.llvm_context, 0, State.getTempName())
-    value = State.builder.load(context, State.getTempName())
-    value = State.builder.load(value, State.getTempName())
+    context = State.builder.structGEP(self.llvm_context, 0, "")
+    value = State.builder.load(context, "")
+    value = State.builder.load(value, "")
     State.builder.ret(value)
 
 @patch
@@ -512,7 +506,7 @@ def Branch_emitValue(self):
     after = last_block.insertBlock("after")
 
     # Emit condition
-    condition = State.builder.extractValue(self.condition.emitValue(), 0, State.getTempName())
+    condition = State.builder.extractValue(self.condition.emitValue(), 0, "")
     State.builder.condBr(condition, if_block, else_block)
 
     for block, instructions in [(if_block, self.true_instructions), (else_block, self.false_instructions)]:
