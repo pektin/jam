@@ -32,7 +32,7 @@ class VerificationError(Exception):
 #
 
 # Set the calling convention of a function in _lib
-def setTypes(name:str, args:[], ret):
+def setTypes(name:str, args:[], ret = None):
     func = getattr(_lib, name)
     func.argtypes = args
     func.restype = ret
@@ -192,6 +192,9 @@ class Value(Wrappable, c_void_p):
     pass
 
 class FunctionValue(Value):
+    pass
+
+class PassManager(Wrappable, c_void_p):
     pass
 
 __all__ = """Context Module Builder Type Pointer Int Float Function Block Value
@@ -567,3 +570,34 @@ class AttributeKind:
 # that on Value, but not the other way around
 FunctionValue.wrapInstanceProp("type", "LLVMTypeOf", None, Function)
 Value.wrapInstanceProp("type", "LLVMTypeOf", None, Type)
+
+#
+# Passes
+#
+
+PassManager.wrapConstructor("new", "LLVMCreatePassManager")
+PassManager.wrapDestructor("LLVMDisposePassManager")
+
+PassManager.wrapInstanceFunc("run", "LLVMRunPassManager", [Module], c_bool)
+
+setTypes("LLVMPassManagerBuilderCreate", [], c_void_p)
+setTypes("LLVMPassManagerBuilderDispose", [c_void_p])
+setTypes("LLVMPassManagerBuilderSetOptLevel", [c_void_p, c_uint])
+setTypes("LLVMPassManagerBuilderSetSizeLevel", [c_void_p, c_uint])
+setTypes("LLVMPassManagerBuilderPopulateModulePassManager", [c_void_p, PassManager])
+
+@logged("setOptLevel", "LLVMPassManagerBuilderSetOptLevel", False)
+def PassManager_setOptLevel(self, level:int):
+    builder = _lib.LLVMPassManagerBuilderCreate()
+    _lib.LLVMPassManagerBuilderSetOptLevel(builder, level)
+    _lib.LLVMPassManagerBuilderPopulateModulePassManager(builder, self)
+    _lib.LLVMPassManagerBuilderDispose(builder)
+PassManager.setOptLevel = PassManager_setOptLevel
+
+@logged("setOptSizeLevel", "LLVMPassManagerBuilderSetSizeLevel", False)
+def PassManager_setOptSizeLevel(self, level:int):
+    builder = _lib.LLVMPassManagerBuilderCreate()
+    _lib.LLVMPassManagerBuilderSetSizeLevel(builder, level)
+    _lib.LLVMPassManagerBuilderPopulateModulePassManager(builder, self)
+    _lib.LLVMPassManagerBuilderDispose(builder)
+PassManager.setOptSizeLevel = PassManager_setOptSizeLevel
