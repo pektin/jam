@@ -68,7 +68,7 @@ Further Options
 .. code-block:: bash
 
     $ jam r --help
-    usage: jam run [-h] [-V] [-p] [-v] [source]
+    usage: jam run [-h] [-V] [-p] [-v] [-O X] [source]
 
     positional arguments:
       source         the source file to run. Leave out for interactive mode
@@ -79,8 +79,10 @@ Further Options
       -p, --profile  run the profiler, printing profiling data after completion
       -v, --verbose  use verbose logging. Supply multiple times to increase
                      verbosity
+      -O X           optimisation level
+
     $ jam c --help
-    usage: jam compile [-h] [-V] [-p] [-v] [-o FILE] [source]
+    usage: jam compile [-h] [-V] [-p] [-v] [-O X] [-o FILE] [source]
 
     positional arguments:
       source                the source file to compile. Leave out to read from
@@ -93,6 +95,7 @@ Further Options
                             completion
       -v, --verbose         use verbose logging. Supply multiple times to increase
                             verbosity
+      -O X                  optimisation level
       -o FILE, --output FILE
                             the file to write the executable to. Leave out to let
                             jam guess the name
