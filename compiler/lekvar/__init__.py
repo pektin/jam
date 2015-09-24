@@ -19,7 +19,7 @@ from .branches import Loop, Break, Branch
 from .comment import Comment
 from . import util
 
-def compile(source, frontend, backend, logger = logging.getLogger()):
+def compile(source, frontend, backend, logger = logging.getLogger(), opt_level = 1):
     module = frontend.parse(source, logger)
 
     builtins = frontend.builtins(logger)
@@ -28,7 +28,7 @@ def compile(source, frontend, backend, logger = logging.getLogger()):
 
     verify(module, builtins, logger)
 
-    return backend.emit(module)
+    return backend.emit(module, logger, opt_level)
 
 def verify(module:Module, builtin:Module, logger = logging.getLogger()):
     # Set up the initial state before verifying
