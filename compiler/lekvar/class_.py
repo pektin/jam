@@ -51,6 +51,11 @@ class Class(Type, Scope):
             raise TypeError("Class does not have a constructor".format(self), self.tokens)
         return self.constructor.resolveCall(call)
 
+    def resolveInstanceCall(self, call:FunctionType):
+        if "" not in self.instance_context:
+            raise TypeError("Class does not overload call operator")
+        return self.instance_context[""].resolveCall(call)
+
     @property
     def local_context(self):
         return self.instance_context
