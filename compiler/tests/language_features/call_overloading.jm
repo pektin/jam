@@ -1,0 +1,20 @@
+#foo\nbar\n
+
+class DefaultPutter
+  value:String
+  new(b:String)
+    value = b
+  end
+
+  def self()
+    puts(value)
+  end
+
+  def self(b:String)
+    puts(b)
+  end
+end
+
+p = DefaultPutter("foo")
+p()
+p("bar")
