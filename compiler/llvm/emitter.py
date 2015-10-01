@@ -123,6 +123,10 @@ def Variable_emitAssignment(self):
 
     return State.builder.structGEP(State.self, self.llvm_context_index, "")
 
+@patch
+def Variable_emitContext(self):
+    return self.emitAssignment()
+
 #
 # class Assignment
 #
