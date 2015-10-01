@@ -387,20 +387,25 @@ class Parser:
 
         # Non cast operations
         if self.lookAhead(2).type not in [Tokens.as_kwd, Tokens.typeof]:
-            # Binary Operations
+            # Operations with self on lhs
             if self.lookAhead().type == Tokens.self_kwd:
                 tokens.append(self.next())
 
-                token = self.next()
-                if token.type not in BINARY_OPERATION_TOKENS:
+                token = self.lookAhead()
+                # Binary Operations
+                if token.type in BINARY_OPERATION_TOKENS:
+                    name = token.data
+                    tokens.append(self.next())
+
+                    arguments = [self.parseVariable()]
+                    default_values = [None]
+                # Call Operation
+                elif token.type == Tokens.group_start:
+                    name = ""
+                    arguments, default_values = self.parseMethodArguments()
+                else:
                     raise SyntaxError("{} is not a valid operation".format(token), [token])
-                name = token.data
-
-                tokens.append(token)
-
-                arguments = [self.parseVariable()]
-                default_values = [None]
-            # Unary Operations
+            # Prefix Unary Operations
             elif self.lookAhead(2).type == Tokens.self_kwd:
                 token = self.next()
                 if token.type not in UNARY_OPERATION_TOKENS:
