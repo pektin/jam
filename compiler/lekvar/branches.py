@@ -26,7 +26,7 @@ class Loop(Object):
                 instruction.verify()
 
         # Update scope state
-        State.soft_scope_state.imerge_or(state)
+        State.soft_scope_state.merge(state)
 
     def resolveType(self):
         raise InternalError("Loop objects do not have a type")
@@ -80,7 +80,8 @@ class Branch(Object):
                 instruction.verify()
 
         # Update scope state
-        State.soft_scope_state.imerge_and(tstate.merge_or(fstate))
+        tstate.merge(fstate)
+        State.soft_scope_state.update(tstate)
 
     def resolveType(self):
         raise InternalError("Branch objects do not have a type")

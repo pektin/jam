@@ -100,23 +100,10 @@ class ScopeState:
     def __init__(self, scope:BoundObject):
         self.scope = scope
 
-    def merge_or(self, other):
-        out = self.copy()
-        out.imerge_or(other)
-        return out
-
-    def merge_and(self, other):
-        out = self.copy()
-        out.imerge_and(other)
-        return out
-
-    def copy(self):
-        return ScopeState(self.scope)
-
-    def imerge_or(self, other):
+    def merge(self, other):
         raise InternalError("Cannot merge default scope states")
 
-    def imerge_and(self, other):
+    def update(self, other):
         raise InternalError("Cannot merge default scope states")
 
 class AnalysScopeState(ScopeState):
@@ -125,16 +112,10 @@ class AnalysScopeState(ScopeState):
         self.definately_returns = False
         self.maybe_returns = False
 
-    def copy(self):
-        state = AnalysScopeState(self.scope)
-        state.definately_returns = self.definately_returns
-        state.maybe_returns = self.maybe_returns
-        return state
-
-    def imerge_or(self, other):
+    def merge(self, other):
         self.definately_returns = self.definately_returns and other.definately_returns
         self.maybe_returns = self.definately_returns or other.definately_returns
 
-    def imerge_and(self, other):
+    def update(self, other):
         self.definately_returns = self.definately_returns or other.definately_returns
         self.maybe_returns = self.definately_returns or other.definately_returns
