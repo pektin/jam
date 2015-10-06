@@ -1,5 +1,3 @@
-.. _tut-helloworld:
-
 Hello World
 ###########
 
@@ -18,4 +16,4 @@ In this example, ``puts`` is a builtin function that prints a string, such as
 
 .. seealso::
 
-    :ref:`Builtin Functions <jam-builtin-functions>`
+    :doc:`Builtin Functions</lib/builtins/functions>`

@@ -1,5 +1,3 @@
-.. _jam-null:
-
 Null
 ####
 
@@ -8,7 +6,7 @@ The ``null`` value represents nothing.
 .. note::
 
     The ``null`` value can only be assigned to
-    :ref:`nullable types <jam-types-nullability>`.
+    :doc:`nullable types</lib/builtins/types>`.
 
 Syntax
 ======

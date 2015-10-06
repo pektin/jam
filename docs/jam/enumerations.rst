@@ -1,5 +1,3 @@
-.. _jam-enumerations:
-
 Enumerations
 ############
 

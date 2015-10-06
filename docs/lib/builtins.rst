@@ -1,6 +1,3 @@
-.. _jam-builtins:
-
-###############
 Builtin Library
 ###############
 
@@ -60,5 +57,5 @@ Constants
 
     A reference representing an object that is nothing. Actually provided by the
     language rather than the library, ``null`` can be
-    :ref:`implicitly cast<jam-type-casting>` to any
-    :ref:`nullable type<jam-types-nullability>`.
+    :doc:`implicitly cast</jam/type-casting>` to any
+    :doc:`nullable type</lib/builtins/types>`.

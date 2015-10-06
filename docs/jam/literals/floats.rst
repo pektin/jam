@@ -1,5 +1,3 @@
-.. _jam-literals-floats:
-
 Floats
 ######
 

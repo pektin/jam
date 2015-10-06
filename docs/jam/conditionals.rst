@@ -1,5 +1,3 @@
-.. _jam-conditionals:
-
 Conditionals
 ############
 

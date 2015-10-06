@@ -1,5 +1,3 @@
-.. _jam-traits:
-
 Traits
 ######
 

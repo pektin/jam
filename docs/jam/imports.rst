@@ -1,5 +1,3 @@
-.. _jam-imports:
-
 Imports
 #######
 

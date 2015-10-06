@@ -1,9 +1,5 @@
-.. _jam-builtin-types:
-
 Builtin Types
 #############
-
-.. _jam-builtin-numerical:
 
 Generic Numerical Classes
 =========================

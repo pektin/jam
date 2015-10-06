@@ -1,5 +1,3 @@
-.. _jam-literals-booleans:
-
 Booleans
 ########
 

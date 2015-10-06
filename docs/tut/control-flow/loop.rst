@@ -1,5 +1,3 @@
-.. _tut-loop:
-
 loop
 ####
 

@@ -1,5 +1,3 @@
-.. _jam:
-
 The Jam Language Reference
 ##########################
 

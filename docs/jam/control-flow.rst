@@ -1,5 +1,3 @@
-.. _jam-control-flow:
-
 Flow Control
 ############
 

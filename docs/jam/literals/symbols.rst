@@ -1,5 +1,3 @@
-.. _jam-literals-symbols:
-
 Symbols
 #######
 

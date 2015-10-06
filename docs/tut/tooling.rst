@@ -1,5 +1,3 @@
-.. _tut-tooling:
-
 Tooling
 #######
 

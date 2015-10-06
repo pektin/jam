@@ -1,5 +1,3 @@
-.. _jam-associative-arrays:
-
 Associative Arrays
 ##################
 

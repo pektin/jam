@@ -1,5 +1,3 @@
-.. _jam-assignments:
-
 Assignments
 ###########
 

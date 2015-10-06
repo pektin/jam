@@ -1,5 +1,3 @@
-.. _tut-if-elif-else:
-
 if/elif/else
 ############
 

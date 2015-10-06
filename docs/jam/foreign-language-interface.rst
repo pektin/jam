@@ -1,5 +1,3 @@
-.. _jam-foreign-language-interface:
-
 Foreign Language Interface
 ##########################
 

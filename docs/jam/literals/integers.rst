@@ -1,11 +1,9 @@
-.. _jam-literals-integers:
-
 Integers
 ########
 
 A integer is a whole number of the builtin type ``Int``.
 
-See the :ref:`builtin library<jam-builtin-numerical>` for more information
+See the :doc:`builtin library</lib/builtins/types>` for more information
 regarding the Integer type.
 
 Syntax

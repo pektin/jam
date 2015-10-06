@@ -1,5 +1,3 @@
-.. _jam-builtin-functions:
-
 Builtin Functions
 #################
 

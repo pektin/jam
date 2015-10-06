@@ -1,5 +1,3 @@
-.. _jam-methods:
-
 Methods
 #######
 

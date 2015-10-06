@@ -1,5 +1,3 @@
-.. _tut-comments:
-
 Comments
 ########
 
@@ -21,4 +19,4 @@ this is a non-issue.
 
 .. seealso::
 
-    Language reference on :ref:`comments<jam-comments>`
+    Language reference on :doc:`comments</jam/comments>`

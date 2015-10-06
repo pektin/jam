@@ -1,5 +1,3 @@
-.. _tut-string-formatting:
-
 String Formatting
 #################
 
@@ -58,4 +56,4 @@ stings, except they do not support interpolation or special characters.
 
 .. seealso::
 
-    :ref:`Strings language reference<jam-literals-strings>`
+    :doc:`Strings language reference</jam/literals/strings>`

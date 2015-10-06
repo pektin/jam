@@ -1,5 +1,3 @@
-.. _jam-introduction:
-
 Introduction
 ############
 

@@ -1,5 +1,3 @@
-.. _jam-type-casting:
-
 Type Casting
 ############
 

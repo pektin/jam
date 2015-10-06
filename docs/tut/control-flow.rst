@@ -1,5 +1,3 @@
-.. _tut-control-flow:
-
 Control Flow
 ############
 
