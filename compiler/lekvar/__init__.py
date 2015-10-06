@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from ..errors import CompilerError
 
 from .state import State
-from .core import Context, Object, BoundObject, Type
+from .core import Context, Object, BoundObject, SoftScope, Scope, Type
 from .module import Module
 from .function import Function, FunctionType, Return
 from .external_function import ExternalFunction
@@ -19,7 +19,7 @@ from .branches import Loop, Break, Branch
 from .comment import Comment
 from . import util
 
-def compile(source, frontend, backend, logger = logging.getLogger(), opt_level = 1):
+def compile(source, frontend, backend, logger = logging.getLogger(), opt_level = 0):
     module = frontend.parse(source, logger)
 
     builtins = frontend.builtins(logger)

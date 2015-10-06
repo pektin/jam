@@ -1,7 +1,7 @@
 from ..errors import *
 
 from .state import State
-from .core import Context, Object, BoundObject, Type
+from .core import Context, Object, BoundObject, SoftScope, Type
 from .function import Function
 from .module import Module
 
@@ -9,14 +9,16 @@ from .module import Module
 # Loop
 #
 
-class Loop(Object):
+class Loop(SoftScope):
     function = None
     instructions = None
+    local_context = None
 
     def __init__(self, instructions, tokens = None):
         super().__init__(tokens)
 
         self.instructions = instructions
+        self.local_context = Context(self)
 
     def verify(self):
         self.function = State.scope
@@ -53,13 +55,16 @@ class Break(Object):
 # Branch
 #
 
-class Branch(Object):
+class Branch(SoftScope):
     function = None
     condition = None
-    true_instructions = None
-    false_instructions = None
 
-    def __init__(self, condition, true_instructions, false_instructions, tokens = None):
+    instructions = None
+    local_context = None
+    previous_branch = None
+    next_branch = None
+
+    def __init__(self, condition, instructions, next_branch = None, tokens = None):
         super().__init__(tokens)
 
         self.condition = condition

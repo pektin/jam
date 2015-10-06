@@ -7,6 +7,7 @@ from .state import State
 # Python predefines
 Object = None
 BoundObject = None
+SoftScope = None
 Scope = None
 Type = None
 Function = None
@@ -18,7 +19,7 @@ class Context:
     scope = None
     children = None
 
-    def __init__(self, scope:BoundObject, children:[BoundObject]):
+    def __init__(self, scope:SoftScope, children:[BoundObject] = []):
         self.scope = scope
 
         self.children = {}
@@ -113,13 +114,17 @@ class BoundObject(Object):
     def __repr__(self):
         return "{}({})".format(self.__class__.__name__, self.name)
 
-# A bound object that has a local context of all of its children
-class Scope(BoundObject):
+# A generic object that has a local context of children
+class SoftScope(Object):
     # The local context provides the context accessible objects bound to a
     # context whose scope is this object.
     @abstractproperty
     def local_context(self):
         pass
+
+# A bound object that has a local context of all of its children
+class Scope(SoftScope, BoundObject):
+    pass
 
 # A type object that is used to describe certain behaviour of an object.
 class Type(Object):
