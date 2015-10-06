@@ -19,9 +19,9 @@ def builtins(logger = logging.getLogger()):
     [
         lekvar.Branch(lekvar.Reference("lhs"), [
             lekvar.Return(lekvar.Reference("rhs")),
-        ], [
+        ], lekvar.Branch(None, [
             lekvar.Return(lekvar.Reference("lhs")),
-        ]),
+        ])),
     ], [])
     ir.context.addChild(and_)
 
@@ -30,9 +30,9 @@ def builtins(logger = logging.getLogger()):
     [
         lekvar.Branch(lekvar.Reference("lhs"), [
             lekvar.Return(lekvar.Reference("lhs")),
-        ], [
+        ], lekvar.Branch(None, [
             lekvar.Return(lekvar.Reference("rhs")),
-        ]),
+        ])),
     ], [])
     ir.context.addChild(or_)
 

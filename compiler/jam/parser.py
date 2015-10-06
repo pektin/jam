@@ -599,7 +599,7 @@ class Parser:
 
             instructions.append(self.parseLine())
 
-        branch = lekvar.Branch(condition, [], [lekvar.Break()])
+        branch = lekvar.Branch(condition, [], lekvar.Branch(None, [lekvar.Break()]))
         return lekvar.Loop([branch] + instructions, tokens)
 
     def parseLoop(self):
@@ -629,13 +629,14 @@ class Parser:
 
         return lekvar.Break([token])
 
-    def parseBranch(self, start_kwd = Tokens.if_kwd):
+    def parseBranch(self, start_kwd = Tokens.if_kwd, has_condition = True):
         tokens = [self.next()]
         assert tokens[0].type == start_kwd
 
-        condition = self.parseValue()
+        condition = self.parseValue() if has_condition else None
 
-        if_instructions = []
+        instructions = []
+        next_branch = None
 
         while True:
             token = self.lookAhead()
@@ -645,31 +646,19 @@ class Parser:
 
             elif token.type == Tokens.end_kwd:
                 tokens.append(self.next())
-                return lekvar.Branch(condition, if_instructions, [], tokens)
+                break
 
             elif token.type == Tokens.else_kwd:
-                tokens.append(self.next())
+                next_branch = self.parseBranch(Tokens.else_kwd, False)
                 break
 
             elif token.type == Tokens.elif_kwd:
-                tokens.append(token)
-                return lekvar.Branch(condition, if_instructions, [self.parseBranch(Tokens.elif_kwd)], tokens)
+                next_branch = self.parseBranch(Tokens.elif_kwd)
+                break
 
-            if_instructions.append(self.parseLine())
+            instructions.append(self.parseLine())
 
-        else_instructions = []
-
-        while True:
-            token = self.lookAhead()
-
-            if token is None:
-                raise SyntaxError("Expected `end` before EOF for else branch", tokens)
-
-            elif token.type == Tokens.end_kwd:
-                tokens.append(self.next())
-                return lekvar.Branch(condition, if_instructions, else_instructions, tokens)
-
-            else_instructions.append(self.parseLine())
+        return lekvar.Branch(condition, instructions, next_branch, tokens)
 
     # Parse a variable, with optional type signature
     def parseVariable(self):

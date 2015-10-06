@@ -106,7 +106,7 @@ def Variable_emit(self):
         self.llvm_value = State.module.addVariable(type, name)
         self.llvm_value.initializer = llvm.Value.undef(type)
     else:
-        self.llvm_value = State.builder.alloca(type, name)
+        self.llvm_value = State.alloca(type, name)
 
 @patch
 def Variable_emitValue(self, value=None):
@@ -501,24 +501,32 @@ def Break_emitValue(self):
 #
 
 @patch
-def Branch_emitValue(self):
+def Branch_emitValue(self, block = None):
+    self.emit()
+
+@patch
+def Branch_emit(self, block = None):
     # Grab the last block
     last_block = self.function.llvm_value.getLastBlock()
     # Create blocks
-    if_block = last_block.insertBlock("if")
-    else_block = last_block.insertBlock("else")
-    after = last_block.insertBlock("after")
+    next_block = last_block.insertBlock("next")
 
-    # Emit condition
-    condition = State.builder.extractValue(self.condition.emitValue(), 0, "")
-    State.builder.condBr(condition, if_block, else_block)
+    if self.condition is not None:
+        block = next_block.insertBlock("branch")
 
-    for block, instructions in [(if_block, self.true_instructions), (else_block, self.false_instructions)]:
-        State.builder.positionAtEnd(block)
+        condition = State.builder.extractValue(self.condition.emitValue(), 0, "")
+        State.builder.condBr(condition, block, next_block)
 
-        if not State.emitInstructions(instructions):
-            # Only br to after if we don't return
-            State.builder.br(after)
+    State.builder.positionAtEnd(next_block)
+    if self.next_branch is not None:
+        after_block = self.next_branch.emit(next_block)
+    else:
+        after_block = next_block
 
-    after.moveBefore(last_block)
-    State.builder.positionAtEnd(after)
+    State.builder.positionAtEnd(block)
+    if not State.emitInstructions(self.instructions):
+        # Only br to after if we don't return
+        State.builder.br(after_block)
+
+    State.builder.positionAtEnd(after_block)
+    return after_block

@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+
 from ..errors import *
 
 from .state import State
@@ -68,25 +70,29 @@ class Branch(SoftScope):
         super().__init__(tokens)
 
         self.condition = condition
-        self.true_instructions = true_instructions
-        self.false_instructions = false_instructions
+
+        self.instructions = instructions
+        self.local_context = Context(self)
+        self.next_branch = next_branch
+        if next_branch is not None:
+            next_branch.previous_branch = self
 
     def verify(self):
         self.function = State.scope
 
-        self.condition.verify()
+        if self.condition is not None:
+            self.condition.verify()
 
-        with State.scoped(self, soft = True, analys = True) as tstate:
-            for instruction in self.true_instructions:
+        with State.scoped(self, soft = True, analys = True) as state:
+            for instruction in self.instructions:
                 instruction.verify()
 
-        with State.scoped(self, soft = True, analys = True) as fstate:
-            for instruction in self.false_instructions:
-                instruction.verify()
+        if self.next_branch is not None:
+            state.merge(self.next_branch.verify())
 
-        # Update scope state
-        tstate.merge(fstate)
-        State.soft_scope_state.update(tstate)
+        if self.previous_branch is None:
+            State.soft_scope_state.update(state)
+        return state
 
     def resolveType(self):
         raise InternalError("Branch objects do not have a type")
