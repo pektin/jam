@@ -39,10 +39,10 @@ Jam supports a variety of operations on integers.
 
 .. seealso::
 
-    Language reference on :doc:`integer literals</jam/literals/integers>`
-    Language reference on :doc:`operations</jam/operations>`
+    Language reference on :doc:`integer literals<../jam/literals/integers>`
+    Language reference on :doc:`operations<../jam/operations>`
 
-    Library reference on :doc:`numericals</lib/builtins/types>`
+    Library reference on :doc:`numericals<../lib/builtins/types>`
 
 Floating Point
 ==============
@@ -75,8 +75,8 @@ operations.
 
 .. seealso::
 
-    Language reference on :doc:`float literals</jam/literals/floats>`
-    Language reference on :doc:`operations</jam/operations>`
+    Language reference on :doc:`float literals<../jam/literals/floats>`
+    Language reference on :doc:`operations<../jam/operations>`
 
 Booleans
 ========
@@ -85,6 +85,6 @@ The only valid boolean values are ``true`` and ``false``.
 
 .. seealso::
 
-    Language reference on :doc:`boolean literals</jam/literals/booleans>`
+    Language reference on :doc:`boolean literals<../jam/literals/booleans>`
 
-    Library reference on :doc:`constants</lib/builtins>`
+    Library reference on :doc:`constants<../lib/builtins>`

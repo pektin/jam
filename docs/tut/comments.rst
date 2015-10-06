@@ -19,4 +19,4 @@ this is a non-issue.
 
 .. seealso::
 
-    Language reference on :doc:`comments</jam/comments>`
+    Language reference on :doc:`comments<../jam/comments>`

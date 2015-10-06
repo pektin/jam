@@ -57,5 +57,5 @@ Constants
 
     A reference representing an object that is nothing. Actually provided by the
     language rather than the library, ``null`` can be
-    :doc:`implicitly cast</jam/type-casting>` to any
-    :doc:`nullable type</lib/builtins/types>`.
+    :doc:`implicitly cast<../jam/type-casting>` to any
+    :doc:`nullable type<../lib/builtins/types>`.

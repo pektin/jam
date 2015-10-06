@@ -56,4 +56,4 @@ stings, except they do not support interpolation or special characters.
 
 .. seealso::
 
-    :doc:`Strings language reference</jam/literals/strings>`
+    :doc:`Strings language reference<../jam/literals/strings>`

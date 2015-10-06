@@ -6,7 +6,7 @@ The ``null`` value represents nothing.
 .. note::
 
     The ``null`` value can only be assigned to
-    :doc:`nullable types</lib/builtins/types>`.
+    :doc:`nullable types<../../lib/builtins/types>`.
 
 Syntax
 ======

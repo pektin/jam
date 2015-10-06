@@ -16,4 +16,4 @@ In this example, ``puts`` is a builtin function that prints a string, such as
 
 .. seealso::
 
-    :doc:`Builtin Functions</lib/builtins/functions>`
+    :doc:`Builtin Functions<../lib/builtins/functions>`
