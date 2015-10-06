@@ -29,5 +29,5 @@ The Jam Language Reference describes the syntax, grammar and compilation of Jam.
     jam/visibility
     jam/imports
     jam/foreign-language-interface
-    jam/templates
+    jam/traits
     jam/unittests
