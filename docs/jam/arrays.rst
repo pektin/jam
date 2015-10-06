@@ -8,7 +8,7 @@ can either be dynamic, where the number of elements may change, or static, where
 it may not.
 
 Array values may be created either by defining separate elements individually,
-or by defining one element over a range of indecies. Mixing both is also valid.
+or by defining one element over a range of indices. Mixing both is also valid.
 
 Types
 =====
@@ -21,6 +21,5 @@ Syntax
 
 .. productionlist::
     ArrayType: "[" `Type` [ ";" `Integer` ] "]"
-    ArrayValue: "[" `ArrayElement` (( "," |
-              : ) `ArrayElement`)* "]"
+    ArrayValue: "[" `ArrayElement` (( "," | \n ) `ArrayElement`)* "]"
     ArrayElement: `Value` [";" `Integer`]
