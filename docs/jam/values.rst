@@ -12,4 +12,4 @@ Syntax
 ======
 
 .. productionlist::
-    Value: `Identifier` | `Literal` | `Method` | `Class` | `TypeCast` | `Attribute` | `Operation` | `Template` | `ArrayValue` | `AssociativeArrayValue`
+    Value: `Identifier` | `Literal` | `Method` | `Class` | `TypeCast` | `Attribute` | `Operation` | `Template` | `ArrayValue` | `AssociativeArrayValue`| `Lambda`

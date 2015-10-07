@@ -27,6 +27,7 @@ where possible, coded examples to demonstrate a feature in Jam.
     assignments
     control-flow
     methods
+    lambdas
     types
     type-casting
     arrays

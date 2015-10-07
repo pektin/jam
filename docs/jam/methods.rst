@@ -24,6 +24,11 @@ Methods can also be assigned to :doc:`variables<variables>`, like any other
 value. A variable that is of a method type may be assigned any methods with
 compatible overloads.
 
+.. seealso::
+
+    :doc:`lambdas`
+        Another kind of method
+
 Syntax
 ======
 
