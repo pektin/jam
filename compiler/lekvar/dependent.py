@@ -65,6 +65,7 @@ class DependentObject(Type, BoundObject):
     # Check whether an object matches the dependencies of this object
     @contextmanager
     def targetAt(self, target):
+        target = target.resolveValue()
         with ExitStack() as stack:
             #TODO: Handle errors
 
@@ -73,7 +74,8 @@ class DependentObject(Type, BoundObject):
                 raise TypeError("TODO: Write this")
 
             # Set target
-            previous_target = self.target
+            if self.target is not None and self.target is not target:
+                raise TypeError("TODO: Write this")
             self.target = target
 
             # Pass on dependency checks
@@ -85,7 +87,13 @@ class DependentObject(Type, BoundObject):
                 stack.enter_context(self.resolved_type.targetAt(target.resolveType()))
 
             for call, obj in self.resolved_calls.items():
-                stack.enter_context(obj.targetAt(target.resolveCall(call)))
+                target_call = target.resolveCall(call)
+                stack.enter_context(obj.targetAt(target_call))
+                # The call itself may also be dependent, so we have to target that
+                if call.dependent:
+                    for arg, target_arg in zip(call.arguments, target_call.arguments):
+                        if isinstance(arg, DependentObject):
+                            stack.enter_context(arg.targetAt(target_arg.resolveType()))
 
             for switch in self.switches:
                 stack.enter_context(switch.resolveTarget())
@@ -96,7 +104,7 @@ class DependentObject(Type, BoundObject):
                 stack.enter_context(self._return_type.targetAt(target.return_type))
 
             yield
-            self.target = previous_target
+            self.target = None
 
     # Same as targetAt but for switches
     @contextmanager
