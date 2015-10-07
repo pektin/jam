@@ -5,4 +5,4 @@ Library Reference
     :numbered: 3
     :titlesonly:
 
-    lib/builtins
+    builtins

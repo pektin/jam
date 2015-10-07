@@ -5,21 +5,21 @@ The Jam Tutorial
     :numbered:
     :titlesonly:
 
-    tut/tooling
-    tut/helloworld
-    tut/comments
-    tut/string-formatting
-    tut/literals
-    tut/variables
-    tut/control-flow
+    tooling
+    helloworld
+    comments
+    string-formatting
+    literals
+    variables
+    control-flow
 
 Introduction
 ============
 
 This tutorial serves as a guide for those new to the language and its tools. For
 more detailed and technical description of the language and its library please
-refer to the :doc:`language reference<jam>` and the
-:doc:`library reference<lib>`.
+refer to the :doc:`language reference<../jam/index>` and the
+:doc:`library reference<../lib/index>`.
 
 Each section will feature worded descriptions of language features alongside
 easy to understand, practical examples of common usage of these features. It is
