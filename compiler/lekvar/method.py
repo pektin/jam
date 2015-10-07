@@ -56,15 +56,16 @@ class Method(BoundObject):
 
         # Check dependent types if no other ones were found
         if len(matches) == 0:
-            with State.type_switch():
-                for overload in self.dependent_overload_context:
-                    if overload.resolveType().checkCompatibility(call):
-                        matches.append(overload)
+            for overload in self.dependent_overload_context:
+                if overload.resolveType().checkCompatibility(call):
+                    matches.append(overload)
+
             if len(matches) == 1:
-                args = [(matches[0].type.arguments[i], call.arguments[i])
-                            for i in range(len(call.arguments))
-                                if isinstance(matches[0].type.arguments[i], DependentObject)]
-                return DependentTarget(overload, args)
+                fn = matches[0]
+                args = [(arg_t, call_t) for arg_t, call_t in zip(fn.type.arguments, call.arguments)
+                                if isinstance(arg_t, DependentObject)]
+                return DependentTarget(fn, args)
+
         elif len(matches) > 1 and call.dependent and State.scope.dependent:
             fn = DependentObject.switch(self, matches, lambda overload: overload.resolveType().checkCompatibility(call))
             # Find last argument that is dependent (the last one whose target is resolved)
