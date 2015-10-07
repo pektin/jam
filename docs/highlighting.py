@@ -25,6 +25,9 @@ class JamLexer(RegexLexer):
             (" ", Text.Whitespace),
             include('operators'),
             (r"([a-zA-Z_][a-zA-Z_0-9]*)", Name),
+            # Mark everything unrecognised as normal
+            # Catch-all for bad lexers
+            (r".", Name),
         ],
 
         'keywords': [
