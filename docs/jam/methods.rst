@@ -15,10 +15,14 @@ Unlike most other compiled languages, Jam allows you to leave out the type of
 arguments. Where no argument type is defined, any parameter with a type that
 matches the unspecified type's usage is valid.
 
-At any point in the method a return statement may be made to cause the method
-to complete and take the given value as the output of the method call. When
-the return value of a method is explicitly defined, all possible execution paths
+At any point in the method a return statement may be made to cause the method to
+complete and take the given value as the output of the method call. When the
+return value of a method is explicitly defined, all possible execution paths
 must return.
+
+Methods can also be assigned to :doc:`variables<variables>`, like any other
+value. A variable that is of a method type may be assigned any methods with
+compatible overloads.
 
 Syntax
 ======
@@ -30,7 +34,6 @@ Syntax
     Method: [`Visibility`] "def" `MethodPrototype`
           :   (`InstructionSet` | ("return" [`Value`])
           : )* "end"
-
 
 Examples
 ========
@@ -51,3 +54,16 @@ Examples
 
     double(2) #=> 4
     double() #=> 2
+
+::
+
+    def add(a:Int, b:Int) -> Int
+      return a + b
+    end
+
+    def add(a:Float, b:Float) -> Float
+      return a + b
+    end
+
+    reduce(add, [1, 2, 3, 4]) #=> 10
+    reduce(add, [3.0, 8.2, 7.3]) #=> 18.5
