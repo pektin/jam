@@ -133,10 +133,12 @@ COMMANDS = {
     "compile": compile,
 }
 
+HELP = ["--help", "-h"]
+
 def main(argv):
 
     # hack for default subparser
-    if not any(arg in COMMANDS for arg in argv):
+    if not any(arg in list(COMMANDS.keys()) + HELP for arg in argv):
         argv.insert(0, "run")
 
     args = parser.parse_args(argv)
