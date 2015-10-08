@@ -42,9 +42,7 @@ class Method(BoundObject):
             self.dependent_overload_context.verify()
 
     def resolveType(self):
-        if self.type is None:
-            self.type = MethodType(self.name, [fn.resolveType() for fn in self.overload_context])
-        return self.type
+        return MethodType([fn.resolveType() for fn in self.overload_context])
 
     def resolveCall(self, call:FunctionType):
         matches = []
@@ -97,21 +95,44 @@ class Method(BoundObject):
         return "method {}".format(self.name)
 
 class MethodType(Type):
-    overloads = None
+    possible_overload_types = None
+    used_overload_types = None
 
-    def __init__(self, name:str, overloads:[FunctionType], tokens = None):
-        super().__init__(name, tokens)
-        self.overloads = overloads
+    def __init__(self, overloads:[FunctionType], tokens = None):
+        super().__init__(tokens)
+        self.possible_overload_types = overloads
+        self.used_overload_types = { fn_type: False for fn_type in overloads }
 
     def resolveType(self):
         raise InternalError("Not Implemented")
 
     def verify(self):
-        raise InternalError("Not Implemented")
+        for fn_type in self.possible_overload_types:
+            fn_type.verify()
 
     @property
     def local_context(self):
         raise InternalError("Not Implemented")
 
     def checkCompatibility(self, other:Type):
-        return False #TODO: Check for identical overloads
+        if not isinstance(other, MethodType):
+            return False
+
+        for self_fn_type in self.possible_overload_types:
+            compat_fn_type = None
+            for other_fn_type in other.possible_overload_types:
+                if self_fn_type.checkCompatibility(other_fn_type):
+                    compat_fn_type = other_fn_type
+                    break
+
+            if compat_fn_type is None:
+                if self.used_overload_types[self_fn_type]:
+                    return False
+                else:
+                    pass
+            #TODO: More type checks
+        return True
+
+    def resolveInstanceCall(self, call:FunctionType):
+        #TODO
+        pass
