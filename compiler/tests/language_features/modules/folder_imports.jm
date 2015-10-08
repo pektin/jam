@@ -1,0 +1,5 @@
+#foo\nbar\n
+
+import .modules.file_imported
+
+file_imported.foo()
