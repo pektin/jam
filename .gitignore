@@ -14,6 +14,9 @@ docs/.build/
 *.s
 *.out
 
+# py.test
+.cache/
+
 # Test coverage
 .coverage
 htmlcov/
