@@ -77,6 +77,11 @@ class Real
     return Real(_builtins.floatSub(value, other.value))
   end
 
+  def -self
+    zero = 0.0
+    return Real(_builtins.floatSub(zero.value, value))
+  end
+
   def self * other:Real
     return Real(_builtins.floatMul(value, other.value))
   end
