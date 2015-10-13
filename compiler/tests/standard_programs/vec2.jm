@@ -1,0 +1,33 @@
+#-1.5\n-5.5\n
+
+class Vec2
+  x:Real
+  y:Real
+
+  new(x_:Real, y_:Real)
+    x = x_
+    y = y_
+  end
+
+  def self + other:Vec2
+    return Vec2(x + other.x, y + other.y)
+  end
+
+  def self - other:Vec2
+    return Vec2(x - other.x, y - other.y)
+  end
+
+  def self * other:Real
+    return Vec2(x * other, y * other)
+  end
+
+  def self / other:Real
+    return Vec2(x / other, y / other)
+  end
+end
+
+v = Vec2(3.0, 9.0) + Vec2(6.0, -8.0)
+v = v - Vec2(1.0, 1.0) * 12.0
+v = v / 2.0
+puts(v.x)
+puts(v.y)
