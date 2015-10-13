@@ -1,4 +1,5 @@
 import io
+import pickle
 import logging
 from os import path
 
@@ -9,10 +10,17 @@ from . import parser
 BUILTINS_FILE = "builtins.jm"
 BUILTINS_PATH = path.join(path.split(__file__)[0], BUILTINS_FILE)
 
-BUILTINS_CACHE = open(BUILTINS_PATH, "r").read()
+builtin_cache = None
 
+# Builtins uses the pickling module
+# to avoid parsing the builtin file more than once
 def builtins(logger = logging.getLogger()):
-    ir = parser.parseFile(io.StringIO(BUILTINS_CACHE), logger)
+    if builtin_cache is not None:
+        return pickle.loads(builtin_cache)
+
+    with open(BUILTINS_PATH, 'r') as f:
+        # Use StringIO because other files can't be pickled
+        ir = parser.parseFile(io.StringIO(f.read()), logger)
 
     # Certain functions cannot be built into the library
     # as they cannot be expressed in jam syntax
@@ -37,5 +45,8 @@ def builtins(logger = logging.getLogger()):
         ])),
     ], [])
     ir.context.addChild(or_)
+
+    global builtin_cache
+    builtin_cache = pickle.dumps(ir)
 
     return ir
