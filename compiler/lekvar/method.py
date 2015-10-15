@@ -134,5 +134,31 @@ class MethodType(Type):
         return True
 
     def resolveInstanceCall(self, call:FunctionType):
-        #TODO
-        pass
+        matches = []
+        for index in range(len(self.possible_overload_types)):
+            fn_type = self.possible_overload_types[index]
+            if fn_type.checkCompatibility(call):
+                matches.append((fn_type, index))
+
+        if len(matches) == 1:
+            return MethodInstance(self, matches[0][1])
+        raise TypeError("TODO: Write This")
+
+class MethodInstance(Object):
+    def __init__(self, type:MethodType, target:int):
+        super().__init__(self)
+        self.type = type
+        self.target = target
+
+    def verify(self):
+        self.type.verify()
+
+    def resolveType(self):
+        return self.type.possible_overload_types[self.target]
+
+    def resolveCall(self, call:FunctionType):
+        return self
+
+    @property
+    def context(self):
+        return None

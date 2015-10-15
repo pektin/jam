@@ -9,7 +9,7 @@ from .module import Module
 from .function import Function, FunctionType, Return
 from .external_function import ExternalFunction
 from .call import Call
-from .method import Method, MethodType
+from .method import Method, MethodType, MethodInstance
 from .links import Link, Reference, Attribute
 from .variable import Variable, Assignment
 from .class_ import Class, Constructor
