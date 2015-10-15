@@ -1,0 +1,8 @@
+!TypeError
+
+def foo(i:Int)
+  puts(i)
+end
+
+fn = foo
+fn("WRONG")
