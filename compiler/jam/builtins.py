@@ -46,7 +46,10 @@ def builtins(logger = logging.getLogger()):
     ], [])
     ir.context.addChild(or_)
 
-    global builtin_cache
-    builtin_cache = pickle.dumps(ir)
+    try:
+        global builtin_cache
+        builtin_cache = pickle.dumps(ir)
+    except TypeError:
+        logger.error("Failed to pickle stdlib. This shouldn't happen.")
 
     return ir
