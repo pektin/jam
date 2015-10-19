@@ -11,7 +11,6 @@ Method = None
 class Method(BoundObject):
     overload_context = None
     dependent_overload_context = None
-    type = None
 
     def __init__(self, name:str, overloads:[Function], tokens = None):
         super().__init__(name, tokens)
