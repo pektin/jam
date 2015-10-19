@@ -109,7 +109,7 @@ def Variable_emit(self):
         self.llvm_value = State.alloca(type, name)
 
 @patch
-def Variable_emitValue(self, value=None):
+def Variable_emitValue(self):
     self.emit()
 
     return State.builder.load(self.emitAssignment(), "")
@@ -165,10 +165,9 @@ def Call_emitValue(self):
     called = self.function.emitValue()
 
     # Only use the function's context if it is static
-    if self.called.resolveValue().static:
+    context = None if self.called.resolveValue().static else self.called.emitContext()
+    with State.selfScope(context):
         context = self.function.emitContext()
-    else:
-        context = self.function.emitContext(self.called.emitContext())
 
     if context is not None:
         arguments = [context]
@@ -242,9 +241,9 @@ def DependentObject_emitType(self):
     return self.target.emitType()
 
 @patch
-def DependentObject_emitContext(self, *args):
+def DependentObject_emitContext(self):
     assert self.target is not None
-    return self.target.emitContext(*args)
+    return self.target.emitContext()
 
 #
 # class DependentTarget
@@ -350,11 +349,11 @@ def Function_emitValue(self):
     return self.llvm_value
 
 @patch
-def Function_emitContext(self, self_value = None):
-    if self_value is not None and len(self.closed_context) > 0:
+def Function_emitContext(self):
+    if State.self is not None and len(self.closed_context) > 0:
         context = State.alloca(self.llvm_closure_type, "")
         self_ptr = State.builder.structGEP(context, 0, "")
-        State.builder.store(self_value, self_ptr)
+        State.builder.store(State.self, self_ptr)
         return State.builder.load(context, "")
     return llvm.Value.null(self.llvm_closure_type)
 
@@ -384,7 +383,7 @@ def Constructor_emitReturn(self):
     State.builder.ret(value)
 
 @patch
-def Constructor_emitContext(self, self_value = None):
+def Constructor_emitContext(self):
     return llvm.Value.null(self.llvm_closure_type)
 
 #
