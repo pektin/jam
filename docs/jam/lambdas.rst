@@ -9,12 +9,13 @@ Syntax
 ======
 
 .. productionlist::
-    Lambda: "(" [ [`Argument` ","]* `Argument` ] ")" "=>" `Value`
+    Lambda: [ "(" [ [`Argument` ","]* `Argument` ] ")" | `Argument` ] "=>" `Value`
 
 Example
 =======
 
 ::
 
-    map((a) => a**2, [1, 2, 3, 4]) #=> [1, 4, 9, 16]
+    map(a => a**2, [1, 2, 3, 4]) #=> [1, 4, 9, 16]
     reduce((a, b) => a*b, [1, 2, 3, 4]) #=> 24
+    12.times(=> puts("Hi"))
