@@ -29,6 +29,13 @@ compatible overloads.
     :doc:`lambdas`
         Another kind of method
 
+Type Inference
+==============
+
+For a argument, the type is determined by every action involving that argument.
+From this it builds a "type expectation" that is used at compile time to check
+whether arguments are valid.
+
 Syntax
 ======
 

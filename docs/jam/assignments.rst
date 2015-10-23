@@ -2,9 +2,9 @@ Assignments
 ###########
 
 Assignments are used to directly store values in variables. A single assignment
-may involve any number of values and variables, however the numbers must match
-up. Two values can be assigned to two variables, or to three groups of two
-variables, but three values cannot be assigned to two variables.
+may involve any number of values and variables. The same value may be assigned
+to any number of variables, while a group of values may be assigned to a group
+of variables, respectively.
 
 Syntax
 ======
@@ -43,7 +43,3 @@ Multi Variable
     # velocity is equal to speed which is equal to 55.25, and
     # mass is equal to weight which is 100
     velocity, mass = speed, weight = 55.25, 100
-
-
-
-
