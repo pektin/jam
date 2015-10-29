@@ -4,8 +4,6 @@ from ctypes import *
 import traceback
 import logging
 
-from . import state
-
 # Set platform specific constants
 if sys.platform.startswith("linux"):
     DLL_NAME = "libLLVM-{}.so.1"
@@ -80,9 +78,8 @@ def convertArgs(args):
 def logged(cls_name, name, check_null = True):
     def logged(func):
         def f(self, *args):
-            # Log the call, if possible
-            State = state.State
-            if hasattr(State, "logger") and State.logger:
+            # Log the call, if possible. global State is set by State.begin
+            if 'State' in globals() and State.logger:
                 if isinstance(self, type):
                     State.logger.debug("{}.{} calling {}{}".format(
                         self.__name__, cls_name, name, args), stack_info=True)
