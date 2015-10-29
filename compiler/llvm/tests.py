@@ -54,7 +54,7 @@ def test_llvm_compiling():
         f.write(llvm.compile(source))
 
     os.chmod(path, 0o775)
-    assert b"Hello World!\n" == check_output(["./" + path])
+    assert b"Hello World!\n" == check_output("./{}".format(path))
 
 def test_module_verification_handling():
     module = c.Module.fromName("test")
@@ -66,7 +66,7 @@ def test_module_verification_handling():
     entry = main.appendBlock("")
     builder.positionAtEnd(entry)
 
-    hello = builder.globalString("Hello World!", "temp.0")
+    hello = builder.globalString("Hello World!", "")
     builder.call(puts, [hello], "")
 
     with pytest.raises(c.VerificationError):
