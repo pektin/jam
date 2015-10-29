@@ -21,30 +21,45 @@ compiler become part of the standard library.
 
 ## Compiler
 
-The compiler currently requires python3 and the llvm-3.6 shared library
+The compiler currently requires Python 3 and the llvm-3.6 shared library
 
-### Ubuntu:
+### Ubuntu
 
 See http://llvm.org/apt/ for instructions on how to set up your system to fetch
 the 3.6 packages if you're still on precise.
 
 ``` bash
-sudo apt-get install python3 libllvm3.6 llvm-runtime python3-sphinx
+sudo apt-get install python3 libllvm3.6 llvm-runtime
+```
+
+### Darwin (OSX Journaled)
+
+``` bash
+brew install python3
+```
+
+Download the source for llvm 3.6 from http://llvm.org/releases/download.html
+and build with:
+
+``` bash
+./configure --enable-shared --disable-assertions
+make install
 ```
 
 ## Usage
 
 The compiler is currently built as a python library, however it can also be
-directly run through the `jam` python script:
+directly run through the `jam` python script. The script can be symlinked into
+`/usr/local/bin` with `make install`
 
 ``` bash
-./jam FILE
+jam FILE
 ```
 
 For further help run:
 
 ``` bash
-./jam --help
+jam --help
 ```
 
 ## Development
@@ -52,10 +67,8 @@ For further help run:
 In order to run the automated tests for the compiler, the py.test framework is
 required.
 
-Ubuntu:
-
 ``` bash
-sudo apt-get install python3-pytest
+pip3 install pip3
 ```
 
 To run the tests, simply execute py.test
