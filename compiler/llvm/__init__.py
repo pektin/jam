@@ -1,6 +1,8 @@
+import os
+import uuid
 import logging
 import subprocess
-from tempfile import NamedTemporaryFile
+from tempfile import TemporaryDirectory
 
 from .. import lekvar
 from ..errors import *
@@ -26,11 +28,18 @@ def _optimise(module:bindings.Module, level:int, size_level:int):
     manager.setOptSizeLevel(size_level)
     return bool(manager.run(module))
 
+def _get_tempname(suffix = ""):
+    name = str(uuid.uuid4())
+    # Make sure it doesn't already exist. REALLY make sure
+    while os.path.isfile(name + suffix):
+        name = str(uuid.uuid4())
+    return name + suffix
+
 # Wrapping around lli
 #TODO: Replace with direct calls to llvm
 def run(source:bytes):
     try:
-        return subprocess.check_output("lli-" + bindings.LLVM_VERSION,
+        return subprocess.check_output(bindings.LLI,
             input = source,
             stderr = subprocess.STDOUT,
         )
@@ -40,18 +49,21 @@ def run(source:bytes):
 # Wrapping around clang
 #TODO: Replace with direct calls to llvm
 def compile(source:bytes):
-    try:
-        # Leave cleaning these up to python. Breaks circleci otherwise...
-        f_in = NamedTemporaryFile('wb', suffix=".ll")
-        f_in.write(source)
-        f_in.flush()
+    with TemporaryDirectory() as build_dir:
+        try:
+            # Leave cleaning these up to python.
+            # They should get removed by the temporary dir anyway
+            path = os.path.join(build_dir, _get_tempname(suffix=".ll"))
+            f_in = open(path, 'wb')
+            f_in.write(source)
+            f_in.flush()
 
-        f_out = NamedTemporaryFile('rb')
-        subprocess.check_output([
-                "clang-" + bindings.LLVM_VERSION,
-                "-v", "-o", f_out.name, f_in.name
-            ], stderr = subprocess.STDOUT)
-        return f_out.read()
-    except subprocess.CalledProcessError as e:
-        output = e.output.decode("UTF-8")
-        raise ExecutionError("clang error compiling source {}".format(output))
+            out_name = os.path.join(build_dir, _get_tempname())
+            subprocess.check_output([
+                    bindings.CLANG,
+                    "-v", "-o", out_name, f_in.name
+                ], stderr = subprocess.STDOUT)
+            return open(out_name, 'rb').read()
+        except subprocess.CalledProcessError as e:
+            output = e.output.decode("UTF-8")
+            raise ExecutionError("clang error compiling source {}".format(output))
