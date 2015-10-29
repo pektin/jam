@@ -1,4 +1,4 @@
-#HelloWorld\n
+?#HelloWorld\n
 
 def reprint(one:String) -> String
   return one
