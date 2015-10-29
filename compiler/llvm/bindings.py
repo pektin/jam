@@ -1,23 +1,38 @@
+import sys
+import shutil
 from ctypes import *
 import traceback
 import logging
 
-# Dirty hack for circular import. Set by .state.State
-State = None
+from . import state
 
-#TODO: Support other operating systems/distributions
+# Set platform specific constants
+if sys.platform.startswith("linux"):
+    DLL_NAME = "libLLVM-{}.so.1"
+elif sys.platform.startswith("darwin"):
+    DLL_NAME = "libLLVM-{}.dylib"
+else:
+    raise OSError("{} is not yet supported".format(sys.platform))
+
+# Load the latest supported llvm version
+LLVM_VERSION = '3.6'
 try:
-    _lib = CDLL("libLLVM-3.6.so.1")
-    LLVM_VERSION = '3.6'
+    _lib = CDLL(DLL_NAME.format(LLVM_VERSION))
 except OSError:
-    try:
-        _lib = CDLL("libLLVM-3.5.so.1")
-        print("WARNING: Using unsupported LLVM version: 3.5")
-        LLVM_VERSION = '3.5'
-    except OSError:
-        _lib = CDLL("libLLVM-3.4.so.1")
-        print("WARNING: Using unsupported LLVM version: 3.4")
-        LLVM_VERSION = '3.4'
+    raise OSError("Failed to load llvm 3.6. Make sure the dll is installed and in the right place.")
+
+# Find path to required executables
+REQUIRED_CMDS = 'clang', 'lli'
+for cmd in REQUIRED_CMDS:
+    # First try the version specific command
+    path = shutil.which("{}-{}".format(cmd, LLVM_VERSION))
+    # Then try without the version
+    if path is None:
+        path = shutil.which(cmd)
+    # Otherwise fail
+    if path is None:
+        raise OSError("Failed to find required executable: {}".format(cmd))
+    globals()[cmd.upper()] = path
 
 c_bool = c_int
 
@@ -66,11 +81,14 @@ def logged(cls_name, name, check_null = True):
     def logged(func):
         def f(self, *args):
             # Log the call, if possible
-            if State.logger:
+            State = state.State
+            if hasattr(State, "logger") and State.logger:
                 if isinstance(self, type):
-                    State.logger.debug("{}.{} calling {}{}".format(self.__name__, cls_name, name, args), stack_info=True)
+                    State.logger.debug("{}.{} calling {}{}".format(
+                        self.__name__, cls_name, name, args), stack_info=True)
                 else:
-                    State.logger.debug("{}.{} calling {}{}".format(self.__class__.__name__, cls_name, name, tuple([self] + list(args))), stack_info=True)
+                    State.logger.debug("{}.{} calling {}{}".format(
+                        self.__class__.__name__, cls_name, name, tuple([self] + list(args))), stack_info=True)
 
             # Perform the call
             ret = func(self, *args)
