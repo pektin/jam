@@ -286,4 +286,4 @@ class Lexer:
                 return node.getToken(start, self.position - 1, data)
             elif node is TREE and not self.current:
                 return None
-        raise SyntaxError(message="Unexpected character").add(tokens=[Token(None, self.position - 1, self.position)], source=self.source)
+        raise SyntaxError(message="Unexpected character").add(content=self.current, tokens=[Token(None, self.position - 1, self.position)], source=self.source)
