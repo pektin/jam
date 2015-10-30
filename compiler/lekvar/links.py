@@ -51,8 +51,7 @@ class Reference(Link):
         self.reference = reference
 
     def verify(self):
-        if self.verified: return
-        self.verified = True
+        if self.value is not None: return
 
         # Resolve the reference using general reference resolution
         try:
@@ -69,7 +68,6 @@ class Attribute(Link):
     # The object the value belongs to
     parent = None
     reference = None
-    verified = False
 
     def __init__(self, parent:Object, reference:str, tokens = None):
         super().__init__(None, tokens)
@@ -77,8 +75,7 @@ class Attribute(Link):
         self.reference = reference
 
     def verify(self):
-        if self.verified: return
-        self.verified = True
+        if self.value is not None: return
 
         self.parent.verify()
         # Resolve the attribute using the values attribute resolution
