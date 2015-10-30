@@ -18,33 +18,33 @@ def builtins(logger = logging.getLogger()):
     if builtin_cache is not None:
         return pickle.loads(builtin_cache)
 
-    with open(BUILTINS_PATH, 'r') as f:
+    with open(BUILTINS_PATH, 'r') as f, lekvar.State.ioSource(io.StringIO(f.read())) as f:
         # Use StringIO because other files can't be pickled
-        ir = parser.parseFile(io.StringIO(f.read()), logger)
+        ir = parser.parseFile(f, logger)
 
-    # Certain functions cannot be built into the library
-    # as they cannot be expressed in jam syntax
-    and_ = lekvar.Function("&&", [lekvar.Variable("lhs", lekvar.Reference("Bool")),
-                                  lekvar.Variable("rhs", lekvar.Reference("Bool"))],
-    [
-        lekvar.Branch(lekvar.Reference("lhs"), [
-            lekvar.Return(lekvar.Reference("rhs")),
-        ], lekvar.Branch(None, [
-            lekvar.Return(lekvar.Reference("lhs")),
-        ])),
-    ], [])
-    ir.context.addChild(and_)
+        # Certain functions cannot be built into the library
+        # as they cannot be expressed in jam syntax
+        and_ = lekvar.Function("&&", [lekvar.Variable("lhs", lekvar.Reference("Bool")),
+                                      lekvar.Variable("rhs", lekvar.Reference("Bool"))],
+        [
+            lekvar.Branch(lekvar.Reference("lhs"), [
+                lekvar.Return(lekvar.Reference("rhs")),
+            ], lekvar.Branch(None, [
+                lekvar.Return(lekvar.Reference("lhs")),
+            ])),
+        ], [])
+        ir.context.addChild(and_)
 
-    or_ = lekvar.Function("||", [lekvar.Variable("lhs", lekvar.Reference("Bool")),
-                                  lekvar.Variable("rhs", lekvar.Reference("Bool"))],
-    [
-        lekvar.Branch(lekvar.Reference("lhs"), [
-            lekvar.Return(lekvar.Reference("lhs")),
-        ], lekvar.Branch(None, [
-            lekvar.Return(lekvar.Reference("rhs")),
-        ])),
-    ], [])
-    ir.context.addChild(or_)
+        or_ = lekvar.Function("||", [lekvar.Variable("lhs", lekvar.Reference("Bool")),
+                                      lekvar.Variable("rhs", lekvar.Reference("Bool"))],
+        [
+            lekvar.Branch(lekvar.Reference("lhs"), [
+                lekvar.Return(lekvar.Reference("lhs")),
+            ], lekvar.Branch(None, [
+                lekvar.Return(lekvar.Reference("rhs")),
+            ])),
+        ], [])
+        ir.context.addChild(or_)
 
     try:
         global builtin_cache
