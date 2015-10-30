@@ -1,0 +1,6 @@
+!TypeError
+
+class Foo
+end
+
+Foo() + 12
