@@ -1,0 +1,7 @@
+!TypeError
+
+class Foo
+end
+
+if Foo() && Foo()
+end
