@@ -236,9 +236,9 @@ class Parser:
 
             # Some operations are attributes of the lhs, others are global functions
             if operation.type in BINARY_OPERATION_FUNCTIONS:
-                lhs = lekvar.Call(lekvar.Reference(BINARY_OPERATION_FUNCTIONS[operation.type]), [lhs, rhs], None, operation)
+                lhs = lekvar.Operation(lekvar.Reference(BINARY_OPERATION_FUNCTIONS[operation.type]), [lhs, rhs], None, operation)
             else:
-                lhs = lekvar.Call(lekvar.Attribute(lhs, operation.data), [rhs], None, operation)
+                lhs = lekvar.Operation(lekvar.Attribute(lhs, operation.data), [rhs], None, operation)
 
         return lhs
 
@@ -748,7 +748,7 @@ class Parser:
         assert token.type == Tokens.as_kwd
 
         type = self.parseSingleValue()
-        return lekvar.Call(lekvar.Attribute(value, token.data), [], type, [token])
+        return lekvar.Operation(lekvar.Attribute(value, token.data), [], type, [token])
 
     def parseImport(self):
         tokens = [self.next()]
