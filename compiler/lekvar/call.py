@@ -12,13 +12,13 @@ class Call(Object):
     values = None
     return_type = None
     function = None
+    function_type = None
 
     def __init__(self, called:Object, values:[Object], return_type:Type = None, tokens = None):
         super().__init__(tokens)
         self.called = called
         self.values = values
         self.return_type = return_type
-        self.function = None
 
     def verify(self):
         self.called.verify()
@@ -33,12 +33,12 @@ class Call(Object):
                 raise TypeError(message="Cannot pass non value:").add(object=value).add(message="as an argument")
             arg_types.append(value_type)
 
-        call_type = FunctionType(arg_types, self.return_type)
-        call_type.verify()
+        self.function_type = FunctionType(arg_types, self.return_type)
+        self.function_type.verify()
 
         # Resolve the call
         with State.type_switch():
-            self.function = self.called.resolveCall(call_type)
+            self.function = self.called.resolveCall(self.function_type)
 
     def resolveType(self):
         # Hack for dependent types
