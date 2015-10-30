@@ -48,12 +48,12 @@ class Class(Type, Scope):
 
     def resolveCall(self, call:FunctionType):
         if self.constructor is None:
-            raise TypeError("Class does not have a constructor".format(self), self.tokens)
+            raise TypeError(object=self).add(message="does not have a constructor")
         return self.constructor.resolveCall(call)
 
     def resolveInstanceCall(self, call:FunctionType):
         if "" not in self.instance_context:
-            raise TypeError("Class does not overload call operator")
+            raise TypeError(object=self).add(message="does not overload call operator")
         return self.instance_context[""].resolveCall(call)
 
     @property
@@ -76,4 +76,4 @@ class Constructor(Function):
         # Constructors may not return
         if State.soft_scope_state.maybe_returns:
             #TODO: Find returns
-            raise SyntaxError("Returns within constructors are invalid", self.tokens)
+            raise SyntaxError(object=self).add(message="within a constructor is invalid")

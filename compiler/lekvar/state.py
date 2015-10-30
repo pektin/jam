@@ -91,7 +91,7 @@ class State:
     def ioSource(cls, source:IOBase):
         previous_source = cls.source
         cls.source = source
-        yield
+        yield source
         cls.source = previous_source
 
 class ScopeState:

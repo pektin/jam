@@ -73,16 +73,15 @@ class Method(BoundObject):
 
         # Allow only one match
         if len(matches) < 1:
-            raise TypeError(
-                [("Method does not have an overload for {}\nPossible overloads:".format(call), [])] +
-                [("", overload.tokens) for overload in self.overload_context] +
-                [("", overload.tokens) for overload in self.dependent_overload_context]
-            )
+            err = TypeError(object=self).add(message="does not have an overload for").add(object=call).addNote(message="Possible overloads:")
+            for overload in list(self.overload_context) + list(self.dependent_overload_context):
+                err.addNote(object=overload)
+            raise err
         elif len(matches) > 1:
-            raise TypeError(
-                [("Ambiguous overloads for {}\nMatches ({}):".format(call, len(matches)), [])] +
-                [("", match.tokens) for match in matches]
-            )
+            err = TypeError(message="Ambiguous call to").add(object=self).add(message="Matches:")
+            for match in matches:
+                err.addNote(object=match)
+            raise err
 
         return matches[0]
 
@@ -141,7 +140,7 @@ class MethodType(Type):
 
         if len(matches) == 1:
             return MethodInstance(self, matches[0][1])
-        raise TypeError("TODO: Write This")
+        raise TypeError(message="TODO: Write This")
 
 class MethodInstance(Object):
     def __init__(self, type:MethodType, target:int):

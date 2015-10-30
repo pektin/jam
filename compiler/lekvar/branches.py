@@ -48,7 +48,7 @@ class Break(Object):
     def verify(self):
         self.loop = State.getSoftScope(lambda a: isinstance(a, Loop))
         if self.loop is None:
-            raise SyntaxError("Cannot `break` outside loop", self.tokens)
+            raise SyntaxError(message="Cannot").add(object=self).add(message="outside loop")
 
     def resolveType(self):
         raise InternalError("Break objects do not have a type")

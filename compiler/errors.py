@@ -1,57 +1,60 @@
+# A singular message for an error. An error is made up of multiple error messages
+# A error message defines the formatting of an error.
+class _ErrorMessage:
+    def __init__(self, message:str = None,
+                       content:str = None,
+                       object = None,
+                       tokens:[] = None,
+                       source = None):
+        # Grab message, tokens and source from object if empty
+        if object is not None:
+            if message is None:
+                message = "`{}`".format(object)
+            if tokens is None:
+                tokens = object.tokens
+            if source is None:
+                source = object.source
+        # Put quoted message if content
+        if content is not None:
+            message = "`{}`".format(content)
 
-def _formatTokens(source:str, tokens:[]):
-    # a mapping of line numbers to a line and set of positions in that line
-    lines = {}
+        self.message = message
+        self.tokens = tokens
+        self.source = source
 
-    for token in tokens:
-        line = _getLine(source, token.start)
+    # Return a 3-tuple of the line number, start and end position of the line
+    # at position in source
+    def _getLine(self, source:str, position:int):
+        number = source[:position].count("\n")
+        start = position - len(source[:position].rpartition("\n")[2])
+        end = position + len(source[position:].partition("\n")[0]) + 1
+        return number, start, end
 
-        if line.number not in lines:
-            lines[line.number] = (line, set())
+    def format(self):
+        if self.source is None or self.tokens is None:
+            return self.message, None
 
-        for position in range(token.start, token.end):
-            lines[line.number][1].add(position)
+        # Read in entire source (could be optimised)
+        self.source.seek(0)
+        source = self.source.read()
 
-    out = []
+        lines = {}
+        for token in self.tokens:
+            number, start, end = self._getLine(source, token.start)
+            line = lines.setdefault(number, (set(), start, end))
+            line[0].update(set(range(token.start, token.end)))
 
-    for number, (line, highlights) in sorted(lines.items(), key=lambda a: a[0]):
-        number_str = str(number)
-        out.append("{}| {}{}| {}".format(
-            number_str,
-            source[line.start:line.end],
-            " " * len(number_str),
-            "".join(("^" if index in highlights else " ")
-                for index in range(line.start, line.end))
-        ))
+        appendix = []
+        for number, (highlights, start, end) in sorted(lines.items(), key=lambda a: a[0]):
+            number_str = str(number)
+            appendix.append("{}| {}{}| {}".format(
+                number_str,
+                source[start:end],
+                " " * len(number_str),
+                "".join(("^" if i in highlights else " ") for i in range(start, end))
+            ))
 
-    return "\n".join(out)
-
-def _getLine(source:str, position:int):
-    class Line:
-        def __init__(self):
-            self.number = 1
-            self.start = 0
-            self.end = 0
-        def __repr__(self): return "({},{},{})".format(self.number, self.start, self.end)
-
-    line = Line()
-
-    # Get the line number and starting index of said line at the position
-    for index, character in enumerate(source):
-        if index == position:
-            break
-        elif character == "\n":
-            line.number += 1
-            line.start = index + 1
-
-    # Get the end index of the line
-    line.end = position
-    for character in source[position:]:
-        line.end += 1
-        if character == "\n": # Include the newline
-            break
-
-    return line
+        return self.message, "\n".join(appendix)
 
 # Generic CompilerError
 class CompilerError(Exception):
@@ -60,34 +63,33 @@ class CompilerError(Exception):
     # A compiler error takes a single error message and a list of tokens.
     # When displayed, the error will contain the specified message along with
     # nicely formatted source code extracts, highlighting the specified tokens
-    def __init__(self, message:str, tokens:[] = None):
+    def __init__(self, **kwargs):
         super().__init__("")
         self.messages = []
-        if isinstance(message, list):
-            for msg in message:
-                self.addMessage(*msg)
-        else:
-            self.addMessage(message, tokens)
+        self.notes = []
+        self.add(**kwargs)
 
-    def addMessage(self, message:str, tokens:[]):
-        if message:
-            self.messages.append((message, tokens))
-        else:
-            msg = self.messages[-1]
-            if msg[1]:
-                msg = (msg[0], msg[1] + tokens)
-            else:
-                msg = (msg[0], tokens)
-            self.messages[-1] = msg
+    def add(self, **kwargs):
+        self.messages.append(_ErrorMessage(**kwargs))
+        return self
 
-    def format(self, source:str):
-        message = "\n".join(
-            (msg if msg else "") +
-            ("\n" if msg and tokens else "") +
-            (_formatTokens(source, tokens) if tokens else "")
-                for msg, tokens in self.messages
-        )
-        self.args = (message,)
+    def addNote(self, **kwargs):
+        self.notes.append(_ErrorMessage(**kwargs))
+        return self
+
+    def _format(self, list):
+        content = []
+        appendix = []
+
+        for message in list:
+            message = message.format()
+            if message[0]: content.append(message[0])
+            if message[1]: appendix.append(message[1])
+
+        return " ".join(content) + "\n" + "\n".join(appendix)
+
+    def format(self):
+        self.args = (self._format(self.messages) + self._format(self.notes),)
 
 class SyntaxError(CompilerError):
     pass
@@ -118,3 +120,5 @@ class ExecutionError(Exception):
 
 class InternalError(Exception):
     pass
+
+from . import lekvar

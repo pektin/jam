@@ -61,14 +61,14 @@ class Function(Scope):
     def verifySelf(self):
         # If we have a return type, we must return on all code paths
         if self.type.return_type is not None and not State.soft_scope_state.definately_returns:
-            raise SemanticError("All code paths must return", self.tokens)
+            raise SemanticError(message="All code paths must return for").add(object=self)
 
     def resolveType(self):
         return self.type
 
     def resolveCall(self, call:FunctionType):
         if not checkCompatibility(self.resolveType(), call):
-            raise TypeError("Function is not callable with {}".format(call), self.tokens)
+            raise TypeError(object=self).add(message="is not callable with").add(object=call)
         return self
 
     def __repr__(self):
@@ -146,7 +146,7 @@ class Return(Object):
         scope = State.soft_scope_state.scope
 
         if not isinstance(State.scope, Function):
-            raise SyntaxError("Cannot return outside of a function", self.tokens)
+            raise SyntaxError(message="Cannot").add(object=self).add(message="outside of a function")
         self.function = State.scope
 
         if self.value is not None:
@@ -159,7 +159,7 @@ class Return(Object):
             else:
                 checkCompatibility(self.function.type.return_type, self.value.resolveType())
         elif self.function.type.return_type is not None:
-            raise TypeError("Function cannot return nothing. It must return a {}".format(self.function.type.return_type), self.tokens)
+            raise TypeError(object=self).add(message="must return a").add(object=self.function.type.return_type)
 
         # Update scope state
         State.soft_scope_state.definately_returns = True

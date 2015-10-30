@@ -45,7 +45,7 @@ class Import(lekvar.Link, lekvar.BoundObject):
                         break
 
             if self.value is None:
-                raise ImportError("Cannot find file to import", self.tokens)
+                raise ImportError(message="Cannot find file for").add(object=self)
 
         for name in self.path[index:]:
             self.value = lekvar.Attribute(self.value, name)

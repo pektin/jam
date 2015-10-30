@@ -39,7 +39,5 @@ def verify(module:Module, builtin:Module, logger = logging.getLogger()):
     try:
         module.verify()
     except CompilerError as e:
-        if module.source is not None:
-            module.source.seek(0)
-            e.format(module.source.read())
+        e.format()
         raise e

@@ -30,7 +30,7 @@ class Call(Object):
             value_type = value.resolveType()
 
             if value_type is None:
-                raise TypeError("Cannot pass nothing as an argument", value.tokens)
+                raise TypeError(message="Cannot pass non value:").add(object=value).add(message="as an argument")
             arg_types.append(value_type)
 
         call_type = FunctionType(arg_types, self.return_type)

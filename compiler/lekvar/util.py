@@ -36,12 +36,12 @@ def resolveReference(reference:str, exclude = None):
 
     # Only a single found object is valid
     if len(found) < 1:
-        raise MissingReferenceError("No reference to {}".format(reference))
+        raise MissingReferenceError(message="Missing reference to")
     elif len(found) > 1:
-        raise AmbiguityError(
-            [("Ambiguous reference to {}\nMatches:".format(reference), [])] +
-            [("", match.tokens) for match in found]
-        )
+        err = AmbiguityError(message="Ambiguous reference to").addNote(message="Matches:")
+        for match in found:
+            err.addNote(object=match)
+        raise err
 
     return found[0]
 
@@ -51,8 +51,7 @@ def resolveAttribute(object:Object, reference:str):
 
     if context is not None and reference in context:
         return context[reference]
-
-    raise MissingReferenceError("{} does not have an attribute {}".format(object, reference), object.tokens)
+    raise MissingReferenceError(object=object).add(message="does not have an attribute")
 
 # Check whether a object is within a scope
 def inScope(object:BoundObject, scope:Scope):

@@ -18,7 +18,7 @@ def parseFile(source:IOBase, logger=logging.getLogger()):
             return module
         except CompilerError as e:
             source.seek(0)
-            e.format(source.read())
+            e.format()
             raise e
 
 #
@@ -60,6 +60,9 @@ class Parser:
         self.tokens = []
         self.logger = logger.getChild("Parser")
 
+    @property
+    def source(self): return self.lexer.source
+
     # Return the next token and move forward by one token
     def next(self):
         if len(self.tokens) == 0:
@@ -75,7 +78,7 @@ class Parser:
 
     # Throw an unexpected token error
     def _unexpected(self, token):
-        raise SyntaxError("Unexpected {}: `{}`".format(token.type.name, token.data), [token])
+        raise SyntaxError(message="Unexpected").add(content=token.data, tokens=[token], source=self.source)
 
     # Strip all tokens of a type, returning one lookAhead or None
     def strip(self, types:[Tokens]):
@@ -95,7 +98,7 @@ class Parser:
         token = self.next()
 
         if token is None:
-            raise SyntaxError("Expected {} before EOF".format(type.name))
+            raise SyntaxError(message="Expected").add(content=type.name).add(message="before EOF")
 
         if token.type != type:
             self._unexpected(token)
@@ -145,7 +148,7 @@ class Parser:
             if inline:
                 token = self.lookAhead()
                 if token is None:
-                    raise SyntaxError("Expected `end` before EOF for module", tokens)
+                    raise SyntaxError(message="Expected").add(content="end").add(message="before EOF").addNote(tokens=tokens, source=self.source)
                 elif token.type == Tokens.end_kwd:
                     tokens.append(self.next())
                     break
@@ -286,7 +289,7 @@ class Parser:
 
         # EOF handling
         if token is None:
-            raise SyntaxError("Expected value before EOF") #TODO: Add token reference
+            raise SyntaxError(message="Expected value before EOF") #TODO: Add token reference
 
         # Identify the kind of value
         if token.type == Tokens.def_kwd:
@@ -404,12 +407,12 @@ class Parser:
                     name = ""
                     arguments, default_values = self.parseMethodArguments()
                 else:
-                    raise SyntaxError("{} is not a valid operation".format(token), [token])
+                    raise SyntaxError(content=token.data, tokens=[token], source=self.source).add(message="is not a valid operation")
             # Prefix Unary Operations
             elif self.lookAhead(2).type == Tokens.self_kwd:
                 token = self.next()
                 if token.type not in UNARY_OPERATION_TOKENS:
-                    raise SyntaxError("{} is not a valid operation".format(token), [token])
+                    raise SyntaxError(content=token.data, tokens=[token], source=self.source).add(message="is not a valid operation")
                 name = token.data
 
                 tokens.append(token)
@@ -464,7 +467,7 @@ class Parser:
             token = self.lookAhead()
 
             if token is None:
-                raise SyntaxError("Expected `end` before EOF for method", tokens)
+                raise SyntaxError(message="Expected `end` before EOF").add(tokens=tokens, source=self.source)
 
             if token.type == Tokens.end_kwd:
                 tokens.append(self.next())
@@ -498,7 +501,7 @@ class Parser:
             else:
                 # Check for default arguments before a non-defaulted argument
                 if value is not None:
-                    raise SemanticError("Cannot have non-defaulted arguments after defaulted ones", value.tokens)
+                    raise SemanticError(message="Cannot have non-defaulted arguments after defaulted ones").add(message="", object=value)
 
         return lekvar.Method(name, overloads)
 
@@ -552,7 +555,7 @@ class Parser:
             token = self.strip([Tokens.comment])
 
             if token is None:
-                raise SyntaxError("Expected `end` before EOF for class", tokens)
+                raise SyntaxError(message="Expected `end` before EOF").add(tokens=tokens, source=self.source)
 
             elif token.type == Tokens.end_kwd:
                 tokens.append(self.next())
@@ -591,7 +594,7 @@ class Parser:
             token = self.lookAhead()
 
             if token is None:
-                raise SyntaxError("Expected `end` before EOF for while loop", tokens)
+                raise SyntaxError(message="Expected `end` before EOF").add(tokens=tokens, source=self.source)
 
             elif token.type == Tokens.end_kwd:
                 tokens.append(self.next())
@@ -612,7 +615,7 @@ class Parser:
             token = self.lookAhead()
 
             if token is None:
-                raise SyntaxError("Expected `end` before EOF for loop", tokens)
+                raise SyntaxError(message="Expected `end` before EOF").add(tokens=tokens, source=self.source)
 
             elif token.type == Tokens.end_kwd:
                 tokens.append(self.next())
@@ -642,7 +645,7 @@ class Parser:
             token = self.lookAhead()
 
             if token is None:
-                raise SyntaxError("Expected `end` or `else` before EOF for if branch", tokens)
+                raise SyntaxError(message="Expected `end` or `else` before EOF").add(tokens=tokens, source=self.source)
 
             elif token.type == Tokens.end_kwd:
                 tokens.append(self.next())

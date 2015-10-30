@@ -71,11 +71,11 @@ class DependentObject(Type, BoundObject):
 
             # Local checks
             if not self.checkLockedCompatibility(target):
-                raise TypeError("TODO: Write this")
+                raise TypeError(message="TODO: Write this")
 
             # Set target
             if self.target is not None and self.target is not target:
-                raise TypeError("TODO: Write this")
+                raise TypeError(message="TODO: Write this")
             self.target = target
 
             # Pass on dependency checks
@@ -100,7 +100,7 @@ class DependentObject(Type, BoundObject):
 
             if self._return_type is not None:
                 if not hasattr(target, "return_type"):
-                    raise TypeError("TODO: Write this")
+                    raise TypeError(message="TODO: Write this")
                 stack.enter_context(self._return_type.targetAt(target.return_type))
 
             yield
@@ -217,6 +217,6 @@ class DependentContext(Context):
         with ExitStack() as stack:
             for name in self.children:
                 if name not in target.children:
-                    raise DependencyError("Dependent target context does not have attribute {}".format(name), target.scope.tokens)
+                    raise DependencyError(message="Dependent target context does not have attribute").add(content=name).add(message="", object=target.scope)
             stack.enter_context(self[name].targetAt(target[name]))
             yield

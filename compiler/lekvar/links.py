@@ -58,7 +58,7 @@ class Reference(Link):
         try:
             self.value = resolveReference(self.reference)
         except MissingReferenceError as e:
-            e.addMessage("", self.tokens)
+            e.add(content=self.reference, object=self)
             raise e
         super().verify()
 
@@ -85,7 +85,7 @@ class Attribute(Link):
         try:
             self.value = resolveAttribute(self.parent, self.reference)
         except MissingReferenceError as e:
-            e.addMessage("", self.tokens)
+            e.add(content=self.reference, object=self)
             raise e
         self.value.verify()
 

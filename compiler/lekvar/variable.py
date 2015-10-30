@@ -28,7 +28,7 @@ class Variable(BoundObject):
 
     def resolveAssignment(self):
         if self.constant and self.assigned:
-            raise TypeError("Cannot assign to constant")
+            raise TypeError(message="Cannot assign to constant").add(object=self)
         self.assigned = True
 
     @property
@@ -67,7 +67,7 @@ class Assignment(Object):
             if variable.type is None:
                 variable.type = self.variable.type
             elif self.variable.type is not None: #TODO: Maybe just verify compatibility?
-                raise TypeError("Cannot override variable type", self.tokens)
+                raise TypeError(message="Cannot override type of").add(object=self)
 
             self.variable = variable
 
@@ -75,9 +75,7 @@ class Assignment(Object):
         value_type = self.value.resolveType()
 
         if value_type is None:
-            raise TypeError("Cannot assign nothing to a variable"
-                + (" of type {}".format(self.variable.type) if self.variable.type is not None else ""),
-                self.value.tokens + self.variable.tokens)
+            raise TypeError(message="Cannot assign").add(object=self.value).add(message="to").add(object=self.variable)
 
         # Infer the variable type if necessary
         if self.variable.type is None:
@@ -87,14 +85,13 @@ class Assignment(Object):
 
         # Verify the variable's type with the assigned values
         if not checkCompatibility(value_type, self.variable.type):
-            raise TypeError("Cannot assign {} of type {} to variable {} of type {}".format(self.value, value_type, self.variable, self.variable.type),
-                self.value.tokens + self.variable.tokens + self.tokens)
+            raise TypeError(message="Cannot assign").add(object=self.value).add(message="to").add(object=self.variable)
 
         # Allow variable to handle any state associated with assignments
         try:
             self.variable.resolveAssignment()
         except TypeError as e:
-            e.addMessage("", self.tokens)
+            e.add(message="", object=self)
             raise
 
     def resolveType(self):
