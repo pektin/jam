@@ -13,7 +13,7 @@ from compiler import jam, lekvar, llvm
 
 VERSION = "Jam v0.1a"
 
-INTERACTIVE_PROMPT = "#| "
+INTERACTIVE_PROMPT = "{}| "
 INTERACTIVE_STARTUP = "{} interactive compiler".format(VERSION)
 
 common_parser = argparse.ArgumentParser(add_help=False)
@@ -98,12 +98,14 @@ def run(args):
         def __init__(self):
             self.buffer = ""
             self.position = 0
+            self.ln = 1
 
         def read(self, n = None):
             if n is None: n = len(self.buffer) - self.position
 
             while self.position + n > len(self.buffer):
-                written = input(INTERACTIVE_PROMPT)
+                written = input(INTERACTIVE_PROMPT.format(self.ln))
+                self.ln += 1
                 if not written: return None
                 self.buffer += written + "\n"
 
