@@ -21,7 +21,7 @@ compiler become part of the standard library.
 
 ## Compiler
 
-The compiler currently requires Python 3 and the llvm-3.6 shared library
+The compiler currently requires Python 3.4 and the llvm-3.6 shared library
 
 ### Ubuntu
 
