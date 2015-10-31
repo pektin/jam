@@ -17,7 +17,7 @@ LLVM_VERSION = '3.6'
 try:
     _lib = CDLL(DLL_NAME.format(LLVM_VERSION))
 except OSError:
-    raise OSError("Failed to load llvm 3.6. Make sure the dll is installed and in the right place.")
+    raise OSError("Failed to load llvm {} Make sure the dll is installed and in the right place.".format(LLVM_VERSION))
 
 # Find path to required executables
 REQUIRED_CMDS = 'clang', 'lli'
@@ -309,7 +309,9 @@ Builder.wrapInstanceFunc("store", "LLVMBuildStore", [Value, Value], Value)
 Builder.wrapInstanceFunc("extractValue", "LLVMBuildExtractValue", [Value, c_uint, c_char_p], Value)
 Builder.wrapInstanceFunc("insertValue", "LLVMBuildInsertValue", [Value, Value, c_uint, c_char_p], Value)
 
-Builder.wrapInstanceFunc("call", "LLVMBuildCall", [FunctionValue, [Value], c_char_p], Value)
+Builder.wrapInstanceFunc("call", "LLVMBuildCall", [Value, [Value], c_char_p], Value)
+
+Builder.wrapInstanceFunc("cast", "LLVMBuildBitCast", [Value, Type, c_char_p], Value)
 
 Builder.wrapInstanceFunc("iAdd", "LLVMBuildAdd", [Value, Value, c_char_p], Value)
 Builder.wrapInstanceFunc("iSub", "LLVMBuildSub", [Value, Value, c_char_p], Value)
