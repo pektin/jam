@@ -82,7 +82,7 @@ class State:
     @classmethod
     def emitInstructions(cls, instructions):
         for instruction in instructions:
-            value = instruction.emitValue()
+            value = instruction.emitValue(None)
 
             if value is not None and value.opcode == llvm.Opcode.Br:
                 return True

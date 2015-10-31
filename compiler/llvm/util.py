@@ -11,6 +11,9 @@ def resolveName(scope:lekvar.BoundObject):
 # A blank emission function. Can be used for anything
 def blankEmit(self):
     return None
+# A blank value emission function. requires type argument
+def blankEmitValue(self, type):
+    return None
 
 # Mokeypatch a function into a lekvar class
 # The lekvar class is determined from the name of the function, which should be
