@@ -39,8 +39,7 @@ class State:
     def addMainInstructions(cls, instructions:[lekvar.Object]):
         last_block = cls.main.getLastBlock().getPrevious()
         with cls.blockScope(last_block):
-            for instruction in instructions:
-                instruction.emitValue()
+            cls.emitInstructions(instructions)
 
     @classmethod
     @contextmanager
