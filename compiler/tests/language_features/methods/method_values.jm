@@ -1,9 +1,14 @@
-?#HelloWorld\n
+#HelloWorld\nBar\n
 
-def reprint(one:String) -> String
+def foo(one:String) -> String
   return one
 end
 
-var = reprint
+def foo(one:String, two:String) -> String
+  return two
+end
+
+var = foo
 
 puts(var("HelloWorld"))
+puts(var("Foo", "Bar"))
