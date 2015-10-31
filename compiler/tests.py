@@ -23,7 +23,7 @@ for root, dirs, files in os.walk(TESTS_PATH):
     # All jam files are tests
     for file in fnmatch.filter(files, "*.jm"):
         path = os.path.join(root, file)
-        name = "test_" + os.path.split(root)[1] + "." + file
+        name = "test_" + ".".join(root.split(os.sep)[2:] + [file])
 
         def test(verbosity, file=file, path=path):
             logging.basicConfig(level=logging.WARNING - verbosity*10, stream=sys.stdout)
