@@ -93,19 +93,19 @@ class Method(BoundObject):
         return "method {}".format(self.name)
 
 class MethodType(Type):
-    possible_overload_types = None
+    overload_types = None
     used_overload_types = None
 
     def __init__(self, overloads:[FunctionType], tokens = None):
         super().__init__(tokens)
-        self.possible_overload_types = overloads
+        self.overload_types = overloads
         self.used_overload_types = { fn_type: False for fn_type in overloads }
 
     def resolveType(self):
         raise InternalError("Not Implemented")
 
     def verify(self):
-        for fn_type in self.possible_overload_types:
+        for fn_type in self.overload_types:
             fn_type.verify()
 
     @property
@@ -116,9 +116,9 @@ class MethodType(Type):
         if not isinstance(other, MethodType):
             return False
 
-        for self_fn_type in self.possible_overload_types:
+        for self_fn_type in self.overload_types:
             compat_fn_type = None
-            for other_fn_type in other.possible_overload_types:
+            for other_fn_type in other.overload_types:
                 if self_fn_type.checkCompatibility(other_fn_type):
                     compat_fn_type = other_fn_type
                     break
@@ -133,8 +133,8 @@ class MethodType(Type):
 
     def resolveInstanceCall(self, call:FunctionType):
         matches = []
-        for index in range(len(self.possible_overload_types)):
-            fn_type = self.possible_overload_types[index]
+        for index in range(len(self.overload_types)):
+            fn_type = self.overload_types[index]
             if fn_type.checkCompatibility(call):
                 matches.append((fn_type, index))
 
@@ -152,7 +152,7 @@ class MethodInstance(Object):
         self.type.verify()
 
     def resolveType(self):
-        return self.type.possible_overload_types[self.target]
+        return self.type.overload_types[self.target]
 
     def resolveCall(self, call:FunctionType):
         return self
