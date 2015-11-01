@@ -1,0 +1,19 @@
+?#foo\nbar\n
+
+class Printer
+  value:String
+
+  new(v:String)
+    value = v
+  end
+
+  def print()
+    puts(value)
+  end
+end
+
+print_a = Printer("foo").print
+print_b = Printer("bar").print
+
+print_a()
+print_b()
