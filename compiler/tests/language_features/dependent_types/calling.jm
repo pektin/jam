@@ -1,0 +1,16 @@
+#foo\nbar\n
+
+def call(fn, arg)
+  fn(arg)
+end
+
+class Printer
+  new() end
+  def self(value:String)
+    puts(value)
+  end
+end
+
+p = Printer()
+call(p, "foo")
+call(puts, "bar")
