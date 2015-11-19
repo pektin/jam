@@ -440,8 +440,8 @@ def Method_emit(self):
 
 @patch
 def Method_emitValue(self, type):
-    if not isinstance(type, lekvar.MethodType):
-        raise InternalError()
+    if type is None:
+        type = self.resolveType()
 
     values = []
     overloads = list(self.overload_context)
