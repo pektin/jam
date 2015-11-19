@@ -1,4 +1,5 @@
 from contextlib import contextmanager, ExitStack
+from itertools import chain
 
 from ..errors import *
 
@@ -25,6 +26,7 @@ class DependentObject(Type, BoundObject):
     _instance_context = None
     resolved_type = None
     resolved_calls = None
+    resolved_instalce_calls = None
 
     # Object Dependencies
     target_switch = None
@@ -41,6 +43,7 @@ class DependentObject(Type, BoundObject):
         self.scope = scope
 
         self.resolved_calls = dict()
+        self.resolved_instalce_calls = dict()
         self.compatible_types = set()
         self.switches = []
 
@@ -54,6 +57,10 @@ class DependentObject(Type, BoundObject):
     @property
     def locked(self):
         return not inScope(self.scope, State.scope)
+
+    @property
+    def resolved(self):
+        return self.target is not None
 
     def verify(self):
         if self.target: self.target.verify()
@@ -79,35 +86,41 @@ class DependentObject(Type, BoundObject):
             self.target = target
 
             # Pass on dependency checks
+            def target_generator():
+                if self._instance_context is not None:
+                    yield self.instance_context, target.instance_context
 
-            if self._instance_context is not None:
-                stack.enter_context(self.instance_context.targetAt(target.instance_context))
+                if self.resolved_type is not None:
+                    yield self.resolved_type, target.resolveType()
 
-            if self.resolved_type is not None:
-                stack.enter_context(self.resolved_type.targetAt(target.resolveType()))
+                calls = self._targetCall(target, self.resolved_calls, lambda c: c.resolveCall)
+                inst_calls = self._targetCall(target, self.resolved_instalce_calls, lambda o: o.resolveInstanceCall)
+                for o in chain(calls, inst_calls):
+                    yield o
 
-            for call, obj in self.resolved_calls.items():
-                target_call = target.resolveCall(call)
-                stack.enter_context(obj.targetAt(target_call))
-                # The call itself may also be dependent, so we have to target that
-                if call.dependent:
-                    for arg, target_arg in zip(call.arguments, target_call.arguments):
-                        if isinstance(arg, DependentObject):
-                            stack.enter_context(arg.targetAt(target_arg.resolveType()))
+                for switch in self.switches:
+                    yield switch.resolveTarget()
 
-            for switch in self.switches:
-                stack.enter_context(switch.resolveTarget())
+                if self._return_type is not None:
+                    if not hasattr(target, "return_type"):
+                        raise TypeError(message="TODO: Write this")
+                    yield self._return_type, target.return_type
 
-            if self._return_type is not None:
-                if not hasattr(target, "return_type"):
-                    raise TypeError(message="TODO: Write this")
-                stack.enter_context(self._return_type.targetAt(target.return_type))
-
-            yield
+            yield target_generator()
             self.target = None
 
+    def _targetCall(self, target, calls, resolution_function):
+        for call, obj in calls.items():
+            target_call = resolution_function(target)(call).resolveValue()
+
+            yield obj, target_call
+            # The call itself may also be dependent, so we have to target that
+            if not all(arg.resolved for arg in call.arguments if isinstance(arg, DependentObject)):
+                for arg, target_arg in zip(call.arguments, target_call.arguments):
+                    if isinstance(arg, DependentObject):
+                        yield arg, target_arg
+
     # Same as targetAt but for switches
-    @contextmanager
     def resolveTarget(self):
         # It should already be verified that only one switch matches
         for possibility in self.target_switch:
@@ -115,10 +128,7 @@ class DependentObject(Type, BoundObject):
                 target = possibility
                 break
 
-        previous_target = self.target
-        self.target = target
-        yield
-        self.target = previous_target
+        return self, target
 
     # Create and cache dependencies for standard object functionality
 
@@ -134,10 +144,13 @@ class DependentObject(Type, BoundObject):
     def resolveCall(self, call):
         return self.resolved_calls.setdefault(call, DependentObject(self.scope))
 
-    # Both of these are superseded by instance_context and resolveCall respectively
+    def resolveInstanceCall(self, call):
+        return self.resolved_instalce_calls.setdefault(call, DependentObject(self.scope))
+
+    # Can be ignored, as context is superseded by instance_context
     @property
-    def context(self): pass
-    def resolveInstanceCall(self, call): pass
+    def context(self):
+        pass
 
     # Hack!
     @property
@@ -148,6 +161,7 @@ class DependentObject(Type, BoundObject):
     def checkCompatibility(self, other:Type):
         if self.target is not None: return self.target.checkCompatibility(other)
         if self.locked: return self.checkLockedCompatibility(other)
+
         if State.type_switching:
             self.compatible_type_switch = self.compatible_type_switch or []
             self.compatible_type_switch.append(other)
@@ -188,8 +202,14 @@ class DependentTarget(Link):
     @contextmanager
     def target(self):
         with ExitStack() as stack:
-            for object, target in self.dependencies:
-                stack.enter_context(object.targetAt(target))
+            dependencies = iter(self.dependencies)
+            while True:
+                dep = next(dependencies, None)
+                if dep is None: break
+
+                object, target = dep
+                dependencies = chain(dependencies, stack.enter_context(object.targetAt(target)))
+
             yield
 
 # The dependent context compliments the dependent object with the creation
@@ -214,9 +234,9 @@ class DependentContext(Context):
 
     @contextmanager
     def targetAt(self, target):
-        with ExitStack() as stack:
+        def target_generator():
             for name in self.children:
                 if name not in target.children:
                     raise DependencyError(message="Dependent target context does not have attribute").add(content=name).add(message="", object=target.scope)
-            stack.enter_context(self[name].targetAt(target[name]))
-            yield
+                yield self[name], target[name]
+        yield target_generator()
