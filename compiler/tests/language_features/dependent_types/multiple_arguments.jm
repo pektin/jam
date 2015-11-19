@@ -1,8 +1,8 @@
-#17\n10\n
+#102\n-22.2\n
 
-def add(a, b)
-  return a + b
+def formula(a, b, c, d, e)
+  return (a + b) * c * (d - e)
 end
 
-puts(add(12, 5))
-puts(add(9.5, 0.5))
+puts(formula(12, 5, 2, 9, 6))
+puts(formula(9.5, 0.5, 0.2, 3.8, 14.9))
