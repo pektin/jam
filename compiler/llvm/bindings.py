@@ -19,18 +19,19 @@ try:
 except OSError:
     raise OSError("Failed to load llvm {} Make sure the dll is installed and in the right place.".format(LLVM_VERSION))
 
-# Find path to required executables
-REQUIRED_CMDS = 'clang', 'lli'
-for cmd in REQUIRED_CMDS:
+def llvm_cmd(cmd, fail_ok = False):
     # First try the version specific command
     path = shutil.which("{}-{}".format(cmd, LLVM_VERSION))
     # Then try without the version
     if path is None:
         path = shutil.which(cmd)
-    # Otherwise fail
-    if path is None:
+
+    if path is None and not fail_ok:
         raise OSError("Failed to find required executable: {}".format(cmd))
-    globals()[cmd.upper()] = path
+    return path
+
+LLI = llvm_cmd("lli")
+CLANG = llvm_cmd("clang", True)
 
 c_bool = c_int
 
