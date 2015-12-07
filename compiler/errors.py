@@ -25,7 +25,7 @@ class _ErrorMessage:
     # Return a 3-tuple of the line number, start and end position of the line
     # at position in source
     def _getLine(self, source:str, position:int):
-        number = source[:position].count("\n")
+        number = source[:position].count("\n") + 1
         start = position - len(source[:position].rpartition("\n")[2])
         end = position + len(source[position:].partition("\n")[0]) + 1
         return number, start, end
