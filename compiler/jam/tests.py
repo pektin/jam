@@ -16,36 +16,38 @@ def :def_end=new  (return(a)  #
 defend+_- end"""
     # Expected output token types
     expected = [
-        Tokens.comment,
+        Tokens.newline,
 
         Tokens.def_kwd,
         Tokens.typeof,
         Tokens.identifier,
-        Tokens.equal,
+        Tokens.assign,
         Tokens.new_kwd,
         Tokens.group_start,
         Tokens.return_kwd,
         Tokens.group_start,
         Tokens.identifier,
         Tokens.group_end,
-        Tokens.comment,
+        Tokens.newline,
 
         Tokens.if_kwd,
-        Tokens.equal,
+        Tokens.assign,
         Tokens.else_kwd,
         Tokens.subtraction,
         Tokens.integer,
         Tokens.integer_division,
         Tokens.division,
         Tokens.multiplication,
+        Tokens.newline,
 
         Tokens.equality,
-        Tokens.equal,
+        Tokens.assign,
         Tokens.smaller_than_or_equal_to,
         Tokens.greater_than_or_equal_to,
         Tokens.smaller_than,
         Tokens.greater_than,
         Tokens.inequality,
+        Tokens.newline,
 
         Tokens.identifier,
         Tokens.addition,
