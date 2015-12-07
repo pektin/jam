@@ -54,6 +54,13 @@ The operations in descending rank order are Parenthesis, Exponents, Division,
 Multiplication, Addition, Subtraction. A group of operations of the same rank
 will be executed from left to right.
 
+Indexing
+--------
+
+Indexing is an operation on a value that maps one or more values to another
+value. This includes using an integer to map the index of an element in an array
+to the element itself.
+
 Syntax
 ======
 
@@ -64,7 +71,8 @@ Syntax
     BinaryOperation: (`Value` `BinaryOperator` `Value`) | `ComparisonOperation`
     UnaryOperator: "~" | "!"
     UnaryOperation: [`UnaryOperator`] `Value`
-    Operation: `UnaryOperation` | `BinaryOperation`
+    IndexOperation: `Value` "[" [ `Value` "," ]* `Value` "]"
+    Operation: `UnaryOperation` | `BinaryOperation` | `IndexOperation`
 
 Examples
 ========
@@ -195,3 +203,19 @@ Bitwise
 
     # Bitwise Inverse
     TODO
+
+Indexing
+--------
+
+::
+
+    # Arrays
+    primes = [2, 3, 5, 7, 11, 13, 17, 19, 23]
+    fifth_prime = primes[4]
+
+    # Associative Arrays
+    emergency_numbers = [
+        "AUS" -> "000",
+        "USA" -> "911",
+    ]
+    aus_emergency_number = emergency_numbers["AUS"]
