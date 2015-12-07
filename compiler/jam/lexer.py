@@ -39,7 +39,7 @@ class Node:
         return "Node(token:{})".format(self.token_type, self.links)
 
 Tokens = Enum("Tokens", [
-    "comment",
+    "newline",
 
     "identifier",
     "const_kwd",
@@ -73,7 +73,7 @@ Tokens = Enum("Tokens", [
     "returns",
     "dot",
     "comma",
-    "equal",
+    "assign",
 
     "addition",
     "subtraction",
@@ -96,17 +96,23 @@ Tokens = Enum("Tokens", [
 TREE = Node()
 
 # Ignore whitespace
-WHITESPACE = set(" \t\n")
+WHITESPACE = set(" \t")
 
 TREE.links.append((TREE, lambda c: c in WHITESPACE))
 
-# Comments
-COMMENT_CHAR = "#"
+# Newlines
 NEWLINE_CHAR = "\n"
 
-node = Node(token_type=Tokens.comment)
+newline_node = Node(token_type=Tokens.newline)
+TREE.links.append((newline_node, lambda c: c == NEWLINE_CHAR))
+
+# Comments
+COMMENT_CHAR = "#"
+
+node = Node()
 TREE.links.append((node, lambda c: c == COMMENT_CHAR))
 node.links.append((node, lambda c: c != NEWLINE_CHAR))
+node.links.append((newline_node, lambda c: c == NEWLINE_CHAR))
 
 # Strings
 FORMAT_STRING_CHAR = "\""
@@ -158,7 +164,7 @@ DIRECT_MAP = [
     (":", Tokens.typeof),
     ("->", Tokens.returns),
     (",", Tokens.comma),
-    ("=", Tokens.equal),
+    ("=", Tokens.assign),
     (".", Tokens.dot),
 
     # Keywords
