@@ -10,7 +10,8 @@ Syntax
 ======
 
 .. productionlist::
-    AssignmentVars: [`Variable` ","]* `Variable`
+    Assignable: `Variable` | `IndexOperation` | `Attribute`
+    AssignmentVars: [`Assignable` ","]* `Assignable`
     Assignment: [`AssignmentVars` "="]* `AssignmentVars` "=" [`Value` ","]* `Value`
 
 Examples
@@ -43,3 +44,17 @@ Multi Variable
     # velocity is equal to speed which is equal to 55.25, and
     # mass is equal to weight which is 100
     velocity, mass = speed, weight = 55.25, 100
+
+Indexing Assignment
+-------------------
+
+::
+
+    #TODO
+
+Attribute Assignment
+--------------------
+
+::
+
+    #TODO
