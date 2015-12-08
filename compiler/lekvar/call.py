@@ -38,14 +38,22 @@ class Call(Object):
 
         # Resolve the call
         with State.type_switch():
-            self.function = self.called.resolveCall(self.function_type)
+            try:
+                self.function = self.called.resolveCall(self.function_type)
+            except CompilerError as e:
+                e.add(object=self, message="").add(object=self.called, message="")
+                raise
 
     def resolveType(self):
         # Hack for dependent types
         context = self.function.target() if isinstance(self.function, DependentTarget) else ExitStack()
         with context:
             type = self.function.resolveType().return_type
-            return type.resolveValue() if type is not None else None
+
+            if type is not None:
+                return type.resolveValue()
+            else:
+                raise TypeError(object=self.called).add(message="does not have a type")
 
     def __repr__(self):
         return "{}({})".format(self.called, ", ".join(repr(val) for val in self.values))

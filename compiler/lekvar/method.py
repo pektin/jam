@@ -75,12 +75,12 @@ class Method(BoundObject):
         if len(matches) < 1:
             err = TypeError(object=self).add(message="does not have an overload for").add(object=call).addNote(message="Possible overloads:")
             for overload in list(self.overload_context) + list(self.dependent_overload_context):
-                err.addNote(object=overload)
+                err.addNote(object=overload, message="")
             raise err
         elif len(matches) > 1:
-            err = TypeError(message="Ambiguous call to").add(object=self).add(message="Matches:")
+            err = TypeError(message="Ambiguous call").add(object=call).add(message="to").add(object=self).add(message="Matches:")
             for match in matches:
-                err.addNote(object=match)
+                err.addNote(object=match, message="")
             raise err
 
         return matches[0]
