@@ -24,7 +24,6 @@ lekvar.Function.llvm_return = None
 #    pass
 
 lekvar.Object.emitContext = blankEmit
-lekvar.Comment.emitValue = blankEmitValue
 
 #
 # class Reference
@@ -133,10 +132,10 @@ def Variable_emitContext(self):
 
 @patch
 def Assignment_emitValue(self, type):
-    value = self.value.emitValue(self.variable.type)
+    value = self.value.emitValue(self.assigned.resolveType())
 
-    variable = self.variable.emitAssignment()
-    State.builder.store(value, variable)
+    assigned = self.assigned.emitAssignment()
+    State.builder.store(value, assigned)
 
 #
 # class Module
