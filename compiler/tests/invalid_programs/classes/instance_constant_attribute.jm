@@ -1,0 +1,12 @@
+#!TypeError
+
+class Foo
+  const value:Int
+  new(v:Int)
+    value = v
+  end
+end
+
+foo = Foo(12)
+foo.value = 13
+puts(foo.value)
