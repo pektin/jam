@@ -11,7 +11,9 @@ from .external_function import ExternalFunction
 from .call import Call
 from .method import Method, MethodType, MethodInstance
 from .links import Link, Reference, Attribute
-from .variable import Variable, Assignment
+from .modifiers import Constant
+from .variable import Variable
+from .assignment import Assignment
 from .class_ import Class, Constructor
 from .dependent import DependentObject, DependentTarget
 from .literal import Literal
