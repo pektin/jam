@@ -1,11 +1,12 @@
 from ..errors import *
 
 from .core import Context, Object, BoundObject, Type
-from .links import Link
+from .links import Link, ContextLink
 
 #
 # Constant
 #
+
 class Constant(Link):
     assigned = False
 
@@ -24,3 +25,18 @@ class Constant(Link):
 
         self.value.verifyAssignment(value)
 
+    @property
+    def context(self):
+        return ConstantContext(self.value.context)
+
+    @property
+    def local_context(self):
+        return ConstantContext(self.value.local_context)
+
+    @property
+    def instance_context(self):
+        return ConstantContext(self.value.instance_context)
+
+class ConstantContext(ContextLink):
+    def __getitem__(self, name:str):
+        return Constant(super().__getitem__(name))
