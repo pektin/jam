@@ -1,12 +1,12 @@
-#?!TypeError
+#!TypeError
 
 class Foo
   value:Int
-  new fromFile(v:Int)
+  new(v:Int)
     value = v
   end
 end
 
-const foo = Foo.fromFile(12)
+const foo = Foo(12)
 foo.value = 13
 puts(foo.value)
