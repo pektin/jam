@@ -64,6 +64,11 @@ def Attribute_emitValue(self, type):
 def Attribute_emitContext(self):
     return self.parent.emitAssignment()
 
+@patch
+def Attribute_emitAssignment(self):
+    with State.selfScope(self.parent.emitAssignment()):
+        return self.value.emitAssignment()
+
 #
 # class Literal
 #
