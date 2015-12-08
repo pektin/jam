@@ -8,7 +8,7 @@ from .variable import Variable
 class Link(Type):
     value = None
 
-    def __init__(self, value:Object = None, tokens = None):
+    def __init__(self, value:Object, tokens = None):
         super().__init__(tokens)
         self.value = value
 
@@ -46,6 +46,35 @@ class Link(Type):
 
     def resolveCompatibility(self, other:Type):
         return self.value.resolveCompatibility(other)
+
+class ContextLink:
+    value = None
+
+    def __init__(self, value:Context):
+        self.value = value
+
+    # Verifies all child objects
+    def verify(self):
+        self.value.verify()
+
+    def __contains__(self, name:str):
+        return name in self.value
+
+    def __getitem__(self, name:str):
+        return self.value[name]
+
+    def __setitem__(self, name:str, value:BoundObject):
+        self.value[name] = value
+
+    # Iterate through the children (not their names)
+    def __iter__(self):
+        return iter(self.value)
+
+    def __len__(self):
+        return len(self.value)
+
+    def __repr__(self):
+        return repr(self.value)
 
 class Reference(Link):
     reference = None
