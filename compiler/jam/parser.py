@@ -568,11 +568,8 @@ class Parser:
                     constructor = meth
                 continue
 
-            elif token.type == Tokens.identifier:
-                value = self.parseVariable()
-
             else:
-                self._unexpected(token)
+                value = self.parseVariable()
 
             self.expect(Tokens.newline)
             self.addChild(attributes, value)
