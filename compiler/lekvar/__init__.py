@@ -16,7 +16,6 @@ from .class_ import Class, Constructor
 from .dependent import DependentObject, DependentTarget
 from .literal import Literal
 from .branches import Loop, Break, Branch
-from .comment import Comment
 from . import util
 
 def compile(source, frontend, backend, logger = logging.getLogger(), opt_level = 0):
