@@ -74,6 +74,11 @@ class Object(ABC):
     def verify(self):
         pass
 
+    # Verify the object as the lhs of an assignment.
+    # Should compliment verify if assignment is allowed.P
+    def verifyAssignment(self, value:Object):
+        raise TypeError(object=self).add(message="is not assignable")
+
     # Should return an instance of Type representing the type of the object
     # Returns None for instructions
     @abstract
@@ -85,7 +90,7 @@ class Object(ABC):
     def resolveValue(self) -> Object:
         return self
 
-    # Resolves a call using this object's type.
+    # Resolves a call operation using this object's type.
     # May be overridden for more specific behaviour
     def resolveCall(self, call:FunctionType) -> Function:
         return self.resolveType().resolveInstanceCall(call)
