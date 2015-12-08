@@ -76,21 +76,20 @@ class ContextLink:
     def __repr__(self):
         return repr(self.value)
 
-class Reference(Link):
-    reference = None
-    verified = False
+class Identifier(Link):
+    identifier = None
 
-    def __init__(self, reference:str, tokens = None):
+    def __init__(self, identifier:str, tokens = None):
         super().__init__(None, tokens)
-        self.reference = reference
+        self.identifier = identifier
 
     def verify(self):
         if self.value is not None: return
 
         try:
-            self.value = resolveReference(self.reference)
+            self.value = resolveReference(self.identifier)
         except MissingReferenceError as e:
-            e.add(content=self.reference, object=self)
+            e.add(content=self.identifier, object=self)
             raise e
 
         super().verify()
@@ -100,25 +99,25 @@ class Reference(Link):
 
         # Infer variable existence
         try:
-            self.value = resolveReference(self.reference)
+            self.value = resolveReference(self.identifier)
         except MissingReferenceError:
-            self.value = Variable(self.reference, value.resolveType())
+            self.value = Variable(self.identifier, value.resolveType())
             State.scope.local_context.addChild(self.value)
 
         self.value.verifyAssignment(value)
 
     def __repr__(self):
-        return "{}".format(self.reference)
+        return "{}".format(self.identifier)
 
 class Attribute(Link):
     # The object the value belongs to
     parent = None
-    reference = None
+    name = None
 
-    def __init__(self, parent:Object, reference:str, tokens = None):
+    def __init__(self, parent:Object, name:str, tokens = None):
         super().__init__(None, tokens)
         self.parent = parent
-        self.reference = reference
+        self.name = name
 
     def verify(self):
         if self.value is not None: return
@@ -136,10 +135,10 @@ class Attribute(Link):
         self.parent.verify()
         # Resolve the attribute using the values attribute resolution
         try:
-            self.value = resolveAttribute(self.parent, self.reference)
+            self.value = resolveAttribute(self.parent, self.name)
         except MissingReferenceError as e:
-            e.add(content=self.reference, object=self)
+            e.add(content=self.name, object=self)
             raise e
 
     def __repr__(self):
-        return "{}.{}".format(self.parent, self.reference)
+        return "{}.{}".format(self.parent, self.name)

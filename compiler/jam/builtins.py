@@ -24,24 +24,24 @@ def builtins(logger = logging.getLogger()):
 
         # Certain functions cannot be built into the library
         # as they cannot be expressed in jam syntax
-        and_ = lekvar.Function("&&", [lekvar.Variable("lhs", lekvar.Reference("Bool")),
-                                      lekvar.Variable("rhs", lekvar.Reference("Bool"))],
+        and_ = lekvar.Function("&&", [lekvar.Variable("lhs", lekvar.Identifier("Bool")),
+                                      lekvar.Variable("rhs", lekvar.Identifier("Bool"))],
         [
-            lekvar.Branch(lekvar.Reference("lhs"), [
-                lekvar.Return(lekvar.Reference("rhs")),
+            lekvar.Branch(lekvar.Identifier("lhs"), [
+                lekvar.Return(lekvar.Identifier("rhs")),
             ], lekvar.Branch(None, [
-                lekvar.Return(lekvar.Reference("lhs")),
+                lekvar.Return(lekvar.Identifier("lhs")),
             ])),
         ], [])
         ir.context.addChild(and_)
 
-        or_ = lekvar.Function("||", [lekvar.Variable("lhs", lekvar.Reference("Bool")),
-                                      lekvar.Variable("rhs", lekvar.Reference("Bool"))],
+        or_ = lekvar.Function("||", [lekvar.Variable("lhs", lekvar.Identifier("Bool")),
+                                      lekvar.Variable("rhs", lekvar.Identifier("Bool"))],
         [
-            lekvar.Branch(lekvar.Reference("lhs"), [
-                lekvar.Return(lekvar.Reference("lhs")),
+            lekvar.Branch(lekvar.Identifier("lhs"), [
+                lekvar.Return(lekvar.Identifier("lhs")),
             ], lekvar.Branch(None, [
-                lekvar.Return(lekvar.Reference("rhs")),
+                lekvar.Return(lekvar.Identifier("rhs")),
             ])),
         ], [])
         ir.context.addChild(or_)

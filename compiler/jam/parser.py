@@ -243,7 +243,7 @@ class Parser:
 
             # Some operations are attributes of the lhs, others are global functions
             if operation.type in BINARY_OPERATION_FUNCTIONS:
-                lhs = lekvar.Operation(lekvar.Reference(BINARY_OPERATION_FUNCTIONS[operation.type]), [lhs, rhs], None, [operation])
+                lhs = lekvar.Operation(lekvar.Identifier(BINARY_OPERATION_FUNCTIONS[operation.type]), [lhs, rhs], None, [operation])
             else:
                 lhs = lekvar.Operation(lekvar.Attribute(lhs, operation.data), [rhs], None, [operation])
 
@@ -306,18 +306,18 @@ class Parser:
         elif token.type == Tokens.module_kwd:
             return self.parseModule()
         elif token.type == Tokens.identifier:
-            return lekvar.Reference(token.data, [self.next()])
+            return lekvar.Identifier(token.data, [self.next()])
         elif token.type in (Tokens.integer, Tokens.dot):
             return self.parseNumber()
         elif token.type in (Tokens.true_kwd, Tokens.false_kwd):
             return self.parseConstant()
         elif token.type == Tokens.string:
             token = self.next()
-            return lekvar.Literal(token.data, lekvar.Reference("String"), [token])
+            return lekvar.Literal(token.data, lekvar.Identifier("String"), [token])
         elif token.type == Tokens.format_string:
             token = self.next()
             return lekvar.Literal(token.data.encode("UTF-8").decode("unicode-escape"),
-                lekvar.Reference("String"), [token])
+                lekvar.Identifier("String"), [token])
         elif token.type == Tokens.group_start:
             return self.parseGrouping()
 
@@ -337,9 +337,9 @@ class Parser:
         token = self.next()
 
         if token.type == Tokens.true_kwd:
-            return lekvar.Literal(True, lekvar.Reference("Bool"))
+            return lekvar.Literal(True, lekvar.Identifier("Bool"))
         elif token.type == Tokens.false_kwd:
-            return lekvar.Literal(False, lekvar.Reference("Bool"))
+            return lekvar.Literal(False, lekvar.Identifier("Bool"))
         else:
             raise InternalError("Invalid constant token type")
 
@@ -355,7 +355,7 @@ class Parser:
 
             tokens.append(token)
             value = float("." + token.data.replace("_", ""))
-            return lekvar.Literal(value, lekvar.Reference("Real"), tokens)
+            return lekvar.Literal(value, lekvar.Identifier("Real"), tokens)
 
         assert tokens[0].type == Tokens.integer
 
@@ -375,12 +375,12 @@ class Parser:
             else:
                 self._unexpected(token)
 
-            return lekvar.Literal(value, lekvar.Reference("Real"), tokens)
+            return lekvar.Literal(value, lekvar.Identifier("Real"), tokens)
 
         # Integer
         else:
             value = int(tokens[0].data.replace("_", ""))
-            return lekvar.Literal(value, lekvar.Reference("Int"), tokens)
+            return lekvar.Literal(value, lekvar.Identifier("Int"), tokens)
 
     def parseMethod(self):
         # starting keyword should have already been identified

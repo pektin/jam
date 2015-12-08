@@ -26,7 +26,7 @@ lekvar.Function.llvm_return = None
 lekvar.Object.emitContext = blankEmit
 
 #
-# class Reference
+# class Link
 #
 
 @patch
