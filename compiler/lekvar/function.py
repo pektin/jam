@@ -33,11 +33,11 @@ class Function(Scope):
         self.instructions = instructions
 
         for arg in self.arguments:
-            if arg.type is None:
+            if arg.resolveType() is None:
                 arg.type = DependentObject(self)
                 self.dependent = True
 
-        self.type = FunctionType([arg.type for arg in arguments], return_type)
+        self.type = FunctionType([arg.resolveType() for arg in arguments], return_type)
 
     def verify(self):
         if self.verified: return
@@ -45,7 +45,7 @@ class Function(Scope):
 
         # Arguments are considered to be already assigned
         for variable in self.arguments:
-            variable.resolveAssignment()
+            variable.verifyAssignment(None)
 
         with State.scoped(self, analys = True):
             self.type.verify()
