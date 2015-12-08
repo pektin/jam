@@ -49,6 +49,10 @@ UNARY_OPERATIONS = [
     Tokens.logical_negation,
 ]
 
+MODIFIERS = {
+    Tokens.const_kwd : lekvar.Constant,
+}
+
 UNARY_OPERATION_TOKENS = set(UNARY_OPERATIONS)
 
 class Parser:
@@ -254,7 +258,7 @@ class Parser:
             if token is None:
                 break
 
-            if token.type in UNARY_OPERATION_TOKENS:
+            if token.type in UNARY_OPERATION_TOKENS or token.type in MODIFIERS:
                 operations.insert(0, self.next())
             else:
                 break
@@ -263,7 +267,10 @@ class Parser:
 
         # Make prefix operations
         for operation in operations:
-            value = lekvar.Call(lekvar.Attribute(value, operation.data), [], None, [operation])
+            if operation.type in MODIFIERS:
+                value = MODIFIERS[operation.type](value, [operation])
+            else:
+                value = lekvar.Call(lekvar.Attribute(value, operation.data), [], None, [operation])
 
         # Postfix unary operations
         while True:
@@ -658,17 +665,20 @@ class Parser:
         tokens = []
         modifiers = []
 
-        if self.lookAhead().type == Tokens.const_kwd:
-            tokens.append(self.next())
-            modifiers.append(lekvar.Constant)
+        while True:
+            token = self.lookAhead()
+            if token.type == Tokens.const_kwd:
+                modifiers.append((lekvar.Constant, self.next()))
+            else:
+                break
 
         name = self.expect(Tokens.identifier, tokens).data
 
         type = self.parseTypeSig()
 
         value = lekvar.Variable(name, type, tokens)
-        for mod in modifiers:
-            value = mod(value)
+        for modifier, token in modifiers:
+            value = modifier(value, [token])
         return value
 
     # Parse an optional type signature
