@@ -1,4 +1,4 @@
-##bar\nfoo\n
+##bar\nfoo\nbaz\n
 
 class Person
   forename:String
@@ -12,3 +12,5 @@ end
 v = Person("foo", "bar")
 puts(v.surname)
 puts(v.forename)
+v.surname = "baz"
+puts(v.surname)
