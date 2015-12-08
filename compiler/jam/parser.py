@@ -235,14 +235,14 @@ class Parser:
 
             # The assignment operation is special
             if operation.type == Tokens.assign:
-                lhs = lekvar.Assignment(lhs, rhs, operation)
+                lhs = lekvar.Assignment(lhs, rhs, [operation])
                 continue
 
             # Some operations are attributes of the lhs, others are global functions
             if operation.type in BINARY_OPERATION_FUNCTIONS:
-                lhs = lekvar.Operation(lekvar.Reference(BINARY_OPERATION_FUNCTIONS[operation.type]), [lhs, rhs], None, operation)
+                lhs = lekvar.Operation(lekvar.Reference(BINARY_OPERATION_FUNCTIONS[operation.type]), [lhs, rhs], None, [operation])
             else:
-                lhs = lekvar.Operation(lekvar.Attribute(lhs, operation.data), [rhs], None, operation)
+                lhs = lekvar.Operation(lekvar.Attribute(lhs, operation.data), [rhs], None, [operation])
 
         return lhs
 
@@ -264,7 +264,7 @@ class Parser:
 
         # Make prefix operations
         for operation in operations:
-            value = lekvar.Call(lekvar.Attribute(value, operation.data), [], None, operation)
+            value = lekvar.Call(lekvar.Attribute(value, operation.data), [], None, [operation])
 
         # Postfix unary operations
         while True:

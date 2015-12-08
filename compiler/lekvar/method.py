@@ -144,7 +144,7 @@ class MethodType(Type):
 
 class MethodInstance(Object):
     def __init__(self, type:MethodType, target:int):
-        super().__init__(self)
+        super().__init__()
         self.type = type
         self.target = target
 
