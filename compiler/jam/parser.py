@@ -136,12 +136,11 @@ class Parser:
 
         if inline:
             self.expect(Tokens.module_kwd, tokens)
-
             module_name = self.expect(Tokens.identifier, tokens).data
+
+            self.expect(Tokens.newline, tokens)
         else:
             module_name = "main"
-
-        self.expect(Tokens.newline, tokens)
 
         children = {}
         instructions = []
