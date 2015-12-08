@@ -1,4 +1,4 @@
-?!SemanticError
+#?!SemanticError
 
 if false
   var = 12

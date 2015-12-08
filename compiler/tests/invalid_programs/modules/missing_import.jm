@@ -1,3 +1,3 @@
-!ImportError
+#!ImportError
 
 import there_is_no_file_with_this_name

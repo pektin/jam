@@ -1,4 +1,4 @@
-#foo\n
+##foo\n
 
 if true && true
   puts("foo")

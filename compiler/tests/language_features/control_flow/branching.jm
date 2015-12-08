@@ -1,4 +1,4 @@
-#foo\nbar\nfoo\nbar\nbaz\nboo\n
+##foo\nbar\nfoo\nbar\nbaz\nboo\n
 
 if true
   puts("foo")

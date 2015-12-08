@@ -1,4 +1,4 @@
-?#12\nfoo\n5\nbar\n
+#?#12\nfoo\n5\nbar\n
 
 def test(m)
   m.print()

@@ -1,4 +1,4 @@
-#foo\n12\n
+##foo\n12\n
 
 def print(o)
   puts(o)

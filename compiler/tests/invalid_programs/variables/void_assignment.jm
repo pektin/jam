@@ -1,4 +1,4 @@
-!TypeError
+#!TypeError
 
 def foo()
   puts("foo")

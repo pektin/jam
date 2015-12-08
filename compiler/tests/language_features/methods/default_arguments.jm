@@ -1,4 +1,4 @@
-?#Hello\nfoo\nHi\nbar\n
+#?#Hello\nfoo\nHi\nbar\n
 
 def print(name:String, message:String = "Hello")
   puts(message)

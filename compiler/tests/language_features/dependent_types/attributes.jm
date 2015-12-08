@@ -1,4 +1,4 @@
-#foo\nbar\n
+##foo\nbar\n
 
 class Foo
   new()

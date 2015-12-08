@@ -1,4 +1,4 @@
-#bar\n
+##bar\n
 # This is part of the `imports` test
 
 def foo()

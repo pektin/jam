@@ -1,4 +1,4 @@
-!AmbiguityError
+#!AmbiguityError
 
 def foo()
 end

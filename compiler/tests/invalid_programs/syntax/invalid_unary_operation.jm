@@ -1,4 +1,4 @@
-!SyntaxError
+#!SyntaxError
 
 def :self
   puts("foo")

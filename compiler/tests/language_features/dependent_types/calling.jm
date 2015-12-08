@@ -1,4 +1,4 @@
-#foo\nbar\n
+##foo\nbar\n
 
 def call(fn, arg)
   fn(arg)

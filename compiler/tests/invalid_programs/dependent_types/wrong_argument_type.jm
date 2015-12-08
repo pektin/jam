@@ -1,4 +1,4 @@
-!TypeError
+#!TypeError
 
 def add(a, b)
   return a + b

@@ -1,4 +1,4 @@
-!SyntaxError
+#!SyntaxError
 
 int main() {
   puts("Hello World!");

@@ -1,4 +1,4 @@
-!SemanticError
+#!SemanticError
 
 def foo(bar:Int = 12, i:Int)
 end

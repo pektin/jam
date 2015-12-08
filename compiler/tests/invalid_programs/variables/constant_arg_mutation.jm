@@ -1,4 +1,4 @@
-!TypeError
+#!TypeError
 
 def foo(const bar:Int)
   bar = bar + 2

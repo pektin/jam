@@ -1,4 +1,4 @@
-#102\n-22.2\n
+##102\n-22.2\n
 
 def formula(a, b, c, d, e)
   return (a + b) * c * (d - e)

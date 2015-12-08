@@ -1,4 +1,4 @@
-#12\nfoo\nfoo\nfoo\nbar\n
+##12\nfoo\nfoo\nfoo\nbar\n
 
 def foo(o)
   i = 0

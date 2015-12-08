@@ -1,4 +1,4 @@
-!SyntaxError
+#!SyntaxError
 
 if True
   puts("foo")

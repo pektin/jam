@@ -1,4 +1,4 @@
-#foo\nfoo\nbar\nbar\n
+##foo\nfoo\nbar\nbar\n
 
 import file_imported
 

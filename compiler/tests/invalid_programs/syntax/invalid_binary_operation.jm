@@ -1,4 +1,4 @@
-!SyntaxError
+#!SyntaxError
 
 def self "foo" other
   puts(other)

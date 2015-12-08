@@ -1,4 +1,4 @@
-!SemanticError
+#!SemanticError
 
 def noReturn() -> String
 end

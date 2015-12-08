@@ -1,4 +1,4 @@
-!SyntaxError
+#!SyntaxError
 
 class Foo
   new()

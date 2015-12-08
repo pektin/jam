@@ -1,4 +1,4 @@
-#Bar\nFoo\n
+##Bar\nFoo\n
 
 class Foo
   foo:String

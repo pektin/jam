@@ -1,4 +1,4 @@
-#foo\n
+##foo\n
 
 def foo()
   puts("foo")

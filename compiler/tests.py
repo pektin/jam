@@ -36,14 +36,19 @@ for root, dirs, files in os.walk(TESTS_PATH):
 
             # Get output data
             with open(path, "r") as f_in:
-                # The first character is the test type
-                type = f_in.read(1)
-                # Or specific test attributes (ignore for now)
+                # The second character is the test type
+                type = f_in.read(2)[1]
+
+                # Or specific test attributes
                 if type == "?":
+                    pytest.xfail()
                     type = f_in.read(1)
 
                 # The first line is the output
                 output = f_in.readline()[:-1].encode("UTF-8").decode("unicode-escape")
+
+                # Go back to the start of the file, so error messages are formatted properly
+                f_in.seek(0)
 
                 with open(build, "wb") as f_out:
                     # Check if the output was correct
@@ -55,11 +60,6 @@ for root, dirs, files in os.walk(TESTS_PATH):
                             compile(f_in)
                     else:
                         raise errors.InternalError("Invalid Test Output Type: {}".format(type))
-
-        # get test attributes
-        with open(path, "r") as f:
-            if f.read(1) == "?":
-                test = pytest.mark.xfail(test)
 
         globals()[name] = test
 

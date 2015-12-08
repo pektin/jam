@@ -1,4 +1,4 @@
-#"\\"\n\a\b\f\n\r\t\v\n\\\\f\\n\n
+##"\\"\n\a\b\f\n\r\t\v\n\\\\f\\n\n
 
 puts("\"\\\"")
 puts("\a\b\f\n\r\t\v")

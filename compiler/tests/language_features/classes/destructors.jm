@@ -1,4 +1,4 @@
-?#foo\nfoo\nbar\nbar\nbar\nbar\n
+#?#foo\nfoo\nbar\nbar\nbar\nbar\n
 
 class Person
   name:String
