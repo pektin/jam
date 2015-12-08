@@ -180,13 +180,7 @@ class Parser:
         elif token.type == Tokens.break_kwd:
             value = self.parseBreak()
         else:
-            token_la2 = self.lookAhead(2)
-            token_la3 = self.lookAhead(3)
-            if (token_la2 is not None and token_la2 in (Tokens.assign, Tokens.typeof) or
-                token_la3 is not None and token_la2 in (Tokens.assign, Tokens.typeof)):
-                value = self.parseAssignment()
-            else:
-                value = self.parseValue()
+            value = self.parseValue()
         self.expect(Tokens.newline)
         return value
 
