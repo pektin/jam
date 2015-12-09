@@ -12,10 +12,6 @@ class Link(Type):
         super().__init__(tokens)
         self.value = value
 
-    @property
-    def dependent(self):
-        return self.value.dependent
-
     # Dispatch all functions to the linked value
 
     def verify(self):
