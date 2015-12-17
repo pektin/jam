@@ -51,6 +51,7 @@ UNARY_OPERATIONS = [
 
 MODIFIERS = {
     Tokens.const_kwd : lekvar.Constant,
+    Tokens.ref_kwd : lekvar.Reference,
 }
 
 UNARY_OPERATION_TOKENS = set(UNARY_OPERATIONS)
@@ -666,6 +667,8 @@ class Parser:
             token = self.lookAhead()
             if token.type == Tokens.const_kwd:
                 modifiers.append((lekvar.Constant, self.next()))
+            elif token.type == Tokens.ref_kwd:
+                modifiers.append((lekvar.Reference, self.next()))
             else:
                 break
 
