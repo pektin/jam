@@ -33,7 +33,7 @@ common_parser.add_argument("-v", "--verbose",
 )
 common_parser.add_argument("-O", metavar="X",
     dest="opt_level",
-    help="optimisation level",
+    help="optimisation level (0-3)",
     type=int,
     default=1,
 )
@@ -58,35 +58,47 @@ run_parser.add_argument("source",
 compile_parser = subparsers.add_parser("compile", aliases=["c"], parents=[common_parser],
     help="compile jam source code to an executable",
 )
-compile_parser.add_argument("source",
-    help="the source file to compile. Leave out to read from stdin",
-    type=argparse.FileType('r'),
-    default=sys.stdin,
-    nargs='?'
+compile_parser.add_argument("-s",
+    dest="out_asm",
+    help="output llvm IR instead of an executable",
+    action='store_true',
+    default=False,
 )
 compile_parser.add_argument("-o", "--output", metavar="FILE",
     help="the file to write the executable to. Leave out to let jam guess the name",
     type=argparse.FileType('wb'),
     default=None,
 )
+compile_parser.add_argument("source",
+    help="the source file to compile. Leave out to read from stdin",
+    type=argparse.FileType('r'),
+    default=sys.stdin,
+    nargs='?'
+)
 
 def compile(args):
     ir = lekvar.compile(args.source, jam, llvm, opt_level=args.opt_level)
-    exe = llvm.compile(ir)
+
+    if args.out_asm:
+        out = ir
+        extension = ".ll"
+    else:
+        out = llvm.compile(ir)
+        extension = ""
 
     if args.output is None:
         if os.path.isfile(args.source.name):
             name = os.path.basename(args.source.name)
-            name = os.path.splitext(name)[0]
+            name = os.path.splitext(name)[0] + extension
         else:
-            name = "a.out"
+            name = "a" + extension
         args.output = open(name, 'wb')
 
     # Try to ensure the output file is executable
-    if os.path.isfile(args.output.name):
+    if os.path.isfile(args.output.name) and not args.out_asm:
         os.chmod(args.output.name, 0o775)
 
-    args.output.write(exe)
+    args.output.write(out)
 
 def run(args):
     if args.source is not None:
