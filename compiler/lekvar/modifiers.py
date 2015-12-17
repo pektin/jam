@@ -8,11 +8,10 @@ from .links import Link, ContextLink
 #
 
 class Constant(Link):
-    assigned = False
+    assigned = True
 
-    def __init__(self, value:Object, assigned = False):
-        self.value = value
-        self.assigned = assigned
+    def __init__(self, value:Object, tokens = None):
+        super().__init__(value, tokens)
 
     @property
     def name(self):
@@ -24,6 +23,9 @@ class Constant(Link):
         self.assigned = True
 
         self.value.verifyAssignment(value)
+
+    def resolveType(self):
+        return Constant(self.value.resolveType())
 
     @property
     def context(self):
@@ -39,7 +41,9 @@ class Constant(Link):
 
 class ConstantContext(ContextLink):
     def __getitem__(self, name:str):
-        return Constant(super().__getitem__(name))
+        value = Constant(super().__getitem__(name))
+        value.assigned = True
+        return value
 
 #
 # Reference
