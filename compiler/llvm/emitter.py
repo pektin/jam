@@ -55,8 +55,6 @@ def Link_emitContext(self):
 
 @patch
 def Attribute_emitValue(self, type):
-    self.value.bound_context.scope.emit()
-
     with State.selfScope(self.parent.emitAssignment()):
         return self.value.emitValue(type)
 
