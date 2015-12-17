@@ -40,3 +40,14 @@ class Constant(Link):
 class ConstantContext(ContextLink):
     def __getitem__(self, name:str):
         return Constant(super().__getitem__(name))
+
+#
+# Reference
+#
+
+class Reference(Link):
+    def __init__(self, value:Object, tokens = None):
+        super().__init__(value, tokens)
+
+    def resolveType(self):
+        return Reference(self.value.resolveType())
