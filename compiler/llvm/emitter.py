@@ -10,9 +10,9 @@ from . import bindings as llvm
 # Abstract extensions
 
 lekvar.BoundObject.llvm_value = None
-lekvar.Function.llvm_return = None
 
 # Extension abstract methods apparently don't work
+
 @patch
 #@abstract
 def Object_emitValue(self, type:lekvar.Type) -> llvm.Value:
@@ -297,8 +297,9 @@ def DependentTarget_emitValue(self, type):
 # class Function
 #
 
-lekvar.Function.llvm_closure_type = None
+lekvar.Function.llvm_return = None
 lekvar.Function.llvm_context = None
+lekvar.Function.llvm_closure_type = None
 
 @patch
 def Function_resetEmission(self):
@@ -334,7 +335,6 @@ def Function_emit(self):
 def Function_emitBody(self):
     self.emitEntry()
 
-    #context = State.builder.load(self.llvm_context, "")
     self_value = State.builder.structGEP(self.llvm_context, 0, "")
     self_value = State.builder.load(self_value, "")
     with State.selfScope(self_value):
@@ -351,9 +351,9 @@ def Function_emitBody(self):
 
 @patch
 def Function_emitEntry(self):
-    #self.llvm_context = State.builder.alloca(self.llvm_closure_type, "context")
-    self.llvm_context = State.builder.cast(self.llvm_value.getParam(0), llvm.Pointer.new(self.llvm_closure_type, 0), "")
-    #State.builder.store(context, self.llvm_context)
+    context_param = self.llvm_value.getParam(0)
+    context_type = llvm.Pointer.new(self.llvm_closure_type, 0)
+    self.llvm_context = State.builder.cast(context_param, context_type, "")
 
 @patch
 def Function_emitPostContext(self):
@@ -391,9 +391,9 @@ def Function_emitContext(self):
 def Constructor_emitEntry(self):
     self.llvm_context = State.builder.alloca(self.llvm_closure_type, "")
 
-    #context = State.builder.load(self.llvm_context, "")
     self_var = State.builder.structGEP(self.llvm_context, 0, "")
-    self_val = State.builder.alloca(self.bound_context.scope.bound_context.scope.emitType(), "self")
+    self_type = self.bound_context.scope.bound_context.scope.emitType()
+    self_val = State.builder.alloca(self_type, "self")
 
     State.builder.store(self_val, self_var)
 
@@ -572,7 +572,6 @@ def Reference_emitInstanceValue(self, value, type):
 
 @patch
 def Reference_emitInstanceAssignment(self, value, type):
-    print(1, value, type)
     ref_value = self.value.emitInstanceAssignment(value, type)
 
     if not isinstance(type, lekvar.Reference):
