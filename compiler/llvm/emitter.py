@@ -546,6 +546,41 @@ def Class_emitType(self):
     return self.llvm_type
 
 #
+# class Reference
+#
+
+@patch
+def Reference_emitValue(self, type):
+    value_type = self.value.resolveType()
+    malloced = State.builder.malloc(referenceType(value_type.emitType()), "")
+    value = State.builder.structGEP(malloced, 1, "")
+    State.builder.store(emitValue(self.value, type), value)
+    return malloced
+
+@patch
+def Reference_emitType(self):
+    return llvm.Pointer.new(referenceType(self.value.emitType()), 0)
+
+@patch
+def Reference_emitInstanceValue(self, value, type):
+    ref_value = self.value.emitInstanceValue(value, type)
+
+    if type is not None and not isinstance(type, lekvar.Reference):
+        value_ptr = State.builder.structGEP(ref_value, 1, "")
+        return State.builder.load(value_ptr, "")
+    return ref_value
+
+@patch
+def Reference_emitInstanceAssignment(self, value, type):
+    print(1, value, type)
+    ref_value = self.value.emitInstanceAssignment(value, type)
+
+    if not isinstance(type, lekvar.Reference):
+        loaded = State.builder.load(ref_value, "")
+        return State.builder.structGEP(loaded, 1, "")
+    return ref_value
+
+#
 # class Loop
 #
 
