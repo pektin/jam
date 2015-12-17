@@ -43,6 +43,7 @@ Tokens = Enum("Tokens", [
 
     "identifier",
     "const_kwd",
+    "ref_kwd",
     "def_kwd",
     "end_kwd",
     "return_kwd",
@@ -169,6 +170,7 @@ DIRECT_MAP = [
 
     # Keywords
     ("const", Tokens.const_kwd),
+    ("ref", Tokens.ref_kwd),
     ("def", Tokens.def_kwd),
     ("end", Tokens.end_kwd),
     ("return", Tokens.return_kwd),
