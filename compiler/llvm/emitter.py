@@ -55,12 +55,20 @@ def Link_emitType(self):
     return self.value.emitType()
 
 @patch
-def Link_emitAssignment(self):
-    return self.value.emitAssignment()
+def Link_emitAssignment(self, type):
+    return self.value.emitAssignment(type)
 
 @patch
 def Link_emitContext(self):
     return self.value.emitContext()
+
+@patch
+def Link_emitInstanceValue(self, value, type):
+    return self.value.emitInstanceValue(value, type)
+
+@patch
+def Link_emitInstanceAssignment(self, value, type):
+    return self.value.emitInstanceAssignment(value, type)
 
 #
 # class Attribute
@@ -68,17 +76,17 @@ def Link_emitContext(self):
 
 @patch
 def Attribute_emitValue(self, type):
-    with State.selfScope(self.parent.emitAssignment()):
-        return self.value.emitValue(type)
+    with State.selfScope(emitAssignment(self.parent, type)):
+        return emitValue(self.value, type)
 
 @patch
 def Attribute_emitContext(self):
-    return self.parent.emitAssignment()
+    return self.parent.emitAssignment(None)
 
 @patch
-def Attribute_emitAssignment(self):
-    with State.selfScope(self.parent.emitAssignment()):
-        return self.value.emitAssignment()
+def Attribute_emitAssignment(self, type):
+    with State.selfScope(emitAssignment(self.parent, type)):
+        return self.value.emitAssignment(type)
 
 #
 # class Literal
@@ -102,7 +110,7 @@ def Literal_emitValue(self, type):
     return llvm.Value.constStruct(struct_type, [data])
 
 @patch
-def Literal_emitAssignment(self):
+def Literal_emitAssignment(self, type):
     return State.pointer(self.emitValue(None))
 
 #
@@ -127,10 +135,10 @@ def Variable_emit(self):
 def Variable_emitValue(self, type):
     self.emit()
 
-    return State.builder.load(self.emitAssignment(), "")
+    return State.builder.load(self.emitAssignment(type), "")
 
 @patch
-def Variable_emitAssignment(self):
+def Variable_emitAssignment(self, type):
     self.emit()
 
     if self.llvm_value is not None:
@@ -140,7 +148,7 @@ def Variable_emitAssignment(self):
 
 @patch
 def Variable_emitContext(self):
-    return self.emitAssignment()
+    return self.emitAssignment(None)
 
 #
 # class Assignment
@@ -148,9 +156,9 @@ def Variable_emitContext(self):
 
 @patch
 def Assignment_emitValue(self, type):
-    value = self.value.emitValue(self.assigned.resolveType())
+    value = emitValue(self.value, self.assigned.resolveType())
 
-    assigned = self.assigned.emitAssignment()
+    assigned = emitAssignment(self.assigned, self.value.resolveType())
     State.builder.store(value, assigned)
 
 #
@@ -190,13 +198,14 @@ def Call_emitValue(self, type):
     else:
         arguments = []
 
-    arguments += [value.emitValue(None) for value in self.values]
+    argument_types = self.function.resolveValue().resolveType().arguments
+    arguments += [emitValue(value, type) for value, type in zip(self.values, argument_types)]
 
     # Get the llvm function type
     return State.builder.call(called, arguments, "")
 
 @patch
-def Call_emitAssignment(self):
+def Call_emitAssignment(self, type):
     return State.pointer(self.emitValue(None))
 
 #
@@ -208,7 +217,7 @@ def Return_emitValue(self, type):
     exit = self.function.llvm_value.getLastBlock()
 
     if self.value is not None:
-        value = self.value.emitValue(None)
+        value = emitValue(self.value, None)
         State.builder.store(value, self.function.llvm_return)
 
     return State.builder.br(exit)
@@ -455,7 +464,8 @@ def Method_emit(self):
 
 @patch
 def Method_emitValue(self, type):
-    if type is None:
+    # If the type isn't given, use our own
+    if type is None or not isinstance(type, lekvar.MethodType):
         type = self.resolveType()
 
     values = []
@@ -500,7 +510,7 @@ def MethodInstance_emitValue(self, type):
 def MethodInstance_emitAssignment(self):
     self.emit()
 
-    value = State.self.emitAssignment()
+    value = State.self.emitAssignment(None)
     return State.builder.structGEP(value, self.target, "")
 
 @patch
