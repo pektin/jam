@@ -13,17 +13,30 @@ lekvar.BoundObject.llvm_value = None
 lekvar.Function.llvm_return = None
 
 # Extension abstract methods apparently don't work
-#@patch
+@patch
 #@abstract
-#def Object_emitValue(self, state:State) -> llvm.Value:
-#    pass
-
-#@patch
-#@abstract
-#def Type_emitType(self, state:State) -> llvm.Type:
-#    pass
+def Object_emitValue(self, type:lekvar.Type) -> llvm.Value:
+    raise InternalError("Not Implemented")
 
 lekvar.Object.emitContext = blankEmit
+
+@patch
+#@abstract
+def Object_emitAssignment(self, type:lekvar.Type) -> llvm.Value:
+    raise InternalError("Not Implemented")
+
+@patch
+#@abstract
+def Type_emitType(self) -> llvm.Type:
+    raise InternalError("Not Implemented")
+
+@patch
+def Type_emitInstanceValue(self, value:lekvar.Object, type:lekvar.Type) -> llvm.Value:
+    return value.emitValue(type)
+
+@patch
+def Type_emitInstanceAssignment(self, value:lekvar.Object, type:lekvar.Type) -> llvm.Value:
+    return value.emitAssignment(type)
 
 #
 # class Link
