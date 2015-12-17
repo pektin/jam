@@ -97,8 +97,12 @@ class Identifier(Link):
         try:
             self.value = resolveReference(self.identifier)
         except MissingReferenceError:
+            # Inject a new variable into the enclosing hard scope
             self.value = Variable(self.identifier, value.resolveType())
             State.scope.local_context.addChild(self.value)
+            # Make variable have the same tokens. Hack for nicer error messages
+            self.value.tokens = self.tokens
+            self.value.source = self.source
 
         self.value.verifyAssignment(value)
 
