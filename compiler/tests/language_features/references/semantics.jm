@@ -1,0 +1,12 @@
+##2\n2\n3\n3\n4\n3\n
+
+foo = ref 2
+bar = foo
+puts(foo)
+puts(bar)
+bar = 3
+puts(foo)
+puts(bar)
+foo = ref 4
+puts(foo)
+puts(bar)
