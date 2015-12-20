@@ -1,0 +1,14 @@
+##12\n-2\n
+
+class Foo
+  bar:Int
+
+  new(b:Int)
+    bar = b
+  end
+end
+
+f = ref Foo(12)
+puts(f.bar)
+f.bar = -2
+puts(f.bar)
