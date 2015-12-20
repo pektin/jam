@@ -10,7 +10,7 @@ from . import bindings as llvm
 class State:
     @classmethod
     @contextmanager
-    def begin(cls, name:str, logger:logging.Logger):
+    def begin(cls, logger:logging.Logger):
         cls.logger = logger
 
         # Dirty hack for circular import. Hook this state into the llvm bindigns
@@ -18,7 +18,7 @@ class State:
 
         cls.self = None
         cls.builder = llvm.Builder.new()
-        cls.module = llvm.Module.fromName(name)
+        cls.module = llvm.Module.fromName("")
 
         main_type = llvm.Function.new(llvm.Int.new(32), [], False)
         cls.main = cls.module.addFunction("main", main_type)

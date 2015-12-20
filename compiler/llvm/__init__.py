@@ -15,7 +15,7 @@ from . import bindings
 def emit(module:lekvar.Module, logger = logging.getLogger(), opt_level = 1):
     State.logger = logger.getChild("llvm")
 
-    with State.begin("main", logger):
+    with State.begin(logger):
         module.emit()
 
     State.module.verify()
