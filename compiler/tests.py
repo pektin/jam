@@ -13,10 +13,10 @@ BUILD_PATH = os.path.join("build", "tests")
 def compile(f_in):
     return lekvar.compile(f_in, jam, llvm)
 
-def interpret(f_in, f_out):
+def interpret(f_in, f_out, precommands):
     ir = compile(f_in)
     f_out.write(ir)
-    return llvm.run(ir).decode("UTF-8")
+    return llvm.run(ir, precommands).decode("UTF-8")
 
 for root, dirs, files in os.walk(TESTS_PATH):
 
@@ -25,14 +25,14 @@ for root, dirs, files in os.walk(TESTS_PATH):
         path = os.path.join(root, file)
         name = "test_" + ".".join(root.split(os.sep)[2:] + [file])
 
-        def test(verbosity, file=file, path=path):
+        def test(verbosity, valgrind, file=file, path=path):
             logging.basicConfig(level=logging.WARNING - verbosity*10, stream=sys.stdout)
 
             # Make the path to the build directory
             build = os.path.join(BUILD_PATH, *os.path.normpath(path).split(os.sep)[2:])
             os.makedirs(os.path.dirname(build), exist_ok=True)
 
-            build = os.path.splitext(build)[0] + ".ll"
+            build = os.path.splitext(build)[0]
 
             # Get output data
             with open(path, "r") as f_in:
@@ -50,10 +50,15 @@ for root, dirs, files in os.walk(TESTS_PATH):
                 # Go back to the start of the file, so error messages are formatted properly
                 f_in.seek(0)
 
-                with open(build, "wb") as f_out:
+                with open(build + ".ll", "wb") as f_out:
                     # Check if the output was correct
                     if type == "#":
-                        assert output == interpret(f_in, f_out)
+                        precommands = []
+                        if valgrind:
+                            precommands += ["valgrind", "--error-exitcode=1", "--leak-check=full",
+                                            # Make valgrind output its log data to #{build}.valgrind
+                                            "--log-file={}.valgrind".format(build)]
+                        assert output == interpret(f_in, f_out, precommands)
                     # Check if the correct exception was thrown
                     elif type == "!":
                         with pytest.raises(getattr(errors, output)):
