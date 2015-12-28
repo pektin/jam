@@ -1,0 +1,20 @@
+##12\n
+
+class Bar
+  foo:Int
+
+  new(f:Int)
+    foo = f
+  end
+end
+
+class Foo
+  bar:ref Bar
+
+  new(b:ref Bar)
+    bar = b
+  end
+end
+
+foo = ref Foo(ref Bar(12))
+puts(foo.bar.foo)
