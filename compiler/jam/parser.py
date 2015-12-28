@@ -266,13 +266,6 @@ class Parser:
 
         value = self.parseSingleValue()
 
-        # Make prefix operations
-        for operation in operations:
-            if operation.type in MODIFIERS:
-                value = MODIFIERS[operation.type](value, [operation])
-            else:
-                value = lekvar.Call(lekvar.Attribute(value, operation.data), [], None, [operation])
-
         # Postfix unary operations
         while True:
             token = self.lookAhead()
@@ -288,6 +281,13 @@ class Parser:
                 value = self.parseCast(value)
             else:
                 break
+
+        # Make prefix operations
+        for operation in operations:
+            if operation.type in MODIFIERS:
+                value = MODIFIERS[operation.type](value, [operation])
+            else:
+                value = lekvar.Call(lekvar.Attribute(value, operation.data), [], None, [operation])
 
         return value
 
