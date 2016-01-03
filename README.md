@@ -1,8 +1,8 @@
 # Jam
 
 [![Join the chat at https://gitter.im/pektin/jam](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/pektin/jam?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 [![Circle CI](https://circleci.com/gh/pektin/jam.svg?style=svg)](https://circleci.com/gh/pektin/jam)
+[![Coverage Status](https://coveralls.io/repos/pektin/jam/badge.svg?branch=master&service=github)](https://coveralls.io/github/pektin/jam?branch=master)
 
 Jam is an experimental programming language that tries to combine the advantages
 of dynamic, interpreted programming languages with those of static, compiled
