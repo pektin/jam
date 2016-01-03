@@ -1,0 +1,9 @@
+#!MissingReferenceError
+
+class Foo
+  new()
+  end
+end
+
+f = Foo()
+puts(f.attr)
