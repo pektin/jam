@@ -4,6 +4,7 @@ from .state import State
 from .core import Context, Object, BoundObject, Type
 from .util import resolveReference, resolveAttribute
 from .variable import Variable
+from .assignment import InferVariable
 
 class Link(Type):
     value = None
@@ -118,18 +119,22 @@ class Identifier(BoundLink):
         BoundLink.verify(self)
 
     def verifyAssignment(self, value):
-        if self.value is not None: return
+        if self.value is not None:
+            self.value.verifyAssignment(value)
+            return
 
         # Infer variable existence
         try:
             self.value = resolveReference(self.name)
         except MissingReferenceError:
             # Inject a new variable into the enclosing hard scope
-            self.value = Variable(self.identifier, value.resolveType())
-            State.scope.local_context.addChild(self.value)
+            self.value = Variable(self.name, value.resolveType())
             # Make variable have the same tokens. Hack for nicer error messages
             self.value.tokens = self.tokens
             self.value.source = self.source
+
+            self.value.verifyAssignment(value)
+            raise InferVariable()
 
         self.value.verifyAssignment(value)
 

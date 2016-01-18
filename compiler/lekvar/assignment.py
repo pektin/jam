@@ -29,9 +29,14 @@ class Assignment(Object):
         except TypeError as e:
             e.add(message="", object=self)
             raise
+        except InferVariable:
+            State.scope.local_context.addChild(self.assigned)
 
     def resolveType(self):
         raise InternalError("Assignments do not have types")
 
     def __repr__(self):
         return "{} = {}".format(self.assigned, self.value)
+
+# Evil exception hack for inferring variables
+class InferVariable(Exception): pass

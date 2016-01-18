@@ -10,7 +10,7 @@ from .function import Function, FunctionType, Return
 from .external_function import ExternalFunction
 from .call import Call
 from .method import Method, MethodType, MethodInstance
-from .links import Link, Identifier, Attribute
+from .links import Link, BoundLink, Identifier, Attribute
 from .modifiers import Constant, Reference
 from .variable import Variable
 from .assignment import Assignment
