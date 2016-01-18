@@ -12,7 +12,7 @@ class ExternalFunction(BoundObject):
     verified = False
 
     def __init__(self, name:str, external_name:str, arguments:[Type], return_type:Type, tokens = None):
-        super().__init__(name, tokens)
+        BoundObject.__init__(self, name, tokens)
         self.external_name = external_name
         self.type = FunctionType(arguments, return_type)
 

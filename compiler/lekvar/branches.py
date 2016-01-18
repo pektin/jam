@@ -17,7 +17,7 @@ class Loop(SoftScope):
     local_context = None
 
     def __init__(self, instructions, tokens = None):
-        super().__init__(tokens)
+        SoftScope.__init__(self, tokens)
 
         self.instructions = instructions
         self.local_context = Context(self)
@@ -43,7 +43,7 @@ class Break(Object):
     loop = None
 
     def __init__(self, tokens = None):
-        super().__init__(tokens)
+        Object.__init__(self, tokens)
 
     def verify(self):
         self.loop = State.getSoftScope(lambda a: isinstance(a, Loop))
@@ -67,7 +67,7 @@ class Branch(SoftScope):
     next_branch = None
 
     def __init__(self, condition, instructions, next_branch = None, tokens = None):
-        super().__init__(tokens)
+        SoftScope.__init__(self, tokens)
 
         self.condition = condition
 

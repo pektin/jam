@@ -39,6 +39,7 @@ class Context:
     # Bind the child to the context, but not the context to the child
     # Useful for setting up "parenting" for internal objects
     def fakeChild(self, child):
+        assert hasattr(child, "bound_context")
         child.bound_context = self
 
     def __contains__(self, name:str):
@@ -113,7 +114,7 @@ class BoundObject(Object):
     bound_context = None
 
     def __init__(self, name, tokens = None):
-        super().__init__(tokens)
+        Object.__init__(self, tokens)
         self.name = name
 
     def __repr__(self):

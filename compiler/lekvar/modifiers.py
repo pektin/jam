@@ -11,7 +11,7 @@ class Constant(Link):
     assigned = True
 
     def __init__(self, value:Object, tokens = None):
-        super().__init__(value, tokens)
+        BoundLink.__init__(self, value, tokens)
 
     @property
     def name(self):
@@ -41,7 +41,7 @@ class Constant(Link):
 
 class ConstantContext(ContextLink):
     def __getitem__(self, name:str):
-        value = Constant(super().__getitem__(name))
+        value = Constant(ContextLink.__getitem__(self, name))
         value.assigned = True
         return value
 
@@ -51,7 +51,7 @@ class ConstantContext(ContextLink):
 
 class Reference(Link):
     def __init__(self, value:Object, tokens = None):
-        super().__init__(value, tokens)
+        BoundLink.__init__(self, value, tokens)
 
     def resolveType(self):
         return Reference(self.value.resolveType())

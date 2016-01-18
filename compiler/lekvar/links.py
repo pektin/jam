@@ -9,7 +9,7 @@ class Link(Type):
     value = None
 
     def __init__(self, value:Object, tokens = None):
-        super().__init__(tokens)
+        Type.__init__(self, tokens)
         self.value = value
 
     # Dispatch all functions to the linked value
@@ -115,7 +115,7 @@ class Attribute(Link):
     name = None
 
     def __init__(self, parent:Object, name:str, tokens = None):
-        super().__init__(None, tokens)
+        Link.__init__(self, None, tokens)
         self.parent = parent
         self.name = name
 

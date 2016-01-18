@@ -24,7 +24,7 @@ class Function(Scope):
     static = False
 
     def __init__(self, name:str, arguments:[Variable], instructions:[Object], children:[Object], return_type:Type = None, tokens = None):
-        super().__init__(name, tokens)
+        Scope.__init__(self, name, tokens)
 
         self.local_context = Context(self, arguments + children)
         self.closed_context = Context(self, [])
@@ -83,7 +83,7 @@ class FunctionType(Type):
     verified = False
 
     def __init__(self, arguments:[Type], return_type:Type = None, tokens = None):
-        super().__init__(tokens)
+        Type.__init__(self, tokens)
         self.arguments = arguments
         self.dependent = any(isinstance(arg, DependentObject) for arg in arguments)
         self.return_type = return_type
@@ -139,7 +139,7 @@ class Return(Object):
     function = None
 
     def __init__(self, value:Object = None, tokens = None):
-        super().__init__(tokens)
+        Object.__init__(self, tokens)
         self.value = value
 
     def verify(self):

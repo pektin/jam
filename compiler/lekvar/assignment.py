@@ -15,7 +15,7 @@ class Assignment(Object):
     scope = None
 
     def __init__(self, assigned:Object, value:Object, tokens = None):
-        super().__init__(tokens)
+        Object.__init__(self, tokens)
         self.assigned = assigned
         self.value = value
 

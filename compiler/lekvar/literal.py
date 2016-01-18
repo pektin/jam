@@ -5,12 +5,12 @@ class Literal(Object):
     type = None
 
     def __init__(self, data, type:Type, tokens = None):
-        super().__init__(tokens)
+        Object.__init__(self, tokens)
         self.data = data
         self.type = type
 
     def verify(self):
-        super().verify()
+        Object.verify(self)
 
         self.type.verify()
 

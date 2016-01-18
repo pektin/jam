@@ -119,7 +119,7 @@ def llvmPrintfWrapper(type, self):
 
 class LLVMType(lekvar.Type, lekvar.BoundObject):
     def __init__(self, name:str):
-        super().__init__(name)
+        lekvar.BoundObject.__init__(self, name)
 
     def verify(self):
         pass
@@ -169,7 +169,7 @@ class LLVMFunction(lekvar.ExternalFunction):
     generator = None
 
     def __init__(self, name:str, arguments:[lekvar.Type], return_type:lekvar.Type, generator):
-        super().__init__(name, name, arguments, return_type)
+        lekvar.ExternalFunction.__init__(self, name, name, arguments, return_type)
         self.generator = generator
 
     @property
@@ -180,5 +180,5 @@ class LLVMFunction(lekvar.ExternalFunction):
 
     def emit(self):
         if self.llvm_value is None:
-            super().emit()
+            lekvar.ExternalFunction.emit(self)
             self.generator(self)

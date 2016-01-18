@@ -14,7 +14,7 @@ class Variable(BoundObject):
     type = None
 
     def __init__(self, name:str, type:Type = None, tokens = None):
-        super().__init__(name, tokens)
+        BoundObject.__init__(self, name, tokens)
         self.type = type
 
     def copy(self):

@@ -64,7 +64,7 @@ class CompilerError(Exception):
     # When displayed, the error will contain the specified message along with
     # nicely formatted source code extracts, highlighting the specified tokens
     def __init__(self, **kwargs):
-        super().__init__("")
+        Exception.__init__(self, "")
         self.messages = []
         self.notes = []
         self.add(**kwargs)

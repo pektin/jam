@@ -39,7 +39,7 @@ class DependentObject(Type, BoundObject):
     _return_type = None
 
     def __init__(self, scope:Scope, name:str = None, tokens = None):
-        super().__init__(name or "", tokens)
+        BoundObject.__init__(self, name or "", tokens)
         self.scope = scope
 
         self.resolved_calls = dict()
@@ -196,7 +196,7 @@ class DependentTarget(Link):
     dependencies = None
 
     def __init__(self, value:Object, dependencies:[(DependentObject, Object)], tokens = None):
-        super().__init__(value, tokens)
+        Link.__init__(self, value, tokens)
         self.dependencies = dependencies
 
     @contextmanager
@@ -218,10 +218,10 @@ class DependentContext(Context):
     dependent = True
 
     def __init__(self, scope:BoundObject):
-        super().__init__(scope, [])
+        Context.__init__(self, scope, [])
 
     def __contains__(self, name:str):
-        if self.scope.locked: return super().__contains__(name)
+        if self.scope.locked: return Context.__contains__(self, name)
         return True
 
     def __getitem__(self, name:str):

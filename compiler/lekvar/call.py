@@ -15,7 +15,7 @@ class Call(Object):
     function_type = None
 
     def __init__(self, called:Object, values:[Object], return_type:Type = None, tokens = None):
-        super().__init__(tokens)
+        Object.__init__(self, tokens)
         self.called = called
         self.values = values
         self.return_type = return_type

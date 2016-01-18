@@ -13,7 +13,7 @@ class Class(Type, Scope):
     verified = False
 
     def __init__(self, name:str, constructor:Method, attributes:[BoundObject], tokens = None):
-        super().__init__(name, tokens)
+        Scope.__init__(self, name, tokens)
 
         self.instance_context = Context(self, attributes)
 
@@ -69,7 +69,7 @@ class Class(Type, Scope):
 
 class Constructor(Function):
     def __init__(self, function:Function, constructing:Type, tokens = None):
-        super().__init__(function.name, function.arguments, function.instructions, [], constructing, tokens)
+        Function.__init__(self, function.name, function.arguments, function.instructions, [], constructing, tokens)
         self.local_context = function.local_context
 
     def verifySelf(self):

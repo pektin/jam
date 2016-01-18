@@ -11,7 +11,7 @@ class Module(Type, Scope):
     type = None
 
     def __init__(self, name:str, children:[BoundObject], main:[Object] = [], tokens = None):
-        super().__init__(name, tokens)
+        Scope.__init__(self, name, tokens)
 
         self.main = main
         self.context = Context(self, children)

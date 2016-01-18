@@ -13,7 +13,7 @@ class Method(BoundObject):
     dependent_overload_context = None
 
     def __init__(self, name:str, overloads:[Function], tokens = None):
-        super().__init__(name, tokens)
+        BoundObject.__init__(self, name, tokens)
 
         self.overload_context = Context(self, [])
         self.dependent_overload_context = Context(self, [])
@@ -97,7 +97,7 @@ class MethodType(Type):
     used_overload_types = None
 
     def __init__(self, overloads:[FunctionType], tokens = None):
-        super().__init__(tokens)
+        Type.__init__(self, tokens)
         self.overload_types = overloads
         self.used_overload_types = { fn_type: False for fn_type in overloads }
 
@@ -144,7 +144,7 @@ class MethodType(Type):
 
 class MethodInstance(Object):
     def __init__(self, type:MethodType, target:int):
-        super().__init__()
+        Object.__init__(self)
         self.type = type
         self.target = target
 

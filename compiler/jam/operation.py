@@ -5,7 +5,7 @@ from .. import lekvar
 class Operation(lekvar.Call):
     def verify(self):
         try:
-            super().verify()
+            lekvar.Call.verify(self)
         except TypeError as e:
             if e.__traceback__.tb_frame.f_code is self.verify.__code__:
                 if isinstance(self.called, lekvar.Attribute):

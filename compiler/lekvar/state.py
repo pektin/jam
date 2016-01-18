@@ -108,7 +108,7 @@ class ScopeState:
 
 class AnalysScopeState(ScopeState):
     def __init__(self, scope:BoundObject):
-        super().__init__(scope)
+        ScopeState.__init__(self, scope)
         self.definately_returns = False
         self.maybe_returns = False
 

@@ -168,7 +168,7 @@ class Wrappable:
             return "{}({})".format(self.constructor_name,
                                    ', '.join(map(str, self.constructor_args)))
         else:
-            return super().__repr__()
+            return Wrappable.__repr__(self)
 
 #
 # The Actual LLVM bindings

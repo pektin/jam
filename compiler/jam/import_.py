@@ -12,7 +12,8 @@ class Import(lekvar.Link, lekvar.BoundObject):
     def __init__(self, path:[str], name:str = None, tokens = None):
         if name is None:
             name = path[-1]
-        super().__init__(None, name)
+        lekvar.Link.__init__(self, None, tokens)
+        lekvar.BoundObject.__init__(self, name, tokens)
         self.tokens = tokens
         self.path = path
 
@@ -50,7 +51,7 @@ class Import(lekvar.Link, lekvar.BoundObject):
         for name in self.path[index:]:
             self.value = lekvar.Attribute(self.value, name)
 
-        super().verify()
+        lekvar.Link.verify(self)
 
     def parseSource(self, file):
         previous_sources = lekvar.State.sources
