@@ -43,6 +43,33 @@ class Link(Type):
     def resolveCompatibility(self, other:Type):
         return self.value.resolveCompatibility(other)
 
+    def __repr__(self):
+        return repr(self.value)
+
+class BoundLink(Link, BoundObject):
+    def __init__(self, value:Object, tokens = None):
+        Link.__init__(self, value, tokens)
+
+    # Dispatches BoundObject parameters as well
+
+    @property
+    def local_context(self):
+        return self.value.context
+
+    @property
+    def name(self):
+        return self.value.name
+    @name.setter
+    def name(self, value):
+        self.value.name = value
+
+    @property
+    def bound_context(self):
+        return self.value.bound_context
+    @bound_context.setter
+    def bound_context(self, value):
+        self.value.bound_context = value
+
 class ContextLink:
     value = None
 
@@ -72,30 +99,30 @@ class ContextLink:
     def __repr__(self):
         return repr(self.value)
 
-class Identifier(Link):
-    identifier = None
+class Identifier(BoundLink):
+    name = None
 
-    def __init__(self, identifier:str, tokens = None):
-        super().__init__(None, tokens)
-        self.identifier = identifier
+    def __init__(self, name:str, tokens = None):
+        BoundLink.__init__(self, None, tokens)
+        self.name = name
 
     def verify(self):
         if self.value is not None: return
 
         try:
-            self.value = resolveReference(self.identifier)
+            self.value = resolveReference(self.name)
         except MissingReferenceError as e:
-            e.add(content=self.identifier, object=self)
+            e.add(content=self.name, object=self)
             raise e
 
-        super().verify()
+        BoundLink.verify(self)
 
     def verifyAssignment(self, value):
         if self.value is not None: return
 
         # Infer variable existence
         try:
-            self.value = resolveReference(self.identifier)
+            self.value = resolveReference(self.name)
         except MissingReferenceError:
             # Inject a new variable into the enclosing hard scope
             self.value = Variable(self.identifier, value.resolveType())
@@ -107,7 +134,7 @@ class Identifier(Link):
         self.value.verifyAssignment(value)
 
     def __repr__(self):
-        return "{}".format(self.identifier)
+        return "{}".format(self.name)
 
 class Attribute(Link):
     # The object the value belongs to

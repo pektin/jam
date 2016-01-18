@@ -1,21 +1,17 @@
 from ..errors import *
 
 from .core import Context, Object, BoundObject, Type
-from .links import Link, ContextLink
+from .links import BoundLink, ContextLink
 
 #
 # Constant
 #
 
-class Constant(Link):
-    assigned = True
+class Constant(BoundLink):
+    assigned = False
 
     def __init__(self, value:Object, tokens = None):
         BoundLink.__init__(self, value, tokens)
-
-    @property
-    def name(self):
-        return self.value.name
 
     def verifyAssignment(self, value):
         if self.assigned:
@@ -39,6 +35,9 @@ class Constant(Link):
     def instance_context(self):
         return ConstantContext(self.value.instance_context)
 
+    def __repr__(self):
+        return "const({})".format(self.value)
+
 class ConstantContext(ContextLink):
     def __getitem__(self, name:str):
         value = Constant(ContextLink.__getitem__(self, name))
@@ -49,7 +48,7 @@ class ConstantContext(ContextLink):
 # Reference
 #
 
-class Reference(Link):
+class Reference(BoundLink):
     def __init__(self, value:Object, tokens = None):
         BoundLink.__init__(self, value, tokens)
 
