@@ -1,0 +1,11 @@
+##foo\n6\n2\n
+
+const FOO = "foo"
+puts(FOO)
+
+def twice(i:Int)
+  const ret = 2 * i
+  return ret
+end
+puts(twice(3))
+puts(twice(1))
