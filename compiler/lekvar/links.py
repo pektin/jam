@@ -113,8 +113,7 @@ class Identifier(BoundLink):
 
     def verifyAssignment(self, value):
         if self.value is not None:
-            self.value.verifyAssignment(value)
-            return
+            return BoundLink.verifyAssignment(self, value)
 
         # Infer variable existence
         try:
@@ -126,10 +125,10 @@ class Identifier(BoundLink):
             self.value.tokens = self.tokens
             self.value.source = self.source
 
-            self.value.verifyAssignment(value)
+            BoundLink.verifyAssignment(self, value)
             raise InferVariable()
-
-        self.value.verifyAssignment(value)
+        else:
+            return BoundLink.verifyAssignment(self, value)
 
     def __repr__(self):
         return "{}".format(self.name)
