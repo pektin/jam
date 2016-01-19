@@ -100,10 +100,12 @@ class Parser:
 
     # Parse for an expected token, returning it's data
     # May also pass a tokens argument, to which the lexed token is appended
-    def expect(self, type:Tokens, tokens:[] = None):
+    def expect(self, type:Tokens, tokens:[] = None, eof_ok = False):
         token = self.next()
 
         if token is None:
+            if eof_ok:
+                return
             raise SyntaxError(message="Expected").add(content=type.name).add(message="before EOF")
 
         if token.type != type:
@@ -185,7 +187,7 @@ class Parser:
             value = self.parseBreak()
         else:
             value = self.parseValue()
-        self.expect(Tokens.newline)
+        self.expect(Tokens.newline, eof_ok = True)
         return value
 
     def parseValue(self):
