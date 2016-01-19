@@ -1,0 +1,16 @@
+##2\n3\n2\n
+
+def assign_2(f:ref Int)
+  f = 2
+end
+
+def fail_assign_3(f:Int)
+  f = 3
+  puts(f)
+end
+
+foo = ref 3
+assign_2(foo)
+puts(foo)
+fail_assign_3(foo)
+puts(foo)
