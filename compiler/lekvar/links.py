@@ -54,15 +54,8 @@ class BoundLink(Link, BoundObject):
     # Dispatches BoundObject parameters as well
 
     @property
-    def local_context(self):
-        return self.value.context
-
-    @property
     def name(self):
         return self.value.name
-    @name.setter
-    def name(self, value):
-        self.value.name = value
 
     @property
     def bound_context(self):
