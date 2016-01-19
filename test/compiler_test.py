@@ -41,7 +41,6 @@ for root, dirs, files in os.walk(TESTS_PATH):
 
                 # Or specific test attributes
                 if type == "?":
-                    pytest.xfail()
                     type = f_in.read(1)
 
                 # The first line is the output
@@ -65,6 +64,9 @@ for root, dirs, files in os.walk(TESTS_PATH):
                             compile(f_in)
                     else:
                         raise errors.InternalError("Invalid Test Output Type: {}".format(type))
+
+        if open(path, "r").read(2)[1] == "?":
+            test = pytest.mark.xfail(test)
 
         globals()[name] = test
 
