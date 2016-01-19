@@ -4,9 +4,8 @@ from io import StringIO
 import pytest
 import logging
 
-from .. import jam, lekvar, llvm
-
-from .lexer import Tokens, Lexer
+from compiler import jam, lekvar, llvm
+from compiler.jam.lexer import Tokens, Lexer
 
 def test_lexer():
     test = """# def:end )=

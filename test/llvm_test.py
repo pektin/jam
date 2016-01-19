@@ -3,9 +3,8 @@ from subprocess import check_output
 
 import pytest
 
-from ..errors import *
-from .. import llvm
-from ..llvm import bindings as c
+from compiler import llvm, errors
+from compiler.llvm import bindings as c
 
 BUILD_PATH = "build/tests"
 
@@ -77,11 +76,11 @@ def rec() { ret rec() }
 """
 
 def test_lli_failure():
-    with pytest.raises(ExecutionError):
+    with pytest.raises(errors.ExecutionError):
         llvm.run(INVALID_SOURCE)
 
 def test_llc_failure():
-    with pytest.raises(ExecutionError):
+    with pytest.raises(errors.ExecutionError):
         llvm.compile(INVALID_SOURCE)
 
 def test_builtin_lib():

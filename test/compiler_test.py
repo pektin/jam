@@ -1,13 +1,13 @@
-import os, sys
+import os
+import sys
 import fnmatch
 import logging
 
 import pytest
 
-from . import jam, lekvar, llvm
-from . import errors
+from compiler import jam, lekvar, llvm, errors
 
-TESTS_PATH = os.path.join("compiler", "tests")
+TESTS_PATH = os.path.join("test", "compiler")
 BUILD_PATH = os.path.join("build", "tests")
 
 def compile(f_in):
