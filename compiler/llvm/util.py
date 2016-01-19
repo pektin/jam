@@ -9,13 +9,6 @@ def resolveName(scope:lekvar.BoundObject):
         scope = scope.bound_context.scope
     return "lekvar" + name
 
-# A blank emission function. Can be used for anything
-def blankEmit(self):
-    return None
-# A blank value emission function. requires type argument
-def blankEmitValue(self, type):
-    return None
-
 # Create a reference counted type from a normal type
 def referenceType(type):
     return llvm.Struct.newAnonym([llvm.Type.void_p(), type], False)

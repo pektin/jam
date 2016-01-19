@@ -18,8 +18,6 @@ lekvar.BoundObject.llvm_value = None
 def Object_emitValue(self, type:lekvar.Type) -> llvm.Value:
     raise InternalError("Not Implemented")
 
-lekvar.Object.emitContext = blankEmit
-
 @patch
 #@abstract
 def Object_emitAssignment(self, type:lekvar.Type) -> llvm.Value:
