@@ -729,15 +729,6 @@ class Parser:
 
         return lekvar.Return(value, tokens)
 
-    def parseAssignment(self):
-        # Find what's on the lhs
-        lhs = self.parseVariable()
-
-        tokens = [self.expect(Tokens.assign)]
-
-        value = self.parseValue()
-        return lekvar.Assignment(lhs, value, tokens)
-
     def parseAttribute(self, value):
         tokens = [self.expect(Tokens.dot)]
 
