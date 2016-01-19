@@ -17,9 +17,6 @@ class Variable(BoundObject):
         BoundObject.__init__(self, name, tokens)
         self.type = type
 
-    def copy(self):
-        return Variable(self.name, self.type, self.tokens)
-
     def verify(self):
         self.type.verify()
 
@@ -37,10 +34,6 @@ class Variable(BoundObject):
 
         if not checkCompatibility(value.resolveType(), self.type):
             raise TypeError(message="Cannot assign").add(object=value).add(message="to").add(object=self)
-
-    @property
-    def local_context(self):
-        return None
 
     def __repr__(self):
         return "{}:{}".format(self.name, self.type)
