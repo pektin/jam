@@ -23,80 +23,88 @@ compiler become part of the standard library.
 
 The compiler currently requires Python 3.4 and the llvm-3.6 shared library
 
-### Ubuntu
+### Ubuntu (Trusty Tahr, 14.04)
 
 See http://llvm.org/apt/ for instructions on how to set up your system to fetch
 the 3.6 packages if you're still on precise.
 
-``` bash
+```bash
 sudo apt-get install python3 libllvm3.6 llvm-runtime
 ```
 
 ### Darwin (OSX Journaled)
 
-``` bash
+```bash
 brew install python3
 ```
 
 Download the source for llvm 3.6 from http://llvm.org/releases/download.html
 and build with:
 
-``` bash
+```bash
 ./configure --enable-shared --disable-assertions
 make install
 ```
 
 ## Usage
 
-The compiler is currently built as a python library, however it can also be
-directly run through the `jam` python script. The script can be symlinked into
-`/usr/local/bin` with `make install`
+The Jam toolbox is entirely contained within the `jam` script. To install the
+script on your local path, run `make install`.
 
-``` bash
+To access the Jam REPL simply run:
+
+```bash
+jam
+```
+
+To directly execute a jam script, run:
+
+```bash
 jam FILE
+```
+
+To compile a script to an executable, run:
+
+```bash
+jam c FILE
 ```
 
 For further help run:
 
-``` bash
+```bash
 jam --help
 ```
 
 ## Development
 
-In order to run the automated tests for the compiler, the py.test framework is
-required.
+### Testing
 
-``` bash
-pip3 install pip3
+Jam uses the [py.test framework](http://pytest.org/).
+
+To run the tests, simply execute py.test inside the project.
+
+```bash
+py.test
 ```
 
-To run the tests, simply execute py.test
+### Debugging
 
-``` bash
-py.test-3
+Certain parts of jam make extensive use of logging. By default only `WARNING`
+level logs are shown. The logging level is bound to the verbosity option. Simply
+passing in a verbosity of 1 (`-v`) enables `INFO` and 2 (`-vv`) enables `DEBUG`.
+
+```bash
+py.test -vv
 ```
 
-By default the tests are run with a logging level set at `WARNING`. The logging
-level is bound to the verbosity option. Simply passing in a verbosity of 1
-(`-v`) enables `INFO` and 2 (`-vv`) enables `DEBUG`.
+### Coverage
 
-``` bash
-py.test-3 -vv
-```
+To check test coverage, use
+[pytest-cov](https://github.com/pytest-dev/pytest-cov):
 
-To check test coverage, use `pytest-cov`.
-To install:
-
-``` bash
-pip3 install pytest-cov
-```
-
-Reporting:
-
-``` bash
-# Vague Report
-py.test-3 --cov=compiler
-# Full html report
-py.test-3 --cov=compiler --cov-report=html
+```bash
+# Vague report in console
+py.test --cov=compiler
+# Full html report, written to htmlcov/
+py.test --cov=compiler --cov-report=html
 ```
