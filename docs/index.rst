@@ -8,21 +8,21 @@ Jam v\ |release| Documentation
     lib/index
     tut/index
 
-This collection of documents tries to provide comprehensive documentation on
-the Jam programming language. Any missing documentation, bugs or other problems
-please report them to the github repository.
+This collection of documents tries to provide comprehensive documentation
+coverage on the Jam programming language. This is still a heavy work in progress
+and is being developed alongside the compiler.
 
-Contents:
-=========
+Documents:
+==========
 
 .. hlist::
     :columns: 2
 
     * :doc:`Language Reference<jam/index>`
-        *an informal definition of syntax and grammar*
+        *documentation for the Jam language*
 
     * :doc:`Library Reference<lib/index>`
-        *the documentation to the standard library*
+        *documentation for the standard library*
 
     * :doc:`Tutorial<tut/index>`
-        *the official tutorial to the jam language*
+        *the official Jam language tutorial*
