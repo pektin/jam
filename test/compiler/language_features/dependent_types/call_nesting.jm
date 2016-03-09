@@ -1,0 +1,11 @@
+#!foo\n
+
+def call(fn, arg)
+  fn(arg)
+end
+
+def print(value)
+  puts(value)
+end
+
+call(print, "foo")
