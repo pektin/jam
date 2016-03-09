@@ -26,7 +26,7 @@ class DependentObject(Type, BoundObject):
     _instance_context = None
     resolved_type = None
     resolved_calls = None
-    resolved_instalce_calls = None
+    resolved_instance_calls = None
 
     # Object Dependencies
     target_switch = None
@@ -43,7 +43,7 @@ class DependentObject(Type, BoundObject):
         self.scope = scope
 
         self.resolved_calls = dict()
-        self.resolved_instalce_calls = dict()
+        self.resolved_instance_calls = dict()
         self.compatible_types = set()
         self.switches = []
 
@@ -94,7 +94,7 @@ class DependentObject(Type, BoundObject):
                     yield self.resolved_type, target.resolveType()
 
                 calls = self._targetCall(target, self.resolved_calls, lambda c: c.resolveCall)
-                inst_calls = self._targetCall(target, self.resolved_instalce_calls, lambda o: o.resolveInstanceCall)
+                inst_calls = self._targetCall(target, self.resolved_instance_calls, lambda o: o.resolveInstanceCall)
                 for o in chain(calls, inst_calls):
                     yield o
 
@@ -145,7 +145,7 @@ class DependentObject(Type, BoundObject):
         return self.resolved_calls.setdefault(call, DependentObject(self.scope))
 
     def resolveInstanceCall(self, call):
-        return self.resolved_instalce_calls.setdefault(call, DependentObject(self.scope))
+        return self.resolved_instance_calls.setdefault(call, DependentObject(self.scope))
 
     # Can be ignored, as context is superseded by instance_context
     @property
