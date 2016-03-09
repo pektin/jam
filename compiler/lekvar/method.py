@@ -160,3 +160,6 @@ class MethodInstance(Object):
     @property
     def context(self):
         return None
+
+    def __repr__(self):
+        return "MethodInstance({})".format(self.type.overload_types[self.target])

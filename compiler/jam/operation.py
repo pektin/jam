@@ -1,9 +1,9 @@
 from ..errors import *
 from .. import lekvar
 
-# Special case error reporting for operations
 class Operation(lekvar.Call):
     def verify(self):
+        # Special case error reporting for operations
         try:
             lekvar.Call.verify(self)
         except TypeError as e:

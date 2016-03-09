@@ -255,7 +255,7 @@ def DependentObject_emit(self):
 @patch
 def DependentObject_emitValue(self, type):
     assert self.target is not None
-    return self.target.emitValue(None)
+    return self.target.emitValue(type)
 
 @patch
 def DependentObject_emitType(self):
