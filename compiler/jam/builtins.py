@@ -26,24 +26,24 @@ def builtins(logger = logging.getLogger()):
         # as they cannot be expressed in jam syntax
         and_ = lekvar.Function("&&", [lekvar.Variable("lhs", lekvar.Identifier("Bool")),
                                       lekvar.Variable("rhs", lekvar.Identifier("Bool"))],
-        [
-            lekvar.Branch(lekvar.Identifier("lhs"), [
-                lekvar.Return(lekvar.Identifier("rhs")),
-            ], lekvar.Branch(None, [
-                lekvar.Return(lekvar.Identifier("lhs")),
-            ])),
-        ], [])
+            [
+                lekvar.Branch(lekvar.Identifier("lhs"), [
+                    lekvar.Return(lekvar.Identifier("rhs")),
+                ], lekvar.Branch(None, [
+                    lekvar.Return(lekvar.Identifier("lhs")),
+                ])),
+            ], [])
         ir.context.addChild(and_)
 
         or_ = lekvar.Function("||", [lekvar.Variable("lhs", lekvar.Identifier("Bool")),
                                       lekvar.Variable("rhs", lekvar.Identifier("Bool"))],
-        [
-            lekvar.Branch(lekvar.Identifier("lhs"), [
-                lekvar.Return(lekvar.Identifier("lhs")),
-            ], lekvar.Branch(None, [
-                lekvar.Return(lekvar.Identifier("rhs")),
-            ])),
-        ], [])
+            [
+                lekvar.Branch(lekvar.Identifier("lhs"), [
+                    lekvar.Return(lekvar.Identifier("lhs")),
+                ], lekvar.Branch(None, [
+                    lekvar.Return(lekvar.Identifier("rhs")),
+                ])),
+            ], [])
         ir.context.addChild(or_)
 
     global builtin_cache
