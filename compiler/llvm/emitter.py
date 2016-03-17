@@ -477,6 +477,10 @@ def Method_emitValue(self, type):
 
     return llvm.Value.constStruct(type.emitType(), values)
 
+@patch
+def Method_emitContext(self):
+    return None
+
 #
 # class MethodType
 #
