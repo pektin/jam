@@ -1,0 +1,12 @@
+##foo\nbar\n
+
+def foo()
+  def bar()
+    puts("bar")
+  end
+
+  puts("foo")
+  bar()
+end
+
+foo()
