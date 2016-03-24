@@ -108,6 +108,31 @@ for specialisation.
     pythag_hypotenuse(5, 8.3) # Uses the generic implementation
     pythag_hypotenuse(5, 2) # Uses the specialisation for integers
 
+Method Closures
+===============
+
+Methods always operate inside the context they are defined in. Methods are
+allowed to be defined within non-static (created at runtime) contexts, such as
+other methods.
+
+::
+
+    def say_factory(greeting:String)
+      def say_greeting(name:String)
+        puts("#{greeting} #{name}")
+      end
+
+      return say_greeting
+    end
+
+    say_hello = say_factory("Hello,")
+    say_yo = say_factory("yo")
+
+    # Hello, Jam
+    say_hello("Jam")
+    # yo closure
+    say_yo("closure")
+
 Method Values
 =============
 
