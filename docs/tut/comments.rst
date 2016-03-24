@@ -7,15 +7,11 @@ this is a non-issue.
 
 ::
 
-    # Returns the given Fibonacci number
-    # Guaranteed to run in constant time
-    def fib(n:Int)
-        # Formula for finding the nth Fibonacci number
-        # Uses the golden ratio constant (Phi) and it's reciprocal (phi)
-        const Phi = 1.618_033_988_749_894_848_204_586
-        const phi = 1/Phi
-        return ((Phi**n - (-phi)**n) / (Phi + phi)) as Int
-    end
+    # The golden ratio (Phi)
+    const Phi = 1.618_033_988_749_894_848_204_586
+
+    # and it's reciprocal (phi)
+    const phi = 1/Phi
 
 .. seealso::
 
