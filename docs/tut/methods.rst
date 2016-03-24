@@ -46,6 +46,9 @@ The type of the return value may be explicitly stated.
 
     a = pythag_hypotenuse(12.3, 8.3)
 
+Overloading
+===========
+
 Methods may be 'overloaded' with different arguments/argument types. This
 concept should be used sparingly, but avoids unnecessary name clutter (ie.
 ``printf``, ``fprintf``, ``sprintf`` and ``snprintf`` from C)
@@ -79,6 +82,9 @@ means ambiguity, which results in a compiler error.
     # The compiler can't know which one to execute, so it errs
     not_right(4)
 
+Specialisation
+==============
+
 Methods whose arguments do not have a defined type are considered to be more
 generic than those that do. Because of this, the non-generic methods are checked
 for matching overloads separately and before the generic ones are. This allows
@@ -101,6 +107,9 @@ for specialisation.
     pythag_hypotenuse(12.3, 5.4) # Uses the generic implementation
     pythag_hypotenuse(5, 8.3) # Uses the generic implementation
     pythag_hypotenuse(5, 2) # Uses the specialisation for integers
+
+Method Values
+=============
 
 Methods can also be used as values themselves, in the same exact way as any
 other value. This works together with overloads and specialisation.
