@@ -12,6 +12,7 @@ The Jam Tutorial
     literals
     variables
     control-flow
+    methods
 
 Introduction
 ============
