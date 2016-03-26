@@ -21,7 +21,8 @@ compiler become part of the standard library.
 
 ## Compiler
 
-The compiler currently requires Python 3.4 and the llvm-3.6 shared library
+The compiler currently requires Python 3.4, the llvm-3.6 shared library and
+clang-3.6
 
 ### Ubuntu (Trusty Tahr, 14.04)
 
@@ -29,7 +30,7 @@ See http://llvm.org/apt/ for instructions on how to set up your system to fetch
 the 3.6 packages if you're still on precise.
 
 ```bash
-sudo apt-get install python3 libllvm3.6 llvm-runtime
+sudo apt-get install python3 libllvm3.6 llvm-runtime clang-3.6
 ```
 
 ### Darwin (OSX Journaled)
