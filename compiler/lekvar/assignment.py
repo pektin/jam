@@ -1,7 +1,6 @@
 from ..errors import *
 
 from .state import State
-from .util import resolveReference, checkCompatibility
 from .core import Context, Object, BoundObject, Type
 
 #
