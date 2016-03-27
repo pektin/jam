@@ -2,7 +2,7 @@ import os
 
 from . import parser
 
-from ..errors import *
+from .. import errors
 from .. import lekvar
 
 class Import(lekvar.Link, lekvar.BoundObject):
@@ -26,10 +26,22 @@ class Import(lekvar.Link, lekvar.BoundObject):
 
         index = 0 # in path
 
+        found = lekvar.State.scope.resolveIdentifier(self.path[index])
+        # Handle circular imports
         try:
-            self.value = lekvar.util.resolveReference(self.path[index], self)
+            found.remove(self)
+        except ValueError:
+            pass
+
+        if len(found) == 1:
+            self.value = found[0]
             index += 1
-        except MissingReferenceError as e:
+        elif len(found) > 1:
+            err = errors.AmbiguityError(message="Ambiguous reference to").add(content=self.path[index], object=self).addNote(message="Matches:")
+            for match in found:
+                err.addNote(object=match)
+            raise err
+        else:
             if hasattr(self.source, "name"):
                 # Start from the path of the source
                 path = os.path.dirname(self.source.name)
@@ -46,7 +58,7 @@ class Import(lekvar.Link, lekvar.BoundObject):
                         break
 
             if self.value is None:
-                raise ImportError(message="Cannot find file for").add(object=self)
+                raise errors.ImportError(message="Cannot find file for").add(object=self)
 
         for name in self.path[index:]:
             self.value = lekvar.Attribute(self.value, name)

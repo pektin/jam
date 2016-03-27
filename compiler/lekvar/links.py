@@ -2,7 +2,7 @@ from ..errors import *
 
 from .state import State
 from .core import Context, Object, BoundObject, Type
-from .util import resolveReference, resolveAttribute
+from .util import resolveAttribute
 from .variable import Variable
 from .assignment import InferVariable
 
@@ -100,14 +100,29 @@ class Identifier(BoundLink):
         BoundLink.__init__(self, None, tokens)
         self.name = name
 
+    def _resolveIdentifier(self):
+        # Use sets to ignore duplicate entries
+        #TODO: Fix duplicate entries
+        found = set(State.scope.resolveIdentifier(self.name))
+        found |= set(State.builtins.resolveIdentifier(self.name))
+
+        if len(found) > 1:
+            err = AmbiguityError(message="Ambiguous reference to").add(content=self.name, object=self).addNote(message="Matches:")
+            for match in found:
+                err.addNote(object=match)
+            raise err
+
+        return found
+
     def verify(self):
         if self.value is not None: return
 
-        try:
-            self.value = resolveReference(self.name)
-        except MissingReferenceError as e:
-            e.add(content=self.name, object=self)
-            raise e
+        found = self._resolveIdentifier()
+
+        if len(found) < 1:
+            raise MissingReferenceError(message="Missing reference to").add(content=self.name, object=self)
+
+        self.value = found.pop()
 
         BoundLink.verify(self)
 
@@ -115,10 +130,13 @@ class Identifier(BoundLink):
         if self.value is not None:
             return BoundLink.verifyAssignment(self, value)
 
+        found = self._resolveIdentifier()
+
+        if len(found) == 1:
+            self.value = found.pop()
+            return BoundLink.verifyAssignment(self, value)
         # Infer variable existence
-        try:
-            self.value = resolveReference(self.name)
-        except MissingReferenceError:
+        else:
             # Inject a new variable into the enclosing hard scope
             self.value = Variable(self.name, value.resolveType())
             # Make variable have the same tokens. Hack for nicer error messages
@@ -127,8 +145,6 @@ class Identifier(BoundLink):
 
             BoundLink.verifyAssignment(self, value)
             raise InferVariable()
-        else:
-            return BoundLink.verifyAssignment(self, value)
 
     def __repr__(self):
         return "{}".format(self.name)

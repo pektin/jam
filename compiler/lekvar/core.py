@@ -117,6 +117,11 @@ class BoundObject(Object):
         Object.__init__(self, tokens)
         self.name = name
 
+    def resolveIdentifier(self, name:str):
+        if self.bound_context is not None:
+            return self.bound_context.scope.resolveIdentifier(name)
+        return []
+
     def __repr__(self):
         return "{}({})".format(self.__class__.__name__, self.name)
 
@@ -128,9 +133,15 @@ class SoftScope(Object):
     def local_context(self):
         pass
 
+    def resolveIdentifier(self, name:str):
+        if self.local_context is not None and name in self.local_context:
+            return [self.local_context[name]]
+        return []
+
 # A bound object that has a local context of all of its children
 class Scope(SoftScope, BoundObject):
-    pass
+    def resolveIdentifier(self, name:str):
+        return BoundObject.resolveIdentifier(self, name) + SoftScope.resolveIdentifier(self, name)
 
 # A type object that is used to describe certain behaviour of an object.
 class Type(Object):

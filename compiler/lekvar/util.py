@@ -14,37 +14,6 @@ def checkCompatibility(type1:Type, type2:Type):
         return True
     return type2.checkCompatibility(type1)
 
-# Resolves a reference inside of a given scope.
-def resolveReference(reference:str, exclude = None):
-    # Collect all objects with a name matching reference up the tree of scopes
-    found = []
-
-    scope = State.scope
-    while True:
-        context = scope.local_context
-
-        if context is not None and reference in context:
-            found.append(context[reference])
-
-        # Go to builtins once the top of the tree is reached, otherwise move up
-        if scope is State.builtins:
-            break
-        else:
-            scope = scope.bound_context.scope if (scope.bound_context is not None) else State.builtins
-
-    found = [scope for scope in found if scope is not exclude]
-
-    # Only a single found object is valid
-    if len(found) < 1:
-        raise MissingReferenceError(message="Missing reference to")
-    elif len(found) > 1:
-        err = AmbiguityError(message="Ambiguous reference to").addNote(message="Matches:")
-        for match in found:
-            err.addNote(object=match)
-        raise err
-
-    return found[0]
-
 # Resolve a attribute of a given object
 def resolveAttribute(object:Object, reference:str):
     context = object.context
