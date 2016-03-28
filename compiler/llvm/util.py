@@ -6,7 +6,7 @@ def resolveName(scope:lekvar.BoundObject):
     name = ""
     while scope.bound_context is not None:
         name = "." + scope.name + name
-        scope = scope.bound_context.scope
+        scope = scope.parent
     return "lekvar" + name
 
 # Create a reference counted type from a normal type

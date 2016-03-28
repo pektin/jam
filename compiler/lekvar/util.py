@@ -27,5 +27,5 @@ def inScope(object:BoundObject, scope:Scope):
     while scope is not None:
         if object == scope:
             return True
-        scope = scope.bound_context.scope if scope.bound_context else None
+        scope = scope.parent
     return False

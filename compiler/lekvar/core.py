@@ -117,9 +117,15 @@ class BoundObject(Object):
         Object.__init__(self, tokens)
         self.name = name
 
+    @property
+    def parent(self):
+        if self.bound_context is None:
+            return None
+        return self.bound_context.scope
+
     def resolveIdentifier(self, name:str):
-        if self.bound_context is not None:
-            return self.bound_context.scope.resolveIdentifier(name)
+        if self.parent is not None:
+            return self.parent.resolveIdentifier(name)
         return []
 
     def __repr__(self):

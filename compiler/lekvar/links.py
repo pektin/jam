@@ -151,12 +151,12 @@ class Identifier(BoundLink):
 
 class Attribute(Link):
     # The object the value belongs to
-    parent = None
+    object = None
     name = None
 
-    def __init__(self, parent:Object, name:str, tokens = None):
+    def __init__(self, object:Object, name:str, tokens = None):
         Link.__init__(self, None, tokens)
-        self.parent = parent
+        self.object = object
         self.name = name
 
     def verify(self):
@@ -172,13 +172,13 @@ class Attribute(Link):
         self.value.verifyAssignment(value)
 
     def _verify(self):
-        self.parent.verify()
+        self.object.verify()
         # Resolve the attribute using the values attribute resolution
         try:
-            self.value = resolveAttribute(self.parent, self.name)
+            self.value = resolveAttribute(self.object, self.name)
         except MissingReferenceError as e:
             e.add(content=self.name, object=self)
             raise e
 
     def __repr__(self):
-        return "{}.{}".format(self.parent, self.name)
+        return "{}.{}".format(self.object, self.name)

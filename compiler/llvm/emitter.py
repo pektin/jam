@@ -74,16 +74,16 @@ def Link_emitInstanceAssignment(self, value, type):
 
 @patch
 def Attribute_emitValue(self, type):
-    with State.selfScope(emitAssignment(self.parent, type)):
+    with State.selfScope(emitAssignment(self.object, type)):
         return emitValue(self.value, type)
 
 @patch
 def Attribute_emitContext(self):
-    return self.parent.emitAssignment(None)
+    return self.object.emitAssignment(None)
 
 @patch
 def Attribute_emitAssignment(self, type):
-    with State.selfScope(emitAssignment(self.parent, type)):
+    with State.selfScope(emitAssignment(self.object, type)):
         return self.value.emitAssignment(type)
 
 #
@@ -123,7 +123,7 @@ def Variable_emit(self):
 
     type = self.type.emitType()
     name = resolveName(self)
-    if self.bound_context.scope.static:
+    if self.parent.static:
         self.llvm_value = State.module.addVariable(type, name)
         self.llvm_value.initializer = llvm.Value.undef(type)
     else:
@@ -390,7 +390,7 @@ def Constructor_emitEntry(self):
     self.llvm_context = State.builder.alloca(self.llvm_closure_type, "")
 
     self_var = State.builder.structGEP(self.llvm_context, 0, "")
-    self_type = self.bound_context.scope.bound_context.scope.emitType()
+    self_type = self.parent.parent.emitType()
     self_val = State.builder.alloca(self_type, "self")
 
     State.builder.store(self_val, self_var)

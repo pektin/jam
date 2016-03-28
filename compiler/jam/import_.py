@@ -69,10 +69,10 @@ class Import(lekvar.Link, lekvar.BoundObject):
         previous_sources = lekvar.State.sources
 
         if lekvar.State.sources is None:
-            parent = self
-            while parent.bound_context is not None:
-                parent = parent.bound_context.scope
-            lekvar.State.sources = ((self.source, parent),)
+            object = self
+            while object.parent is not None:
+                object = object.parent
+            lekvar.State.sources = ((self.source, object),)
 
         # Check if we have already parsed the file
         if hasattr(file, "fileno"):
