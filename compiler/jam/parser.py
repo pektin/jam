@@ -669,8 +669,6 @@ class Parser:
             token = self.lookAhead()
             if token.type == Tokens.const_kwd:
                 modifiers.append((lekvar.Constant, self.next()))
-            elif token.type == Tokens.ref_kwd:
-                modifiers.append((lekvar.Reference, self.next()))
             else:
                 break
 
