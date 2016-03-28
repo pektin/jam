@@ -8,6 +8,7 @@ class Module(Type, Scope):
     verified = False
     context = None
     static = True
+    static_scope = True
     type = None
 
     def __init__(self, name:str, children:[BoundObject], main:[Object] = [], tokens = None):
@@ -15,10 +16,6 @@ class Module(Type, Scope):
 
         self.main = main
         self.context = Context(self, children)
-
-        # All inherit static-ness
-        for child in self.context:
-            child.static = True
 
     def verify(self):
         if self.verified: return

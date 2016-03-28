@@ -11,6 +11,7 @@ class Class(Type, Scope):
     instance_context = None
 
     verified = False
+    static_scope = False
 
     def __init__(self, name:str, constructor:Method, attributes:[BoundObject], tokens = None):
         Scope.__init__(self, name, tokens)

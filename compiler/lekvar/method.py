@@ -1,14 +1,14 @@
 from ..errors import *
 
 from .state import State
-from .core import Context, Object, BoundObject, Type
+from .core import Context, Object, BoundObject, SoftScope, Type
 from .function import Function, FunctionType
 from .dependent import DependentObject, DependentTarget
 
 # Python Predefines
 Method = None
 
-class Method(BoundObject):
+class Method(BoundObject, SoftScope):
     overload_context = None
     dependent_overload_context = None
 

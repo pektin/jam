@@ -96,6 +96,10 @@ class Object(ABC):
     def resolveCall(self, call:FunctionType) -> Function:
         return self.resolveType().resolveInstanceCall(call)
 
+    @property
+    def static(self):
+        return True
+
     # Provides a context of attributes using this object's type.
     # May be overridden for more specific behaviour
     @property
@@ -109,13 +113,16 @@ class Object(ABC):
 # other objects bound to it through a context must also be a bound object.
 class BoundObject(Object):
     name = None
-    static = False
     dependent = False
     bound_context = None
 
     def __init__(self, name, tokens = None):
         Object.__init__(self, tokens)
         self.name = name
+
+    @property
+    def static(self):
+        return self.parent.static_scope if self.parent is not None else True
 
     @property
     def parent(self):
@@ -133,6 +140,11 @@ class BoundObject(Object):
 
 # A generic object that has a local context of children
 class SoftScope(Object):
+    def _get_static(self):
+        return self.parent.static_scope
+    static = property(_get_static)
+    static_scope = property(_get_static)
+
     # The local context provides the context accessible objects bound to a
     # context whose scope is this object.
     @abstractproperty

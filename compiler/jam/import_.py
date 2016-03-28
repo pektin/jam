@@ -7,6 +7,7 @@ from .. import lekvar
 
 class Import(lekvar.Link, lekvar.BoundObject):
     static = True
+    static_scope = True
     path = None
 
     def __init__(self, path:[str], name:str = None, tokens = None):

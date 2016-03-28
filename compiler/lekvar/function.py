@@ -21,7 +21,7 @@ class Function(Scope):
 
     type = None
     verified = False
-    static = False
+    static_scope = False
 
     def __init__(self, name:str, arguments:[Variable], instructions:[Object], children:[Object], return_type:Type = None, tokens = None):
         Scope.__init__(self, name, tokens)

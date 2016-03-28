@@ -79,6 +79,8 @@ def Attribute_emitValue(self, type):
 
 @patch
 def Attribute_emitContext(self):
+    if self.value.static:
+        return None
     return self.object.emitAssignment(None)
 
 @patch
@@ -123,7 +125,7 @@ def Variable_emit(self):
 
     type = self.type.emitType()
     name = resolveName(self)
-    if self.parent.static:
+    if self.static:
         self.llvm_value = State.module.addVariable(type, name)
         self.llvm_value.initializer = llvm.Value.undef(type)
     else:
@@ -186,8 +188,7 @@ def Call_emitValue(self, type):
     with State.selfScope(self.called):
         called = self.function.emitValue(self.function_type)
 
-    # Only use the function's context if it is static
-    bound_value = None if self.called.resolveValue().static else self.called.emitContext()
+    bound_value = self.called.emitContext()
     with State.selfScope(bound_value):
         context = self.function.emitContext()
 
@@ -546,6 +547,10 @@ def Class_emitType(self):
         self.llvm_type = llvm.Struct.newAnonym(var_types, False)
 
     return self.llvm_type
+
+@patch
+def Class_emitContext(self):
+    return None
 
 #
 # class Reference

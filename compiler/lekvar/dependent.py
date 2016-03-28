@@ -152,6 +152,14 @@ class DependentObject(Type, BoundObject):
     def context(self):
         pass
 
+    @property
+    def static(self):
+        return self.target.static
+
+    @property
+    def static_scope(self):
+        return self.target.static_scope
+
     # Hack!
     @property
     def return_type(self):
