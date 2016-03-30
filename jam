@@ -103,7 +103,7 @@ def compile(args):
 def run(args):
     if args.source is not None:
         ir = lekvar.compile(args.source, jam, llvm)
-        print(llvm.run(ir).decode("UTF-8"), end="")
+        llvm.run_direct(ir)
         return
 
     class INWrapper:
@@ -132,13 +132,14 @@ def run(args):
     while True:
         try:
             ir = lekvar.compile(INWrapper(), jam, llvm)
-            print(llvm.run(ir).decode("UTF-8"))
+            llvm.run_direct(ir)
         except compiler.CompilerError as e:
             print("{}: {}".format(e.__class__.__name__, e))
-            print()
         except (KeyboardInterrupt, EOFError):
             print("\nExiting...")
             break
+
+        print()
 
 COMMANDS = {
     "r": run,

@@ -1,4 +1,5 @@
 import os
+import sys
 import uuid
 import logging
 import subprocess
@@ -45,6 +46,14 @@ def run(source:bytes, precommands = []):
         )
     except subprocess.CalledProcessError as e:
         raise ExecutionError("lli error running source: {}".format(e.output))
+
+# Same as run, except doesn't capture output
+def run_direct(source:bytes):
+    subprocess.Popen([bindings.LLI],
+        stdin = subprocess.PIPE,
+        stdout = sys.stdout,
+        stderr = sys.stderr
+    ).communicate(source)
 
 # Wrapping around clang
 #TODO: Replace with direct calls to llvm
