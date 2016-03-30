@@ -109,3 +109,13 @@ py.test --cov=compiler
 # Full html report, written to htmlcov/
 py.test --cov=compiler --cov-report=html
 ```
+
+### Memory (valgrind)
+
+To run all executables created by tests with valgrind to check for leaks and
+other memory issues, pass the `--valgrind` option to `py.test`. Do note that
+valgrind is slow and the tests will take a significantly longer time to run.
+
+```bash
+py.test --valgrind
+```
