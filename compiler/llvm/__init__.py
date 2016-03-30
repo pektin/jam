@@ -37,7 +37,7 @@ def _get_tempname(suffix = ""):
 
 # Wrapping around lli
 #TODO: Replace with direct calls to llvm
-def run(source:bytes, precommands=[]):
+def run(source:bytes, precommands = []):
     try:
         return subprocess.check_output(precommands + [bindings.LLI],
             input = source,
