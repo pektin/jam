@@ -13,8 +13,9 @@ from compiler import jam, lekvar, llvm
 
 VERSION = "Jam v0.1a"
 
-INTERACTIVE_PROMPT = "{}| "
-INTERACTIVE_STARTUP = "{} interactive compiler".format(VERSION)
+INTERACTIVE_STARTUP =        "{} interactive compiler".format(VERSION)
+INTERACTIVE_PROMPT_RESTART = "----"
+INTERACTIVE_PROMPT =         "{:>2}| "
 
 common_parser = argparse.ArgumentParser(add_help=False)
 common_parser.add_argument("-V", "--version",
@@ -131,13 +132,16 @@ def run(args):
     print(INTERACTIVE_STARTUP)
     while True:
         try:
+            print(INTERACTIVE_PROMPT_RESTART)
             ir = lekvar.compile(INWrapper(), jam, llvm)
             llvm.run_direct(ir)
         except compiler.CompilerError as e:
             print("{}: {}".format(e.__class__.__name__, e))
-        except (KeyboardInterrupt, EOFError):
+        except EOFError:
             print("\nExiting...")
             break
+        except KeyboardInterrupt:
+            print("^C")
 
         print()
 
