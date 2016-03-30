@@ -2,8 +2,9 @@ from ..errors import *
 
 from .util import *
 from .state import State
-from .core import Context, Object, BoundObject, Scope, Type
+from .core import Context, Object, BoundObject, SoftScope, Scope, Type
 from .util import checkCompatibility
+from .links import BoundLink
 from .variable import Variable
 from .dependent import DependentObject
 
@@ -38,6 +39,15 @@ class Function(Scope):
                 self.dependent = True
 
         self.type = FunctionType([arg.resolveType() for arg in arguments], return_type)
+
+    def resolveIdentifier(self, name:str):
+        found = BoundObject.resolveIdentifier(self, name)
+
+        for match in found:
+            if not match.static:
+                self.closed_context.addChild(BoundLink(match))
+
+        return found + SoftScope.resolveIdentifier(self, name)
 
     def verify(self):
         if self.verified: return
