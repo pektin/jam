@@ -21,7 +21,7 @@ def Object_emitValue(self, type:lekvar.Type) -> llvm.Value:
 @patch
 #@abstract
 def Object_emitAssignment(self, type:lekvar.Type) -> llvm.Value:
-    raise InternalError("Not Implemented")
+    return None
 
 @patch
 #@abstract
@@ -79,8 +79,6 @@ def Attribute_emitValue(self, type):
 
 @patch
 def Attribute_emitContext(self):
-    if self.value.static:
-        return None
     return self.object.emitAssignment(None)
 
 @patch
