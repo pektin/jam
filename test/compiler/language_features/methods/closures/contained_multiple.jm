@@ -1,0 +1,19 @@
+##12\n1\n
+
+def foo()
+  x = 1
+  y = 12
+
+  def bar()
+    puts(x)
+    puts(y)
+  end
+
+  tmp = x
+  x = y
+  y = tmp
+
+  bar()
+end
+
+foo()
