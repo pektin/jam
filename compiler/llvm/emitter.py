@@ -1,4 +1,5 @@
 from abc import abstractmethod as abstract
+from contextlib import ExitStack
 
 from .. import lekvar
 from ..errors import *
@@ -116,10 +117,13 @@ def Literal_emitAssignment(self, type):
 #
 
 lekvar.Variable.llvm_context_index = -1
+lekvar.Variable.llvm_self_index = -1
 
 @patch
 def Variable_emit(self):
-    if self.llvm_value is not None or self.llvm_context_index >= 0: return
+    if (self.llvm_value is not None or
+        self.llvm_context_index >= 0 or
+        self.llvm_self_index >= 0): return
 
     type = self.type.emitType()
     name = resolveName(self)
@@ -142,7 +146,14 @@ def Variable_emitAssignment(self, type):
     if self.llvm_value is not None:
         return self.llvm_value
 
-    return State.builder.structGEP(State.self, self.llvm_context_index, "")
+    if self.llvm_self_index >= 0:
+        return State.builder.structGEP(State.self, self.llvm_self_index, "")
+
+    context_ptr = State.builder.structGEP(State.self, self.llvm_context_index, "")
+    if self.llvm_self_index >= 0:
+        self_value = State.builder.load(context_ptr, "")
+        context_ptr = State.builder.structGEP(self_value, self.llvm_self_index, "")
+    return context_ptr
 
 @patch
 def Variable_emitContext(self):
@@ -229,11 +240,23 @@ lekvar.Context.llvm_type = None
 def Context_emitType(self):
     if self.llvm_type is not None: return self.llvm_type
 
+    index = 0
     types = []
-    for index, child in self.children.items():
+
+    # specialcase for 'self'
+    if "self" in self.children:
+        self_value = self.children["self"]
+        self_value.llvm_context_index = index
+        index += 1
+        self_type = self_value.resolveType().emitType()
+        types.append(llvm.Pointer.new(self_type, 0))
+
+    for child in self.children.values():
+        if child.name == "self": continue
+
         child.llvm_context_index = index
-        child_type = child.resolveType().emitType()
-        types.append(llvm.Pointer.new(child_type, 0))
+        index += 1
+        types.append(child.resolveType().emitType())
 
     if len(types) == 0:
         types = [llvm.Pointer.void_p()]
@@ -291,6 +314,28 @@ def DependentTarget_emitValue(self, type):
         return self.value.emitValue(type)
 
 #
+# class ClosedLink
+#
+
+lekvar.ClosedLink.llvm_value = None
+
+@patch
+def ClosedLink_emit(self):
+    self.value.emit()
+
+@patch
+def ClosedLink_emitValue(self, type):
+    return State.builder.load(self.emitAssignment(type), "")
+
+@patch
+def ClosedLink_emitAssignment(self, type):
+    return self.llvm_value
+
+@patch
+def ClosedLink_emitLinkValue(self, type):
+    return self.value.emitValue(type)
+
+#
 # class Function
 #
 
@@ -317,13 +362,12 @@ def Function_emit(self):
     exit = self.llvm_value.appendBlock("exit")
 
     with State.blockScope(entry):
-
-        for child in self.local_context:
-            child.emit()
-
         # Only emit br if it hasn't already
         if not self.emitBody():
             State.builder.br(exit)
+
+        for child in self.local_context:
+            child.emit()
 
     with State.blockScope(exit):
         self.emitReturn()
@@ -332,9 +376,20 @@ def Function_emit(self):
 def Function_emitBody(self):
     self.emitEntry()
 
-    self_value = State.builder.structGEP(self.llvm_context, 0, "")
-    self_value = State.builder.load(self_value, "")
-    with State.selfScope(self_value):
+    # Exit stack that might contain a selfScope
+    self_stack = ExitStack()
+    if "self" in self.closed_context:
+        index = self.closed_context["self"].llvm_context_index
+        self_value = State.builder.structGEP(self.llvm_context, index, "")
+        self_value = State.builder.load(self_value, "")
+        self_stack.enter_context(State.selfScope(self_value))
+
+    with self_stack:
+        for object in self.closed_context:
+            if object.name == "self": continue
+
+            index = object.llvm_context_index
+            object.llvm_value = State.builder.structGEP(self.llvm_context, index, "")
 
         # Allocate Arguments
         for index, arg in enumerate(self.arguments):
@@ -350,7 +405,7 @@ def Function_emitBody(self):
 def Function_emitEntry(self):
     context_param = self.llvm_value.getParam(0)
     context_type = llvm.Pointer.new(self.llvm_closure_type, 0)
-    self.llvm_context = State.builder.cast(context_param, context_type, "")
+    self.llvm_context = State.builder.cast(context_param, context_type, "context")
 
 @patch
 def Function_emitPostContext(self):
@@ -373,10 +428,22 @@ def Function_emitValue(self, type):
 
 @patch
 def Function_emitContext(self):
-    if State.self is not None and len(self.closed_context) > 0:
+    if len(self.closed_context) > 0:
         context = State.alloca(self.llvm_closure_type, "")
-        self_ptr = State.builder.structGEP(context, 0, "")
-        State.builder.store(State.self, self_ptr)
+
+        #TODO: Remove this special case
+        if State.self is not None and "self" in self.closed_context:
+            index = self.closed_context["self"].llvm_context_index
+            self_ptr = State.builder.structGEP(context, index, "")
+            State.builder.store(State.self, self_ptr)
+
+        for object in self.closed_context:
+            if object.name == "self": continue
+
+            obj_ptr = State.builder.structGEP(context, object.llvm_context_index, "")
+            value = object.emitLinkValue(None)
+            State.builder.store(value, obj_ptr)
+
         return context
     return llvm.Value.null(llvm.Pointer.new(self.llvm_closure_type, 0))
 
@@ -539,11 +606,10 @@ def Class_emitType(self):
 
         for child in self.instance_context:
             if isinstance(child, lekvar.Variable):
-                child.llvm_context_index = len(var_types)
+                child.llvm_self_index = len(var_types)
                 var_types.append(child.type.emitType())
 
         self.llvm_type = llvm.Struct.newAnonym(var_types, False)
-
     return self.llvm_type
 
 @patch
