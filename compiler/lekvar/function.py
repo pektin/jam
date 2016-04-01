@@ -43,9 +43,10 @@ class Function(Scope):
     def resolveIdentifier(self, name:str):
         found = BoundObject.resolveIdentifier(self, name)
 
-        for match in found:
+        for index, match in enumerate(found):
             if not match.static:
-                self.closed_context.addChild(BoundLink(match))
+                found[index] = match = ClosedLink(match)
+                self.closed_context.addChild(match)
 
         return found + SoftScope.resolveIdentifier(self, name)
 
@@ -180,3 +181,6 @@ class Return(Object):
 
     def __repr__(self):
         return "return {}".format(self.value)
+
+class ClosedLink(BoundLink):
+    pass
