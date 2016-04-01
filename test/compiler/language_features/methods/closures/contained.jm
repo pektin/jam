@@ -1,0 +1,15 @@
+##13\n
+
+def foo()
+  x = 12
+
+  def bar()
+    puts(x)
+  end
+
+  x = 13
+
+  bar()
+end
+
+foo()
