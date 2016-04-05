@@ -324,10 +324,6 @@ def DependentTarget_emitValue(self, type):
 lekvar.ClosedLink.llvm_value = None
 
 @patch
-def ClosedLink_emit(self):
-    self.value.emit()
-
-@patch
 def ClosedLink_emitValue(self, type):
     return State.builder.load(self.emitAssignment(type), "")
 
