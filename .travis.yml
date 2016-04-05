@@ -20,5 +20,6 @@ addons:
       - clang-3.6
 
 install: pip install pytest-cov python-coveralls
-script: py.test --cov=compiler
+script:
+  py.test --cov=compiler --cov-report term-missing
 after_script: coveralls
