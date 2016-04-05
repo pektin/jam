@@ -1,0 +1,11 @@
+##12\n
+
+def foo()
+  def bar()
+    puts(12)
+  end
+
+  return bar
+end
+
+foo()()
