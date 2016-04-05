@@ -216,6 +216,10 @@ def Call_emitValue(self, type):
 def Call_emitAssignment(self, type):
     return State.pointer(self.emitValue(None))
 
+@patch
+def Call_emitContext(self):
+    return self.called.emitContext()
+
 #
 # class Return
 #
