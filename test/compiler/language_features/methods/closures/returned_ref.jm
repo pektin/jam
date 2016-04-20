@@ -1,0 +1,13 @@
+#?#12\n
+
+def foo()
+  x = ref 12
+
+  def bar()
+    puts(x)
+  end
+
+  return bar
+end
+
+foo()()
