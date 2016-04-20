@@ -54,3 +54,6 @@ class Reference(BoundLink):
 
     def resolveType(self):
         return Reference(self.value.resolveType())
+
+    def __repr__(self):
+        return "ref {}".format(self.value)
