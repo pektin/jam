@@ -1,0 +1,13 @@
+#!AmbiguityError
+
+def foo()
+end
+
+module mod1
+  def foo()
+  end
+
+  module mod2
+    import foo
+  end
+end
