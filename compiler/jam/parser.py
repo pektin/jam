@@ -1,5 +1,6 @@
 import logging
 from io import IOBase
+from copy import copy
 
 from .. errors import *
 from .. import lekvar
@@ -26,7 +27,6 @@ def parseFile(source:IOBase, logger=logging.getLogger()):
 #
 
 BINARY_OPERATIONS = [
-    {Tokens.assign},
     {Tokens.logical_and},
     {Tokens.logical_or},
     {Tokens.equality, Tokens.inequality,
@@ -186,30 +186,38 @@ class Parser:
         elif token.type == Tokens.break_kwd:
             value = self.parseBreak()
         else:
-            value = self.parseValue()
+            value = self.parseValue(allow_assign = True)
         self.expect(Tokens.newline, eof_ok = True)
         return value
 
-    def parseValue(self):
+    def parseValue(self, allow_assign = False):
         values = [self.parseUnaryOperation()]
         operations = []
+
+        binary_operation_tokens = BINARY_OPERATION_TOKENS
+        if allow_assign:
+            binary_operation_tokens = {Tokens.assign} | binary_operation_tokens
 
         while True:
             token = self.lookAhead()
 
-            if token and token.type in BINARY_OPERATION_TOKENS:
+            if token and token.type in binary_operation_tokens:
                 operations.append(self.next())
                 values.append(self.parseUnaryOperation())
             else:
                 break
 
-        return self.parseBinaryOperation(values, operations)
+        return self.parseBinaryOperation(values, operations, allow_assign = allow_assign)
 
-    def parseBinaryOperation(self, values, operations, operation_index = 0):
+    def parseBinaryOperation(self, values, operations, operation_index = 0, allow_assign = False):
         if len(values) == 1:
             return values[0]
 
-        if operation_index == len(BINARY_OPERATIONS):
+        binary_operations = BINARY_OPERATIONS
+        if allow_assign:
+            binary_operations = [{Tokens.assign}] + binary_operations
+
+        if operation_index == len(binary_operations):
             raise InternalError("Unparsed operation {}".format(values))
 
         # Accumulate values from higher order operations
@@ -219,19 +227,21 @@ class Parser:
 
         previous_index = 0
         for index, operation in enumerate(operations):
-            if operation.type in BINARY_OPERATIONS[operation_index]:
+            if operation.type in binary_operations[operation_index]:
                 operation_operations.append(operation)
 
                 operation_values.append(self.parseBinaryOperation(
                     values[previous_index:index + 1],
                     operations[previous_index:index],
                     operation_index + 1,
+                    allow_assign,
                 ))
                 previous_index = index + 1
         operation_values.append(self.parseBinaryOperation(
             values[previous_index:],
             operations[previous_index:],
             operation_index + 1,
+            allow_assign,
         ))
 
         # Accumulate operations (left to right)
@@ -489,7 +499,7 @@ class Parser:
                     in_defaults = False
                 else:
                     # Copy arguments
-                    args = [arg.copy() for arg in arguments[:index]]
+                    args = [copy(arg) for arg in arguments[:index]]
 
                     # Add an overload calling the previous overload with the default argument
                     overloads.append(
