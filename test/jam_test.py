@@ -70,5 +70,4 @@ def test_builtin_lib(verbosity):
 
     lekvar.verify(ir, ir)
 
-    #TODO: Make this work
-    #module = llvm.emit(ir)
+    module = llvm.emit(ir)
