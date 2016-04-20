@@ -75,16 +75,16 @@ def Link_emitInstanceAssignment(self, value, type):
 
 @patch
 def Attribute_emitValue(self, type):
-    with State.selfScope(emitAssignment(self.object, type)):
+    with State.selfScope(emitAssignment(self.object, None)):
         return emitValue(self.value, type)
 
 @patch
 def Attribute_emitContext(self):
-    return self.object.emitAssignment(None)
+    return emitAssignment(self.object, None)
 
 @patch
 def Attribute_emitAssignment(self, type):
-    with State.selfScope(emitAssignment(self.object, type)):
+    with State.selfScope(emitAssignment(self.object, None)):
         return self.value.emitAssignment(type)
 
 #
@@ -645,7 +645,7 @@ def Reference_emitInstanceValue(self, value, type):
 def Reference_emitInstanceAssignment(self, value, type):
     ref_value = self.value.emitInstanceAssignment(value, type)
 
-    if not isinstance(type, lekvar.Reference):
+    if type is None or not isinstance(type, lekvar.Reference):
         loaded = State.builder.load(ref_value, "")
         return State.builder.structGEP(loaded, 1, "")
     return ref_value
