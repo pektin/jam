@@ -113,7 +113,7 @@ COMMENT_CHAR = "#"
 node = Node()
 TREE.links.append((node, lambda c: c == COMMENT_CHAR))
 node.links.append((node, lambda c: c != NEWLINE_CHAR))
-node.links.append((newline_node, lambda c: c == NEWLINE_CHAR))
+node.links.append((newline_node, lambda c: c == NEWLINE_CHAR or c is None))
 
 # Strings
 FORMAT_STRING_CHAR = "\""
@@ -268,9 +268,8 @@ class Lexer:
         while True:
             next_nodes = []
 
-            if self.current:
-                for node in current_nodes:
-                    next_nodes += node.evaluate(self.current)
+            for node in current_nodes:
+                next_nodes += node.evaluate(self.current)
 
             if len(next_nodes) == 0:
                 if len(current_nodes) > 0:
@@ -284,6 +283,9 @@ class Lexer:
                 current_nodes = [TREE]
             else:
                 token_data += self.current
+
+            if not self.current:
+                return None
             self.next()
 
             current_nodes = next_nodes
