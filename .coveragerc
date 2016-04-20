@@ -6,5 +6,6 @@ exclude_lines =
     InternalError
     # Don't complain about C error handling. There's a reason this code didn't get run
     NullException
-    # Don't complain about backwards compatibility hacks
-    except OSError
+    # Don't complain about platform specific stuff
+    OSError
+    sys.platform
