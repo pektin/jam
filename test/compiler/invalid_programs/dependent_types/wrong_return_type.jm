@@ -1,0 +1,11 @@
+#!TypeError
+
+def foo(a) -> Int
+  return a()
+end
+
+def bar()
+  return "bar"
+end
+
+foo(bar)
