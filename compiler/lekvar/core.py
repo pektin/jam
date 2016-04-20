@@ -106,6 +106,9 @@ class Object(ABC):
     def context(self) -> Context:
         return self.resolveType().instance_context
 
+    def __copy__(self):
+        raise InternalError("Not Implemented");
+
     def __repr__(self):
         return "{}".format(self.__class__.__name__)
 

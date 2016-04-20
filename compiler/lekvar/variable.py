@@ -1,3 +1,5 @@
+from copy import copy
+
 from ..errors import *
 
 from .state import State
@@ -34,6 +36,9 @@ class Variable(BoundObject):
 
         if not checkCompatibility(value.resolveType(), self.type):
             raise TypeError(message="Cannot assign").add(object=value).add(message="to").add(object=self)
+
+    def __copy__(self):
+        return Variable(self.name, copy(self.type), self.tokens)
 
     def __repr__(self):
         return "{}:{}".format(self.name, self.type)

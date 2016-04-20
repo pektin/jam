@@ -52,6 +52,9 @@ class Link(Type):
     def resolveCompatibility(self, other:Type):
         return self.value.resolveCompatibility(other)
 
+    def __copy__(self):
+        return Link(self)
+
     def __repr__(self):
         return repr(self.value)
 
