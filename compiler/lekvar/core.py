@@ -106,6 +106,7 @@ class Object(ABC):
     def context(self) -> Context:
         return self.resolveType().instance_context
 
+    # Create a copy, assuming the copy exists in the same context
     def __copy__(self):
         raise InternalError("Not Implemented");
 
