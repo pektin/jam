@@ -146,14 +146,10 @@ def Variable_emitAssignment(self, type):
     if self.llvm_value is not None:
         return self.llvm_value
 
-    if self.llvm_self_index >= 0:
-        return State.builder.structGEP(State.self, self.llvm_self_index, "")
+    if self.llvm_self_index < 0:
+        raise InternalError()
 
-    context_ptr = State.builder.structGEP(State.self, self.llvm_context_index, "")
-    if self.llvm_self_index >= 0:
-        self_value = State.builder.load(context_ptr, "")
-        context_ptr = State.builder.structGEP(self_value, self.llvm_self_index, "")
-    return context_ptr
+    return State.builder.structGEP(State.self, self.llvm_self_index, "")
 
 @patch
 def Variable_emitContext(self):
