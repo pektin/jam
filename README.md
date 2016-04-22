@@ -4,30 +4,31 @@
 [![Build Status](https://travis-ci.org/pektin/jam.svg?branch=master)](https://travis-ci.org/pektin/jam)
 [![Coverage Status](https://coveralls.io/repos/pektin/jam/badge.svg?branch=master&service=github)](https://coveralls.io/github/pektin/jam?branch=master)
 
-Jam is an experimental programming language that tries to combine the advantages
-of dynamic, interpreted programming languages with those of static, compiled
-ones.
+Jam is a general purpose programming language that tries to combine the
+advantages of dynamic, interpreted programming languages with those of static,
+compiled ones.
 
-Jam is based on Ruby and Python and tries to provide the same concepts that make
-those languages great, but supported by a powerful type system to allow the
-language to compile to native code.
+Jam syntax is heavily inspired by [Ruby](https://ruby-lang.org) with a hint of
+[Python](https://python.org) and [D](http://dlang.org/), designed with
+readability and writeability in mind.
 
-Jam compiles to an executable intermediate format called Lekvar, meaning Jam can
-also be interpreted in much the same way as python.
+Supported by a powerful, fully static gradual type system, Jam can compile
+untyped code, written in the style of dynamic languages to fast, native code.
 
-Currently the compiler is being written in python in the form of a library. The
-plan is to bootstrap the compiler once the language is capable and then have the
-compiler become part of the standard library.
+Currently the compiler is being written in python, speed being a secondary
+concern. The plan is to bootstrap the compiler once the language is capable.
 
-## Compiler
+## Dependencies
 
 The compiler currently requires Python 3.4, the llvm-3.6 shared library and
 clang-3.6
 
-### Ubuntu (Trusty Tahr, 14.04)
+### Ubuntu (< 14.04 Trusty Tahr)
 
 See http://llvm.org/apt/ for instructions on how to set up your system to fetch
-the 3.6 packages if you're still on precise.
+the llvm 3.6 packages, then follow instructions for newer Ubuntu versions.
+
+### Ubuntu (>= 14.04 Trusty Tahr)
 
 ```bash
 sudo apt-get install python3 libllvm3.6 llvm-runtime clang-3.6
