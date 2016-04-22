@@ -143,8 +143,6 @@ def Variable_emitValue(self, type):
 def Variable_emitAssignment(self, type):
     self.emit()
 
-    if self.llvm_context_index != -1: print(self.llvm_context_index)
-
     if self.llvm_value is not None:
         return self.llvm_value
 
