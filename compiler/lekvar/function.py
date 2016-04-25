@@ -6,7 +6,7 @@ from .core import Context, Object, BoundObject, SoftScope, Scope, Type
 from .util import checkCompatibility
 from .links import BoundLink
 from .variable import Variable
-from .dependent import DependentObject
+from .dependent import DependentObject, DependentTarget
 
 # Python Predefines
 FunctionType = None
@@ -81,6 +81,11 @@ class Function(Scope):
         if not checkCompatibility(self.resolveType(), call):
             raise TypeError(object=self).add(message="is not callable with").add(object=call)
         return self
+
+    def dependentTarget(self, type):
+        args = [(arg_t, call_t) for arg_t, call_t in zip(self.type.arguments, type.arguments)
+                                if isinstance(arg_t, DependentObject)]
+        return DependentTarget(self, args)
 
     def __repr__(self):
         return "def {}({}) -> {}".format(self.name,

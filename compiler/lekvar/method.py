@@ -58,10 +58,7 @@ class Method(BoundObject, SoftScope):
                     matches.append(overload)
 
             if len(matches) == 1:
-                fn = matches[0]
-                args = [(arg_t, call_t) for arg_t, call_t in zip(fn.type.arguments, call.arguments)
-                                if isinstance(arg_t, DependentObject)]
-                return DependentTarget(fn, args)
+                return matches[0].dependentTarget(call)
 
         elif len(matches) > 1 and call.dependent and State.scope.dependent:
             fn = DependentObject.switch(self, matches, lambda overload: overload.resolveType().checkCompatibility(call))
