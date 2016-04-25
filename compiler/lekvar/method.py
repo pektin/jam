@@ -41,7 +41,8 @@ class Method(BoundObject, SoftScope):
             self.dependent_overload_context.verify()
 
     def resolveType(self):
-        return MethodType([fn.resolveType() for fn in self.overload_context])
+        return MethodType([fn.resolveType() for fn in self.overload_context],
+                          [fn.resolveType() for fn in self.dependent_overload_context])
 
     def resolveCall(self, call:FunctionType):
         matches = []
@@ -70,12 +71,14 @@ class Method(BoundObject, SoftScope):
 
         # Allow only one match
         if len(matches) < 1:
-            err = TypeError(object=self).add(message="does not have an overload for").add(object=call).addNote(message="Possible overloads:")
+            err = (TypeError(object=self).add(message="does not have an overload for")
+                                         .add(object=call).addNote(message="Possible overloads:"))
             for overload in list(self.overload_context) + list(self.dependent_overload_context):
                 err.addNote(object=overload, message="")
             raise err
         elif len(matches) > 1:
-            err = TypeError(message="Ambiguous call").add(object=call).add(message="to").add(object=self).add(message="Matches:")
+            err = (TypeError(message="Ambiguous call").add(object=call).add(message="to")
+                                                      .add(object=self).add(message="Matches:"))
             for match in matches:
                 err.addNote(object=match, message="")
             raise err
@@ -90,19 +93,25 @@ class Method(BoundObject, SoftScope):
         return "method {}".format(self.name)
 
 class MethodType(Type):
-    overload_types = None
-    used_overload_types = None
+    overloads = None
+    used_overloads = None
+    dependent_overloads = None
+    used_dependent_overloads = None
+    dependent = False
 
-    def __init__(self, overloads:[FunctionType], tokens = None):
+    def __init__(self, overloads:[FunctionType], dependent_overloads:[FunctionType], tokens = None):
         Type.__init__(self, tokens)
-        self.overload_types = overloads
-        self.used_overload_types = { fn_type: False for fn_type in overloads }
+        self.overloads = overloads
+        self.used_overloads = {}
+        self.dependent_overloads = dependent_overloads
+        self.used_dependent_overloads = {}
+        self.dependent = len(dependent_overloads) > 0
 
     def resolveType(self):
         raise InternalError("Not Implemented")
 
     def verify(self):
-        for fn_type in self.overload_types:
+        for fn_type in self.overloads + self.dependent_overloads:
             fn_type.verify()
 
     @property
@@ -113,31 +122,57 @@ class MethodType(Type):
         if not isinstance(other, MethodType):
             return False
 
-        for self_fn_type in self.overload_types:
+        for self_fn_type in self.overloads:
             compat_fn_type = None
-            for other_fn_type in other.overload_types:
+            for other_fn_type in other.overloads:
                 if self_fn_type.checkCompatibility(other_fn_type):
                     compat_fn_type = other_fn_type
                     break
 
             if compat_fn_type is None:
-                if self.used_overload_types[self_fn_type]:
+                if self.used_overloads[self_fn_type]:
                     return False
                 else:
                     pass
             #TODO: More type checks
+
+        for self_fn_type in self.dependent_overloads:
+            for other_fn_type in other.overloads:
+                if self_fn_type.checkCompatibility(other_fn_type):
+                    #TODO: Actually check these
+                    pass
+
         return True
 
     def resolveInstanceCall(self, call:FunctionType):
         matches = []
-        for index in range(len(self.overload_types)):
-            fn_type = self.overload_types[index]
-            if fn_type.checkCompatibility(call):
-                matches.append((fn_type, index))
 
-        if len(matches) == 1:
-            return MethodInstance(self, matches[0][1])
+        for fn_type in self.overloads:
+            if fn_type.checkCompatibility(call):
+                matches.append(fn_type)
+
+        if len(matches) == 0:
+            for fn_type in self.dependent_overloads:
+                if fn_type.checkCompatibility(call):
+                    matches.append(fn_type)
+
+            if len(matches) == 1:
+                self.used_dependent_overloads[call] = True
+                return MethodInstance(self, call)
+
+        elif len(matches) == 1:
+            self.used_overloads[matches[0]] = True
+            return MethodInstance(self, matches[0])
+
         raise TypeError(message="TODO: Write This")
+
+    @property
+    def used_overload_types(self):
+        return [type for type, used in self.used_overloads.items() if used]
+
+    @property
+    def used_dependent_overload_types(self):
+        return [type for type, used in self.used_dependent_overloads.items() if used]
 
 class MethodInstance(Object):
     def __init__(self, type:MethodType, target:FunctionType):
