@@ -143,7 +143,7 @@ class MethodType(Type):
         raise TypeError(message="TODO: Write This")
 
 class MethodInstance(Object):
-    def __init__(self, type:MethodType, target:int):
+    def __init__(self, type:MethodType, target:FunctionType):
         Object.__init__(self)
         self.type = type
         self.target = target
@@ -152,7 +152,7 @@ class MethodInstance(Object):
         self.type.verify()
 
     def resolveType(self):
-        return self.type.overload_types[self.target]
+        return self.target
 
     def resolveCall(self, call:FunctionType):
         return self
@@ -162,4 +162,4 @@ class MethodInstance(Object):
         return None
 
     def __repr__(self):
-        return "MethodInstance({})".format(self.type.overload_types[self.target])
+        return "MethodInstance({})".format(self.resolveType())
