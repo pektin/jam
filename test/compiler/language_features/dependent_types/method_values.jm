@@ -1,0 +1,14 @@
+##12\nfloat\nfoo\n
+
+def print(value:Real)
+  puts("float")
+end
+
+def print(value)
+  puts(value)
+end
+
+p = print
+p(12)
+p(5.4)
+p("foo")
