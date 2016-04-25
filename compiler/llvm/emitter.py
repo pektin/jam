@@ -2,7 +2,7 @@ from abc import abstractmethod as abstract
 from contextlib import ExitStack
 
 from .. import lekvar
-from ..errors import *
+from ..errors import InternalError
 
 from .state import State
 from .util import *
@@ -202,8 +202,14 @@ def Call_emitValue(self, type):
     else:
         arguments = []
 
-    argument_types = self.function.resolveValue().resolveType().arguments
-    arguments += [emitValue(value, type) for value, type in zip(self.values, argument_types)]
+    # Hack, for now
+    scope = ExitStack()
+    if isinstance(self.function, lekvar.DependentTarget):
+        scope = self.function.target()
+
+    with scope:
+        argument_types = self.function.resolveValue().resolveType().arguments
+        arguments += [emitValue(value, type) for value, type in zip(self.values, argument_types)]
 
     # Get the llvm function type
     return State.builder.call(called, arguments, "")
@@ -225,7 +231,7 @@ def Return_emitValue(self, type):
     exit = self.function.llvm_value.getLastBlock()
 
     if self.value is not None:
-        value = emitValue(self.value, None)
+        value = emitValue(self.value, self.function.type.return_type)
         State.builder.store(value, self.function.llvm_return)
 
     return State.builder.br(exit)
@@ -524,17 +530,28 @@ def Method_emit(self):
 
 @patch
 def Method_emitValue(self, type):
+    type = type.resolveValue()
+
     # If the type isn't given, use our own
     if type is None or not isinstance(type, lekvar.MethodType):
         type = self.resolveType()
 
+    #TODO: Increase efficiency
     values = []
     overloads = list(self.overload_context)
-    for overload_type in type.overload_types:
+    for overload_type in type.used_overload_types:
         for index, overload in enumerate(overloads):
             if overload.resolveType().checkCompatibility(overload_type):
                 values.append(overload.emitValue(overload_type))
                 overloads.pop(index)
+                break
+
+    overloads = list(self.dependent_overload_context)
+    for overload_type in type.used_dependent_overload_types:
+        for overload in overloads:
+            if overload.resolveType().checkCompatibility(overload_type):
+                fn = overload.dependentTarget(overload_type)
+                values.append(fn.emitValue(overload_type))
                 break
 
     return llvm.Value.constStruct(type.emitType(), values)
@@ -552,7 +569,8 @@ lekvar.MethodType.llvm_type = None
 @patch
 def MethodType_emitType(self):
     if self.llvm_type is None:
-        fn_types = [llvm.Pointer.new(type.emitType(), 0) for type in self.overload_types]
+        fn_types = [llvm.Pointer.new(type.emitType(), 0) for type in self.used_overload_types]
+        fn_types += [llvm.Pointer.new(type.emitType(), 0) for type in self.used_dependent_overload_types]
         self.llvm_type = llvm.Struct.newAnonym(fn_types, False)
     return self.llvm_type
 
@@ -575,7 +593,13 @@ def MethodInstance_emitAssignment(self):
     self.emit()
 
     value = State.self.emitAssignment(None)
-    return State.builder.structGEP(value, self.target, "")
+    try:
+        index = self.type.used_overload_types.index(self.target)
+    except ValueError:
+        index = len(self.type.used_overload_types)
+        index += self.type.used_dependent_overload_types.index(self.target)
+
+    return State.builder.structGEP(value, index, "")
 
 @patch
 def MethodInstance_emitContext(self):
