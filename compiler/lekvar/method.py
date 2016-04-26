@@ -130,7 +130,7 @@ class MethodType(Type):
                     break
 
             if compat_fn_type is None:
-                if self.used_overloads[self_fn_type]:
+                if self_fn_type in self.used_overloads:
                     return False
                 else:
                     pass
