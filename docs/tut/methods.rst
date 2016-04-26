@@ -150,4 +150,4 @@ other value. This works together with overloads and specialisation.
       puts("Hello")
     end
 
-    do_twice(lazy say_hello)
+    do_twice(say_hello)
