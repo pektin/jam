@@ -36,6 +36,15 @@ For a argument, the type is determined by every action involving that argument.
 From this it builds a "type expectation" that is used at compile time to check
 whether arguments are valid.
 
+For instance, if a method is defined as::
+
+    def intAdd(x, y) -> Int
+      return x + y
+    end
+
+Then the type expectation of ``x`` is that it has a method (``+``) that takes
+one argument (``y``) and returns a type compatible with ``Int``.
+
 Syntax
 ======
 
