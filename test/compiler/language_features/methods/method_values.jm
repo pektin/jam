@@ -1,4 +1,4 @@
-##HelloWorld\nBar\n
+##HelloWorld\nBar\nFoo\n
 
 def foo(one:String) -> String
   return one
@@ -11,4 +11,16 @@ end
 var = foo
 
 puts(var("HelloWorld"))
+puts(var("Foo", "Bar"))
+
+def bar(one:String) -> String
+  return one
+end
+
+def bar(one:String, two:String) -> String
+  return one
+end
+
+var = bar
+
 puts(var("Foo", "Bar"))
