@@ -1,0 +1,27 @@
+#!TypeError
+
+def printType(_:Int)
+  puts("Int")
+end
+
+def printType(_:String)
+  puts("String")
+end
+
+def printValue(v:String)
+  puts(v)
+end
+
+def printValue(v:Real)
+  puts(v)
+end
+
+fn = printType
+
+fn(12)
+fn("foo")
+
+fn = printValue
+
+fn("bar")
+fn(3.5)
