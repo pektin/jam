@@ -1,5 +1,5 @@
-Builtin Functions
-#################
+Builtin Methods
+###############
 
 ::
 

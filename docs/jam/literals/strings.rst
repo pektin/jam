@@ -47,5 +47,5 @@ Examples
     name = "Harold"
 
 
-    # This function will print out "My name is Harrold" with a newline
-    print("My name is #{name}\n")
+    # This will print "My name is Harrold" to the console with a newline
+    puts("My name is #{name}\n")

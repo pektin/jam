@@ -11,9 +11,9 @@ The standard "Hello World" program is easy to write in jam.
     # This line prints 'Hello World!' to the console
     puts("Hello World!")
 
-In this example, ``puts`` is a builtin function that prints a string, such as
+In this example, ``puts`` is a builtin method that prints a string, such as
 ``Hello World!``, to the console.
 
 .. seealso::
 
-    :doc:`Builtin Functions<../lib/builtins/functions>`
+    :doc:`Builtin Methods<../lib/builtins/methods>`

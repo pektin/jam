@@ -10,8 +10,8 @@ When an operation is done to a value all implicit casts are checked for that
 same operation. Although the direct type of the value takes precedence, having
 ambiguity between implicitly cast types is invalid.
 
-When a value is passed to a function, the value may be implicitly cast to the
-type of the respective argument if required.
+When a value is passed to a method, the value may be implicitly cast to the type
+of the respective argument if required.
 
 Syntax
 ======

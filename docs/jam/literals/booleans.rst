@@ -18,15 +18,15 @@ Examples
     state = true
 
     if state == true
-      print("This will print\n")
+      puts("This will print\n")
     else
-      print("This will not\n")
+      puts("This will not\n")
     end
 
 
     # Boolean value used in a conditional block
     if true
-      print("This will always print\n")
+      puts("This will always print\n")
     else
-      print("This will never print\n")
+      puts("This will never print\n")
     end

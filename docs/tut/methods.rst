@@ -40,7 +40,7 @@ The type of the return value may be explicitly stated.
     # Calculates the length of a hypotenuse,
     # given the lengths of the other two sides of a right-angled triangle.
     def pythag_hypotenuse(a:Real, b:Real) -> Real
-      # The sqrt function returns the square root of its argument.
+      # The sqrt method returns the square root of its argument.
       return sqrt(a**2 + b**2)
     end
 

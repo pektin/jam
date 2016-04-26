@@ -2,13 +2,13 @@ Builtin Library
 ###############
 
 The builtin library consists of a module containing a selection of constants,
-functions and types that prove most useful in most circumstances. These are
-always available from any scope in Jam.
+methods and types that prove most useful in most circumstances. These are always
+available from any scope in Jam.
 
 .. toctree::
     :titlesonly:
 
-    builtins/functions
+    builtins/methods
     builtins/types
 
 Constants

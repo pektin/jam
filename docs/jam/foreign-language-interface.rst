@@ -13,7 +13,7 @@ C Interface
 ===========
 
 The C interface supports both global variables and functions. Because of C's
-static typing every type must be explicitly declared.
+static typing every type must be explicitly declared and cannot be inferred.
 
 Syntax
 ------

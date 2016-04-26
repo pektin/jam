@@ -115,12 +115,12 @@ Equivalence
 
     # Equality
     if num_sides == 4
-        print("Shape is a square")
+        puts("Shape is a square")
     end
 
     # Inverse Equality
     if num_eyes != 2
-        print("Not human")
+        puts("Not human")
     end
 
 
@@ -131,7 +131,7 @@ Relational
 
     # Smaller than
     while count < 10
-        print(count)
+        puts(count)
         count += 1
     end
 
