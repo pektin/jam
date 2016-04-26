@@ -11,14 +11,10 @@ arguments. Input to a method must match exactly one overload.
 A method may be defined with a name or anonymously. To overload a method the
 same name must be used for each definition in the same scope.
 
-Unlike most other compiled languages, Jam allows you to leave out the type of
-arguments. Where no argument type is defined, any parameter with a type that
-matches the unspecified type's usage is valid.
-
 At any point in the method a return statement may be made to cause the method to
 complete and take the given value as the output of the method call. When the
 return value of a method is explicitly defined, all possible execution paths
-must return.
+must end with a return statement.
 
 Methods can also be assigned to :doc:`variables<variables>`, like any other
 value. A variable that is of a method type may be assigned any methods with
@@ -32,9 +28,9 @@ compatible overloads.
 Type Inference
 ==============
 
-For a argument, the type is determined by every action involving that argument.
-From this it builds a "type expectation" that is used at compile time to check
-whether arguments are valid.
+Method arguments may be defined without a type. In this case, the type is
+determined by every action involving that argument. From this it builds a "type
+expectation" that is used at compile time to check whether arguments are valid.
 
 For instance, if a method is defined as::
 
