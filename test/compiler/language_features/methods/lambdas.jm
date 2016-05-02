@@ -1,0 +1,11 @@
+##foo\nfoo\n
+
+def n_times(n, fn)
+  i = 0
+  while i < n
+    fn()
+    i = i + 1
+  end
+end
+
+n_times(2, => puts("foo"))
