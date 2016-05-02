@@ -92,6 +92,8 @@ Tokens = Enum("Tokens", [
     "logical_negation",
     "logical_and",
     "logical_or",
+
+    "function",
 ])
 
 TREE = Node()
@@ -158,6 +160,7 @@ DIRECT_MAP = [
     ("!", Tokens.logical_negation),
     ("&&", Tokens.logical_and),
     ("||", Tokens.logical_or),
+    ("=>", Tokens.function),
 
     # Instructions
     ("(", Tokens.group_start),
