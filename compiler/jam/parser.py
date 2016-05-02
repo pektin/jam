@@ -22,11 +22,17 @@ def parseFile(source:IOBase, logger=logging.getLogger()):
             e.format()
             raise e
 
+def anonymousFn(args, value, tokens):
+    instruction = lekvar.Return(value, tokens)
+    fn = lekvar.Function("", args, [instruction], tokens = tokens)
+    return lekvar.Method("", [fn], tokens = tokens)
+
 #
 # Parser
 #
 
 BINARY_OPERATIONS = [
+    {Tokens.function},
     {Tokens.logical_and},
     {Tokens.logical_or},
     {Tokens.equality, Tokens.inequality,
@@ -44,6 +50,7 @@ BINARY_OPERATION_FUNCTIONS = {
 }
 
 UNARY_OPERATIONS = [
+    Tokens.function,
     Tokens.addition,
     Tokens.subtraction,
     Tokens.logical_negation,
@@ -249,10 +256,13 @@ class Parser:
         for index, operation in enumerate(operation_operations):
             rhs = operation_values[index + 1]
 
-            # The assignment operation is special
+            # Specialcases
             if operation.type == Tokens.assign:
                 lhs = lekvar.Assignment(lhs, rhs, [operation])
                 continue
+            elif operation.type == Tokens.function:
+                lhs = anonymousFn(lhs, rhs, [operation])
+                raise NotImplemented("TODO: Lambdas")
 
             # Some operations are attributes of the lhs, others are global functions
             if operation.type in BINARY_OPERATION_FUNCTIONS:
@@ -298,6 +308,8 @@ class Parser:
         for operation in operations:
             if operation.type in MODIFIERS:
                 value = MODIFIERS[operation.type](value, [operation])
+            elif operation.type == Tokens.function:
+                value = anonymousFn([], value, tokens = [operation])
             else:
                 value = lekvar.Call(lekvar.Attribute(value, operation.data), [], None, [operation])
 
