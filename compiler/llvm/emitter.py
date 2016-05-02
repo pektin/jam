@@ -231,8 +231,11 @@ def Return_emitValue(self, type):
     exit = self.function.llvm_value.getLastBlock()
 
     if self.value is not None:
-        value = emitValue(self.value, self.function.type.return_type)
-        State.builder.store(value, self.function.llvm_return)
+        if self.function.type.return_type is None:
+            self.value.emitValue(None)
+        else:
+            value = emitValue(self.value, self.function.type.return_type)
+            State.builder.store(value, self.function.llvm_return)
 
     return State.builder.br(exit)
 

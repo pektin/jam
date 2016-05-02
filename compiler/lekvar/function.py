@@ -170,7 +170,11 @@ class Return(Object):
 
             # Infer function types
             if self.function.type.return_type is None:
-                self.function.type.return_type = self.value.resolveType()
+                try:
+                    return_type = self.value.resolveType()
+                except TypeError:
+                    return_type = None
+                self.function.type.return_type = return_type
         # Check function types
             else:
                 checkCompatibility(self.function.type.return_type, self.value.resolveType())
