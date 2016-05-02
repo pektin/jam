@@ -24,7 +24,7 @@ class Function(Scope):
     verified = False
     static_scope = False
 
-    def __init__(self, name:str, arguments:[Variable], instructions:[Object], children:[Object], return_type:Type = None, tokens = None):
+    def __init__(self, name:str, arguments:[Variable], instructions:[Object], children:[Object] = [], return_type:Type = None, tokens = None):
         Scope.__init__(self, name, tokens)
 
         self.local_context = Context(self, arguments + children)
