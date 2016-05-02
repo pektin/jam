@@ -175,7 +175,7 @@ class Type(Object):
     # Resolves a call on an instance
     # Returns the function to call for that instance
     def resolveInstanceCall(self, call:FunctionType) -> Function:
-        raise TypeError("Cannot call object of type", self)
+        raise TypeError(message="Cannot call object of type").add(object=self)
 
     # Returns whether or not a given type is compatible with this type
     @abstract
