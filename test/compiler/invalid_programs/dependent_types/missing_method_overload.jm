@@ -1,0 +1,11 @@
+#!TypeError
+
+def call(o, a:Int)
+  o(a)
+end
+
+def foo()
+  puts("foo")
+end
+
+call(foo, 12)
