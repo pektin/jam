@@ -1,0 +1,6 @@
+#?!TypeError
+
+def foo()
+  return
+  return true
+end
