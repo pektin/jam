@@ -587,14 +587,10 @@ def MethodInstance_emit(self):
 
 @patch
 def MethodInstance_emitValue(self, type):
-    self.emit()
-
     return State.builder.load(self.emitAssignment(), "")
 
 @patch
 def MethodInstance_emitAssignment(self):
-    self.emit()
-
     value = State.self.emitAssignment(None)
     try:
         index = self.type.used_overload_types.index(self.target)
