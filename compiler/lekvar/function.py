@@ -54,18 +54,23 @@ class Function(Scope):
         if self.verified: return
         self.verified = True
 
+        self.unscopedVerify()
+        with State.scoped(self, analys = True):
+            self.scopedVerify()
+
+    def unscopedVerify(self):
         # Arguments are considered to be already assigned
         for variable in self.arguments:
             variable.verifyAssignment(None)
 
-        with State.scoped(self, analys = True):
-            self.type.verify()
+    def scopedVerify(self):
+        self.type.verify()
 
-            for instruction in self.instructions:
-                instruction.verify()
+        for instruction in self.instructions:
+            instruction.verify()
 
-            # Analytical verification
-            self.verifySelf()
+        # Analytical verification
+        self.verifySelf()
 
     # Used to perform analytical verification after standard verification
     # Guaranteed to run within the scope of the function
@@ -121,6 +126,11 @@ class FunctionType(Type):
     def local_context(self):
         raise InternalError("Not Implemented")
 
+    def resolveInstanceCall(self, call):
+        if not checkCompatibility(self, call):
+            raise TypeError(object=self).add(message="is not callable with").add(object=call)
+        return FunctionInstance(self)
+
     def checkCompatibility(self, other:Type):
         other = other.resolveValue()
 
@@ -144,6 +154,20 @@ class FunctionType(Type):
 
     def __repr__(self):
         return "({}) -> {}".format(", ".join(repr(arg) for arg in self.arguments), self.return_type)
+
+class FunctionInstance(Object):
+    def __init__(self, type:FunctionType):
+        Object.__init__(self)
+        self.type = type
+
+    def verify(self):
+        self.type.verify()
+
+    def resolveType(self):
+        return self.type
+
+    def resolveCall(self, call):
+        return self
 
 #
 # Return

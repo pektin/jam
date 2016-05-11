@@ -360,7 +360,7 @@ def Function_emit(self):
     self.llvm_closure_type = self.closed_context.emitType()
 
     name = resolveName(self)
-    func_type = self.resolveType().emitType(self.llvm_closure_type is not None)
+    func_type = self.resolveType().emitFunctionType(self.llvm_closure_type is not None)
     self.llvm_value = State.module.addFunction(name, func_type)
 
     entry = self.llvm_value.appendBlock("entry")
@@ -487,7 +487,11 @@ def Constructor_emitContext(self):
 #
 
 @patch
-def FunctionType_emitType(self, has_context = True):
+def FunctionType_emitType(self):
+    return llvm.Pointer.new(self.emitFunctionType(), 0)
+
+@patch
+def FunctionType_emitFunctionType(self, has_context = True):
     if has_context:
         arguments = [llvm.Type.void_p()]
     else:
@@ -499,7 +503,26 @@ def FunctionType_emitType(self, has_context = True):
         return_type = self.return_type.emitType()
     else:
         return_type = llvm.Type.void()
+
     return llvm.Function.new(return_type, arguments, False)
+
+#
+# class FunctionInstance
+#
+
+@patch
+def FunctionInstance_emitValue(self, type):
+    return State.builder.load(self.emitAssignment(), "")
+
+@patch
+def FunctionInstance_emitAssignment(self):
+    print(State.self)
+    value = State.self.emitAssignment(None)
+    return value
+
+@patch
+def FunctionInstance_emitContext(self):
+    return llvm.Value.null(llvm.Type.void_p())
 
 #
 # class ExternalFunction
@@ -510,7 +533,7 @@ def ExternalFunction_emit(self):
     if self.llvm_value is not None: return
 
     name = resolveName(self)
-    func_type = self.type.emitType(False)
+    func_type = self.type.emitFunctionType(False)
     self.llvm_value = State.module.addFunction(name, func_type)
 
 @patch
@@ -572,8 +595,8 @@ lekvar.MethodType.llvm_type = None
 @patch
 def MethodType_emitType(self):
     if self.llvm_type is None:
-        fn_types = [llvm.Pointer.new(type.emitType(), 0) for type in self.used_overload_types]
-        fn_types += [llvm.Pointer.new(type.emitType(), 0) for type in self.used_dependent_overload_types]
+        fn_types = [type.emitType() for type in self.used_overload_types]
+        fn_types += [type.emitType() for type in self.used_dependent_overload_types]
         self.llvm_type = llvm.Struct.newAnonym(fn_types, False)
     return self.llvm_type
 
