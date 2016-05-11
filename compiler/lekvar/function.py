@@ -43,10 +43,14 @@ class Function(Scope):
     def resolveIdentifier(self, name:str):
         found = BoundObject.resolveIdentifier(self, name)
 
+        # Collect externally identifier, non-statics in the closed context
         for index, match in enumerate(found):
             if not match.static:
-                found[index] = match = ClosedLink(match)
-                self.closed_context.addChild(match)
+                if match.name in self.closed_context:
+                    found[index] = self.closed_context[match.name]
+                else:
+                    found[index] = match = ClosedLink(match)
+                    self.closed_context.addChild(match)
 
         return found + SoftScope.resolveIdentifier(self, name)
 
