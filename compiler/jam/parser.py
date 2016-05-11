@@ -24,8 +24,7 @@ def parseFile(source:IOBase, logger=logging.getLogger()):
 
 def anonymousFn(args, value, tokens):
     instruction = lekvar.Return(value, tokens)
-    fn = lekvar.Function("", args, [instruction], tokens = tokens)
-    return lekvar.Method("", [fn], tokens = tokens)
+    return lekvar.Lambda("", args, [instruction], tokens = tokens)
 
 #
 # Parser
