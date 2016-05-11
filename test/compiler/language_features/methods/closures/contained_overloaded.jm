@@ -1,0 +1,19 @@
+##15\n12\n
+
+def main()
+
+  a = 12
+
+  def foo(x:Int)
+    return x + a
+  end
+
+  def foo()
+    return a
+  end
+
+  puts(foo(3))
+  puts(foo())
+end
+
+main()
