@@ -1,0 +1,16 @@
+##2\n3\n
+
+def main()
+
+  a = ref 2
+
+  def foo()
+    a = a + 1
+  end
+
+  puts(a)
+  foo()
+  puts(a)
+end
+
+main()
