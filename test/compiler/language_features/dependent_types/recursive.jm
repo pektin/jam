@@ -1,0 +1,10 @@
+##1\n2\n3\n4\n5\n
+
+def count_to(n)
+  if n > 1
+    count_to(n - 1)
+  end
+  puts(n)
+end
+
+count_to(5)
