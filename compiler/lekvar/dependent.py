@@ -76,14 +76,18 @@ class DependentObject(Type, BoundObject):
         with ExitStack() as stack:
             #TODO: Handle errors
 
+            # Set target
+            if self.target is not None:
+                if self.target is target:
+                    yield []
+                    return
+
+                raise TypeError(message="TODO: Write this")
+            self.target = target
+
             # Local checks
             if not self.checkLockedCompatibility(target):
                 raise TypeError(message="TODO: Write this")
-
-            # Set target
-            if self.target is not None and self.target is not target:
-                raise TypeError(message="TODO: Write this")
-            self.target = target
 
             # Pass on dependency checks
             def target_generator():
