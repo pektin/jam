@@ -47,6 +47,16 @@ class DependentObject(Type, BoundObject):
         self.compatible_types = set()
         self.switches = []
 
+    def __eq__(self, other):
+        if self.target is None:
+            return Type.__eq__(self, other)
+        return self.target == other.resolveValue()
+
+    def __hash__(self):
+        if self.target is None:
+            return Type.__hash__(self)
+        return hash(self.target)
+
     @classmethod
     def switch(self, scope:Scope, targets:[Object], determiner:(lambda Object: bool)):
         out = DependentObject(scope)

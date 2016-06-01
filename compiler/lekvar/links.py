@@ -13,6 +13,12 @@ class Link(Type):
         Type.__init__(self, tokens)
         self.value = value
 
+    def __eq__(self, other):
+        return self.value == other
+
+    def __hash__(self):
+        return hash(self.value)
+
     # Dispatch all functions to the linked value
 
     def verify(self):

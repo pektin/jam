@@ -128,6 +128,12 @@ class FunctionType(Type):
         self.dependent = any(isinstance(arg, DependentObject) for arg in arguments)
         self.return_type = return_type
 
+    def __eq__(self, other):
+        return self.checkCompatibility(other)
+
+    def __hash__(self):
+        return hash(tuple(self.arguments))
+
     def verify(self):
         if self.verified: return
         self.verified = True
