@@ -80,7 +80,7 @@ def logged(cls_name, name, check_null = True):
     def logged(func):
         def f(self, *args):
             # Log the call, if possible. global State is set by State.begin
-            if 'State' in globals() and State.logger:
+            if 'State' in globals() and State.logger and State.logger.isEnabledFor(logging.DEBUG):
                 if isinstance(self, type):
                     State.logger.debug("{}.{} calling {}{}".format(
                         self.__name__, cls_name, name, args), stack_info=True)
