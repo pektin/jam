@@ -167,6 +167,7 @@ class DependentObject(Type, BoundObject):
         return self._return_type
 
     def checkCompatibility(self, other:Type):
+        if self is other.resolveValue(): return True
         if self.target is not None: return self.target.checkCompatibility(other)
         if self.locked: return self.checkLockedCompatibility(other)
 
@@ -182,7 +183,7 @@ class DependentObject(Type, BoundObject):
         for types in self.compatible_types:
             matches = []
             for type in types:
-                if type.checkCompatibility(other.resolveValue()):
+                if type.checkCompatibility(other.resolveValue()) or other.checkCompatibility(type):
                     matches.append(type)
 
             if len(matches) != 1:
