@@ -2,18 +2,12 @@ language: python
 python: "3.4"
 cache: apt
 
-matrix:
-  include:
-    - os: linux
-      dist: trusty
-      sudo: required
+os: linux
+dist: trusty
+sudo: required
 
 addons:
   apt:
-    sources:
-      - ubuntu-toolchain-r-test
-      - llvm-toolchain-precise
-      - llvm-toolchain-precise-3.6
     packages:
       - libllvm3.6
       - llvm-runtime
