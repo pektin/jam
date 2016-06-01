@@ -21,14 +21,18 @@ from .branches import Loop, Break, Branch
 from . import util
 
 def compile(source, frontend, backend, logger = logging.getLogger(), opt_level = 0):
+    logger.info("Parsing")
     module = frontend.parse(source, logger)
 
+    logger.info("Loading Builtins")
     builtins = frontend.builtins(logger)
     # Hack backend builtins into frontend builtins
     builtins.context.addChild(backend.builtins(logger))
 
+    logger.info("Verifying")
     verify(module, builtins, logger)
 
+    logger.info("Generating Code")
     return backend.emit(module, logger, opt_level)
 
 def verify(module:Module, builtin:Module, logger = logging.getLogger()):
