@@ -64,8 +64,7 @@ class Class(Type, Scope):
         return other.resolveValue() is self
 
     def __repr__(self):
-        contents = "\n".join(repr(val) for val in [self.constructor] + list(self.instance_context))
-        return "class {}\n{}\nend".format(self.name, contents)
+        return "class {}".format(self.name)
 
 class Constructor(Function):
     def __init__(self, function:Function, constructing:Type, tokens = None):

@@ -516,7 +516,6 @@ def FunctionInstance_emitValue(self, type):
 
 @patch
 def FunctionInstance_emitAssignment(self):
-    print(State.self)
     value = State.self.emitAssignment(None)
     return value
 
