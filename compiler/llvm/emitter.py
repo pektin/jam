@@ -319,18 +319,32 @@ def DependentTarget_checkEmission(self):
     if not self.emitted:
         self.value.resetEmission()
         self.emitted = True
+        return False
+    return True
 
 @patch
 def DependentTarget_emit(self):
-    self.checkEmission()
-    with self.target():
-        self.value.emit()
+    if not self.checkEmission():
+        with self.target():
+            self.value.emit()
 
 @patch
 def DependentTarget_emitValue(self, type):
-    self.checkEmission()
+    if self.value.emitted_cache is None:
+        self.value.emitted_cache = {}
+    cache = self.value.emitted_cache
+
     with self.target():
-        return self.value.emitValue(type)
+        if type not in cache:
+            assert not self.checkEmission()
+
+            #TODO: Make this generic, currently specific for Function
+            # Maybe turn the entire emitter into a sequenced collection of generators,
+            # like dependent object targeting, which would also allow for multithreading
+            self.value.emitStatic()
+            cache[type] = self.value.llvm_value
+            self.value.emitBody()
+        return cache[type]
 
 #
 # class ClosedLink
@@ -357,6 +371,7 @@ def ClosedLink_emitLinkValue(self, type):
 lekvar.Function.llvm_return = None
 lekvar.Function.llvm_context = None
 lekvar.Function.llvm_closure_type = None
+lekvar.Function.emitted_cache = None
 
 @patch
 def Function_resetEmission(self):
@@ -370,18 +385,25 @@ def Function_resetEmission(self):
 def Function_emit(self):
     if self.llvm_value is not None: return
 
+    self.emitStatic()
+    self.emitBody()
+
+@patch
+def Function_emitStatic(self):
     self.llvm_closure_type = self.closed_context.emitType()
 
     name = resolveName(self)
     func_type = self.resolveType().emitFunctionType(self.llvm_closure_type is not None)
     self.llvm_value = State.module.addFunction(name, func_type)
 
+@patch
+def Function_emitBody(self):
     entry = self.llvm_value.appendBlock("entry")
     exit = self.llvm_value.appendBlock("exit")
 
     with State.blockScope(entry):
         # Only emit br if it hasn't already
-        if not self.emitBody():
+        if not self.emitInstructions():
             State.builder.br(exit)
 
         for child in self.local_context:
@@ -391,7 +413,7 @@ def Function_emit(self):
         self.emitReturn()
 
 @patch
-def Function_emitBody(self):
+def Function_emitInstructions(self):
     self.emitEntry()
 
     # Exit stack that might contain a selfScope
@@ -463,6 +485,9 @@ def Function_emitContext(self):
             State.builder.store(value, obj_ptr)
 
         return context
+
+    if self.llvm_closure_type is None:
+        return None
     return llvm.Value.null(llvm.Pointer.new(self.llvm_closure_type, 0))
 
 #

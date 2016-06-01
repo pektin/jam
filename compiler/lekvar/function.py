@@ -99,12 +99,6 @@ class Function(Scope):
         args = [(arg_t, call_t) for arg_t, call_t in zip(self.type.arguments, type.arguments)
                                 if isinstance(arg_t, DependentObject)]
 
-        # If all the dependent arguments are scoped inside self, no targeting is required
-        dependent_call_types = [arg[1] for arg in args
-                                       if isinstance(arg[1], DependentObject)]
-        if len(dependent_call_types) > 0 and all(type.scope is self for type in dependent_call_types):
-            return self
-
         # Cache targets by arguments
         cache_args = tuple(arg[1] for arg in args)
         if cache_args not in self.dependent_target_cache:
