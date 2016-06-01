@@ -1,0 +1,17 @@
+##ping\npong\nping\n
+
+def ping(n)
+  puts("ping")
+  if n > 1
+    pong(n - 1)
+  end
+end
+
+def pong(n)
+  puts("pong")
+  if n > 1
+    ping(n - 1)
+  end
+end
+
+ping(3)
