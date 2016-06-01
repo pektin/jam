@@ -227,11 +227,13 @@ class DependentTarget(Link):
         with ExitStack() as stack:
             dependencies = iter(self.dependencies)
             while True:
-                dep = next(dependencies, None)
-                if dep is None: break
+                dep = next(dependencies, 0)
+                if dep is 0: break
+                if dep is None: continue
 
                 object, target = dep
-                dependencies = chain(dependencies, stack.enter_context(object.targetAt(target)))
+                next_dependencies = object.targetAt(target)
+                dependencies = chain(dependencies, stack.enter_context(next_dependencies))
 
             yield
 
