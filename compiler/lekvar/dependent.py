@@ -258,6 +258,11 @@ class DependentContext(Context):
     @contextmanager
     def targetAt(self, target):
         def target_generator():
+            if isinstance(target, DependentContext) and self.scope.scope is target.scope.scope:
+                target.scope._instance_context = self
+                yield None
+                return
+
             for name in self.children:
                 if name not in target.children:
                     raise DependencyError(message="Dependent target context does not have attribute").add(content=name).add(message="", object=target.scope)
