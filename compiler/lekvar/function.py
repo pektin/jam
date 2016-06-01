@@ -24,6 +24,8 @@ class Function(Scope):
     verified = False
     static_scope = False
 
+    dependent_target_cache = None
+
     def __init__(self, name:str, arguments:[Variable], instructions:[Object], children:[Object] = [], return_type:Type = None, tokens = None):
         Scope.__init__(self, name, tokens)
 
@@ -39,6 +41,8 @@ class Function(Scope):
                 self.dependent = True
 
         self.type = FunctionType([arg.resolveType() for arg in arguments], return_type)
+
+        self.dependent_target_cache = {}
 
     def resolveIdentifier(self, name:str):
         found = BoundObject.resolveIdentifier(self, name)
@@ -94,7 +98,12 @@ class Function(Scope):
     def dependentTarget(self, type):
         args = [(arg_t, call_t) for arg_t, call_t in zip(self.type.arguments, type.arguments)
                                 if isinstance(arg_t, DependentObject)]
-        return DependentTarget(self, args)
+
+        # Cache targets by arguments
+        cache_args = tuple(arg[1] for arg in args)
+        if cache_args not in self.dependent_target_cache:
+            self.dependent_target_cache[cache_args] = DependentTarget(self, args)
+        return self.dependent_target_cache[cache_args]
 
     def __repr__(self):
         return "def {}({}) -> {}".format(self.name,
