@@ -42,6 +42,10 @@ def Type_emitInstanceAssignment(self, value:lekvar.Object, type:lekvar.Type) -> 
 #
 
 @patch
+def Link_resetEmission(self):
+    self.value.resetEmission()
+
+@patch
 def Link_emit(self):
     return self.value.emit()
 
@@ -118,6 +122,12 @@ def Literal_emitAssignment(self, type):
 
 lekvar.Variable.llvm_context_index = -1
 lekvar.Variable.llvm_self_index = -1
+
+@patch
+def Variable_resetEmission(self):
+    self.llvm_value = None
+    self.llvm_context_index = -1
+    self.llvm_self_index = -1
 
 @patch
 def Variable_emit(self):
@@ -352,6 +362,9 @@ lekvar.Function.llvm_closure_type = None
 def Function_resetEmission(self):
     self.llvm_value = None
     self.llvm_closure_type = None
+
+    for child in self.local_context:
+        child.resetEmission()
 
 @patch
 def Function_emit(self):
