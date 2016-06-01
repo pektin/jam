@@ -260,8 +260,9 @@ class Parser:
                 lhs = lekvar.Assignment(lhs, rhs, [operation])
                 continue
             elif operation.type == Tokens.function:
+                raise InternalError("Not Implemented")
+                #TODO: Lambdas
                 lhs = anonymousFn(lhs, rhs, [operation])
-                raise NotImplemented("TODO: Lambdas")
 
             # Some operations are attributes of the lhs, others are global functions
             if operation.type in BINARY_OPERATION_FUNCTIONS:
