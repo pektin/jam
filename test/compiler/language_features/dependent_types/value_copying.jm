@@ -1,0 +1,9 @@
+##1\n2\n
+
+def foo(a)
+  b = a
+  return b
+end
+
+puts(foo(1))
+puts(foo("2"))
