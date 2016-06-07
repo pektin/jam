@@ -42,6 +42,21 @@ class Class(Type, Scope):
                 self.constructor.verify()
 
             self.instance_context.verify()
+            self.verifyNonRecursive()
+
+    def verifyNonRecursive(self):
+        # Traverse tree of class attributes, looking for self
+        is_var = lambda a: isinstance(a, Variable)
+        attributes = list(filter(is_var, self.instance_context))
+
+        while len(attributes) > 0:
+            attr = attributes.pop(0)
+            type = attr.resolveType().resolveValue()
+
+            if type is self:
+                raise TypeError(object=self).add(message="is recursive, here").add(object=attr)
+            elif isinstance(type, Class):
+                attributes += list(filter(is_var, type.instance_context))
 
     def resolveType(self):
         raise InternalError("Not Implemented")
