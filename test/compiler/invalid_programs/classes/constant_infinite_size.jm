@@ -1,0 +1,5 @@
+#!TypeError
+
+class Infinite
+  child:const Infinite
+end

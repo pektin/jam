@@ -1,0 +1,9 @@
+#!TypeError
+
+class Infinite1
+  child:Infinite2
+end
+
+class Infinite2
+  child:Infinite1
+end
