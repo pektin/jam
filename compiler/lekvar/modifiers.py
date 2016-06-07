@@ -52,8 +52,17 @@ class Reference(BoundLink):
     def __init__(self, value:Object, tokens = None):
         BoundLink.__init__(self, value, tokens)
 
+    def resolveValue(self):
+        return self
+
     def resolveType(self):
         return Reference(self.value.resolveType())
+
+    def checkCompatibility(self, other):
+        if isinstance(other, Reference):
+            return self.value.checkCompatibility(other.value)
+
+        return self.value.checkCompatibility(other)
 
     def __repr__(self):
         return "ref {}".format(self.value)
