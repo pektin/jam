@@ -8,6 +8,12 @@ from .core import Context, Object, BoundObject, Scope, Type
 from .util import inScope
 from .links import Link
 
+# Like util.checkCompatibility, but type1 can be dependent whose compatibility check takes more arguments
+def checkDependentCompatibility(type1:Type, type2:Type, *args):
+    if isinstance(type1, DependentObject):
+        return type1.checkCompatibility(type2, *args)
+    return type1.checkCompatibility(type2)
+
 # A dependent object is a collector for behaviour
 # Initially the object is used like any other, creating dependencies
 # Later a object can be chosen to "replace" the dependent object,
@@ -182,10 +188,10 @@ class DependentObject(Type, BoundObject):
         self._return_type = self._return_type or DependentObject(self.scope)
         return self._return_type
 
-    def checkCompatibility(self, other:Type):
+    def checkCompatibility(self, other:Type, check_cache = None):
         if self is other.resolveValue(): return True
-        if self.target is not None: return self.target.checkCompatibility(other)
-        if self.locked: return self.checkLockedCompatibility(other)
+        if self.target is not None: return checkDependentCompatibility(self.target, other, check_cache)
+        if self.locked: return self.checkLockedCompatibility(other, check_cache)
 
         if State.type_switching:
             self.compatible_type_switch = self.compatible_type_switch or []
@@ -195,12 +201,28 @@ class DependentObject(Type, BoundObject):
             self.compatible_types.add((other,))
         return True
 
-    def checkLockedCompatibility(self, other:Type):
+    def revCheckCompatibility(self, other:Type, check_cache = None):
+        if self is other.resolveValue(): return True
+        if self.target is not None: return self.target.revCheckCompatibility(other)
+
+        # On reverse checks, we're always locked
+        return self.checkLockedCompatibility(other, check_cache)
+
+    def checkLockedCompatibility(self, other:Type, check_cache = None):
+        other = other.resolveValue()
+        # Keep a set of 'checked' types to escape infinite recursion
+        if check_cache is None: check_cache = {}
+        cache = check_cache.setdefault(self, set())
+
         for types in self.compatible_types:
             matches = []
             for type in types:
-                if type.checkCompatibility(other.resolveValue()) or other.checkCompatibility(type):
+                if type in cache:
                     matches.append(type)
+                else:
+                    cache.add(type)
+                    if checkDependentCompatibility(type, other, check_cache):
+                        matches.append(type)
 
             if len(matches) != 1:
                 return False
