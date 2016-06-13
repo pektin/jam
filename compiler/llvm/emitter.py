@@ -290,8 +290,7 @@ def Context_emitType(self):
 
 @patch
 def DependentObject_emit(self):
-    assert self.target is not None
-    self.target.emit()
+    raise InternalError("Not Implemented")
 
 @patch
 def DependentObject_emitValue(self, type):
@@ -324,9 +323,7 @@ def DependentTarget_checkEmission(self):
 
 @patch
 def DependentTarget_emit(self):
-    if not self.checkEmission():
-        with self.target():
-            self.value.emit()
+    raise InternalError("Not Implemented")
 
 @patch
 def DependentTarget_emitValue(self, type):
@@ -341,6 +338,7 @@ def DependentTarget_emitValue(self, type):
             #TODO: Make this generic, currently specific for Function
             # Maybe turn the entire emitter into a sequenced collection of generators,
             # like dependent object targeting, which would also allow for multithreading
+            assert isinstance(self.value, lekvar.Function)
             self.value.emitStatic()
             cache[type] = self.value.llvm_value
             self.value.emitBody()
@@ -486,8 +484,8 @@ def Function_emitContext(self):
 
         return context
 
-    if self.llvm_closure_type is None:
-        return None
+    assert self.llvm_closure_type is not None
+
     return llvm.Value.null(llvm.Pointer.new(self.llvm_closure_type, 0))
 
 #
@@ -595,9 +593,8 @@ def Method_emit(self):
 def Method_emitValue(self, type):
     type = type.resolveValue()
 
-    # If the type isn't given, use our own
-    if type is None or not isinstance(type, lekvar.MethodType):
-        type = self.resolveType()
+    # Make sure type is always given
+    assert type is not None
 
     #TODO: Increase efficiency
     values = []
