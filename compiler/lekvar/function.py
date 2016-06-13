@@ -158,7 +158,7 @@ class FunctionType(Type):
                 return False
 
             for self_arg, other_arg in zip(self.arguments, other.arguments):
-                if not checkCompatibility(other_arg, self_arg):
+                if not checkCompatibility(self_arg, other_arg):
                     return False
 
             # Only check for return type compatibility when the other has one
@@ -167,7 +167,7 @@ class FunctionType(Type):
                 if self.return_type is None:
                     return False
 
-                return checkCompatibility(other.return_type, self.return_type)
+                return checkCompatibility(self.return_type, other.return_type)
             return True
         return False
 
@@ -219,8 +219,8 @@ class Return(Object):
                     return_type = None
                 self.function.type.return_type = return_type
         # Check function types
-            else:
-                checkCompatibility(self.function.type.return_type, self.value.resolveType())
+            elif not checkCompatibility(self.value.resolveType(), self.function.type.return_type):
+                raise TypeError(object=self).add(message="return type is not compatible with").add(object=self.function.type.return_type)
         elif self.function.type.return_type is not None:
             raise TypeError(object=self).add(message="must return a").add(object=self.function.type.return_type)
 
