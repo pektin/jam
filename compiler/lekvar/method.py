@@ -2,6 +2,7 @@ from ..errors import *
 
 from .state import State
 from .core import Context, Object, BoundObject, SoftScope, Type
+from .util import checkCompatibility
 from .function import Function, FunctionType
 from .dependent import DependentObject, DependentTarget
 
@@ -49,20 +50,20 @@ class Method(BoundObject, SoftScope):
 
         # Collect overloads which match the call type
         for overload in self.overload_context:
-            if overload.resolveType().checkCompatibility(call):
+            if checkCompatibility(call, overload.resolveType()):
                 matches.append(overload)
 
         # Check dependent types if no other ones were found
         if len(matches) == 0:
             for overload in self.dependent_overload_context:
-                if overload.resolveType().checkCompatibility(call):
+                if checkCompatibility(call, overload.resolveType()):
                     matches.append(overload)
 
             if len(matches) == 1:
                 return matches[0].dependentTarget(call)
 
         elif len(matches) > 1 and call.dependent and State.scope.dependent:
-            fn = DependentObject.switch(self, matches, lambda overload: overload.resolveType().checkCompatibility(call))
+            fn = DependentObject.switch(self, matches, lambda overload: checkCompatibility(call, overload.resolveType()))
             # Find last argument that is dependent (the last one whose target is resolved)
             for arg in reversed(call.arguments):
                 if isinstance(arg, DependentObject):
