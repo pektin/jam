@@ -181,3 +181,6 @@ class Type(Object):
     @abstract
     def checkCompatibility(self, other:Type) -> bool:
         pass
+
+    def revCheckCompatibility(self, other:Type) -> bool:
+        return self.checkCompatibility(other)

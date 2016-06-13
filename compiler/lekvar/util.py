@@ -12,7 +12,7 @@ Module = None
 def checkCompatibility(type1:Type, type2:Type):
     if type1.checkCompatibility(type2):
         return True
-    return type2.checkCompatibility(type1)
+    return type2.revCheckCompatibility(type1)
 
 # Resolve a attribute of a given object
 def resolveAttribute(object:Object, reference:str):
