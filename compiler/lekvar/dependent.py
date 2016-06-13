@@ -79,21 +79,21 @@ class DependentObject(Type, BoundObject):
     def resolveValue(self):
         return self.target or self
 
-    # Check whether an object matches the dependencies of this object
+    # Targets this dependent object
     @contextmanager
     def targetAt(self, target):
         target = target.resolveValue()
+
         with ExitStack() as stack:
             #TODO: Handle errors
 
-            # Set target
+            # Escape recursion
             if self.target is not None:
                 if self.target is target:
                     yield []
                     return
 
-                raise TypeError(message="TODO: Write this")
-            self.target = target
+                #TODO: There should be a safer way to handle this
 
             # Local checks
             if not self.checkLockedCompatibility(target):
@@ -116,10 +116,12 @@ class DependentObject(Type, BoundObject):
                     yield switch.resolveTarget()
 
                 if self._return_type is not None:
-                    if not hasattr(target, "return_type"):
-                        raise TypeError(message="TODO: Write this")
+                    # Should fail compatibility checks if not true
+                    assert hasattr(target, "return_type")
+
                     yield self._return_type, target.return_type
 
+            self.target = target
             yield target_generator()
             self.target = None
 
@@ -236,6 +238,9 @@ class DependentTarget(Link):
                 dependencies = chain(dependencies, stack.enter_context(next_dependencies))
 
             yield
+
+    def __repr__(self):
+        return "Target({}, {})".format(self.value, self.dependencies)
 
 # The dependent context compliments the dependent object with the creation
 # of dependencies for contexts.
