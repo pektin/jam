@@ -1,0 +1,11 @@
+##1\n1\n1\nfoo\n
+
+def foo(a, b)
+  puts(b)
+  if a > 0
+    return foo(a - 1, b)
+  end
+end
+
+foo(2, 1)
+foo(0, "foo")
