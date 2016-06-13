@@ -11,6 +11,6 @@ class Operation(lekvar.Call):
                 raise e.add(message="TODO: write this")
             elif isinstance(self.called, lekvar.Identifier):
                 raise e.add(message="TODO: write this")
-            raise
+            raise InternalError("Unhandled type used in operation")
 
 lekvar.Operation = Operation
