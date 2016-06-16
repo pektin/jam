@@ -3,7 +3,7 @@
 const FOO = "foo"
 puts(FOO)
 
-def twice(i:Int)
+def twice(const i:Int)
   const ret = 2 * i
   return ret
 end
