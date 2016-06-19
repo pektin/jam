@@ -22,6 +22,9 @@ class Variable(BoundObject):
     def verify(self):
         self.type.verify()
 
+        if not isinstance(self.type.resolveValue(), Type):
+            raise TypeError(object=self.type).add("cannot be used as a type for").add(object=self)
+
     def resolveType(self):
         return self.type
 
@@ -35,7 +38,9 @@ class Variable(BoundObject):
         self.verify()
 
         if not checkCompatibility(value.resolveType(), self.type):
-            raise TypeError(message="Cannot assign").add(object=value).add(message="to").add(object=self)
+            raise (TypeError(message="Cannot assign").add(object=value)
+                        .add(message="of type").add(object=value.resolveType())
+                        .add(message="to").add(object=self))
 
     def __copy__(self):
         return Variable(self.name, copy(self.type), self.tokens)

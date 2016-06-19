@@ -135,8 +135,14 @@ class FunctionType(Type):
         for arg in self.arguments:
             arg.verify()
 
+            if not isinstance(arg.resolveValue(), Type):
+                raise TypeError(object=arg).add(message="cannot be used as a type for").add(object=self)
+
         if self.return_type is not None:
             self.return_type.verify()
+
+            if not isinstance(self.return_type.resolveValue(), Type):
+                raise TypeError(object=self.return_type).add(message="is not a valid return type")
 
     def resolveType(self):
         raise InternalError("Not Implemented")
