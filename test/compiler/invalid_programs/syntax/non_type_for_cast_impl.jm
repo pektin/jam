@@ -1,0 +1,9 @@
+#!TypeError
+
+T = 3
+
+class Foo
+  def self as T
+    return 2
+  end
+end

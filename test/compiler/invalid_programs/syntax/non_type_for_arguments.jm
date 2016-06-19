@@ -1,0 +1,6 @@
+#!TypeError
+
+T = 2
+
+def foo(a:T)
+end

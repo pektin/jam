@@ -1,0 +1,7 @@
+#!TypeError
+
+T = 2
+
+def foo() -> T
+  return 2
+end
