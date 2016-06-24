@@ -47,7 +47,7 @@ class Link(Type):
         return self.value.resolveCall(call)
 
     def verifyAssignment(self, value):
-        return self.value.verifyAssignment(value)
+        self.value.verifyAssignment(value)
 
     def resolveValue(self):
         return self.value.resolveValue()
