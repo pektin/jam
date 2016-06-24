@@ -167,6 +167,9 @@ class Scope(SoftScope, BoundObject):
 
 # A type object that is used to describe certain behaviour of an object.
 class Type(Object):
+    def resolveType(self):
+        raise InternalError("Not Implemented")
+
     # The attributes available on an instance
     @property
     def instance_context(self):

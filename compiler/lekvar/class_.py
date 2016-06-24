@@ -58,9 +58,6 @@ class Class(Type, Scope):
             elif isinstance(type, Class):
                 attributes += list(filter(is_var, type.instance_context))
 
-    def resolveType(self):
-        raise InternalError("Not Implemented")
-
     def resolveCall(self, call:FunctionType):
         if self.constructor is None:
             raise TypeError(object=self).add(message="does not have a constructor")
