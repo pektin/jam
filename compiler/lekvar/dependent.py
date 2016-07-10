@@ -88,7 +88,8 @@ class DependentObject(Type, BoundObject):
     # Targets this dependent object
     @contextmanager
     def targetAt(self, target):
-        target = target.resolveValue()
+        if isinstance(target, DependentObject):
+            target = target.resolveValue()
 
         with ExitStack() as stack:
             #TODO: Handle errors
@@ -133,7 +134,7 @@ class DependentObject(Type, BoundObject):
 
     def _targetCall(self, target, calls, resolution_function):
         for call, obj in calls.items():
-            target_call = resolution_function(target)(call).resolveValue()
+            target_call = resolution_function(target)(call)
 
             yield obj, target_call
             # The call itself may also be dependent, so we have to target that
@@ -160,6 +161,8 @@ class DependentObject(Type, BoundObject):
         return self._instance_context
 
     def resolveType(self):
+        if self.target is not None: return self.target.resolveType()
+
         self.resolved_type = self.resolved_type or DependentObject(self.scope)
         return self.resolved_type
 
