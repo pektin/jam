@@ -159,6 +159,7 @@ def Variable_emitAssignment(self, type):
     if self.llvm_self_index < 0:
         raise InternalError()
 
+    assert State.self is not None
     return State.builder.structGEP(State.self, self.llvm_self_index, "")
 
 @patch
@@ -552,8 +553,7 @@ def FunctionInstance_emitValue(self, type):
 
 @patch
 def FunctionInstance_emitAssignment(self):
-    value = State.self.emitAssignment(None)
-    return value
+    return State.self
 
 @patch
 def FunctionInstance_emitContext(self):
@@ -593,10 +593,15 @@ def Method_emit(self):
 def Method_emitValue(self, type):
     type = type.resolveValue()
 
-    # Make sure type is always given
-    assert type is not None
+    if isinstance(type, lekvar.MethodType):
+        return self.emitValueForMethodType(type)
+    elif isinstance(type, lekvar.FunctionType):
+        return self.resolveCall(type).emitValue(type)
+    else:
+        raise InternalError("Invalid value type for method")
 
-    #TODO: Increase efficiency
+@patch
+def Method_emitValueForMethodType(self, type):
     values = []
     overloads = list(self.overload_context)
     for overload_type in type.used_overload_types:
@@ -648,7 +653,7 @@ def MethodInstance_emitValue(self, type):
 
 @patch
 def MethodInstance_emitAssignment(self):
-    value = State.self.emitAssignment(None)
+    value = State.self
     try:
         index = self.type.used_overload_types.index(self.target)
     except ValueError:
