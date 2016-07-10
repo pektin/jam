@@ -112,8 +112,8 @@ class Attribute(Link):
     object = None
     name = None
 
-    def __init__(self, object:Object, name:str, tokens = None):
-        Link.__init__(self, None, tokens)
+    def __init__(self, object:Object, name:str = "", tokens = None, value = None):
+        Link.__init__(self, value, tokens)
         self.object = object
         self.name = name
 
@@ -139,4 +139,6 @@ class Attribute(Link):
             raise e
 
     def __repr__(self):
+        if self.value is not None:
+            return "{}.{}({})".format(self.object, self.name, self.value)
         return "{}.{}".format(self.object, self.name)

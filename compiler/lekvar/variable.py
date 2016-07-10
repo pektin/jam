@@ -5,6 +5,7 @@ from ..errors import *
 from .state import State
 from .util import checkCompatibility
 from .core import Context, Object, BoundObject, Type
+from .links import Attribute
 
 #
 # Variable
@@ -27,6 +28,10 @@ class Variable(BoundObject):
 
     def resolveType(self):
         return self.type
+
+    def resolveCall(self, call):
+        function = BoundObject.resolveCall(self, call)
+        return Attribute(self, value = function)
 
     def verifyAssignment(self, value:Object):
         if value is None:
