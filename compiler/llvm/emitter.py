@@ -676,6 +676,18 @@ def Class_emit(self):
         child.emit()
 
 @patch
+def Class_emitValue(self, type):
+    if type is None:
+        type = self.resolveType()
+    else:
+        type = type.resolveValue()
+        assert isinstance(type, lekvar.Class)
+
+    attributes = [self.constructor.emitValue(type.instance_context[""].resolveType())]
+
+    return llvm.Value.constStruct(type.emitType(), attributes)
+
+@patch
 def Class_emitType(self):
     if self.llvm_type is None:
         var_types = []

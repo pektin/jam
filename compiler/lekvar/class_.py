@@ -9,6 +9,7 @@ from .variable import Variable
 class Class(Type, Scope):
     constructor = None
     instance_context = None
+    type = None
 
     verified = False
 
@@ -44,6 +45,11 @@ class Class(Type, Scope):
             self.instance_context.verify()
             self.verifyNonRecursive()
 
+    def resolveType(self):
+        if self.type is None:
+            self.type = MetaClass(self)
+        return MetaClass(self)
+
     def verifyNonRecursive(self):
         # Traverse tree of class attributes, looking for self
         is_var = lambda a: isinstance(a, Variable)
@@ -73,7 +79,7 @@ class Class(Type, Scope):
         return self.instance_context
 
     def checkCompatibility(self, other:Type) -> bool:
-        return other.resolveValue() is self
+        return other.resolveValue() == self
 
     def __repr__(self):
         return "class {}".format(self.name)
@@ -88,3 +94,25 @@ class Constructor(Function):
         if State.soft_scope_state.maybe_returns:
             #TODO: Find returns
             raise SyntaxError(object=self).add(message="within a constructor is invalid")
+
+class MetaClass(Class):
+    class_instance = None
+
+    def __init__(self, instance:Class):
+        constructor = Variable("", instance.constructor.resolveType())
+        Class.__init__(self, "meta " + instance.name, None, [constructor])
+
+        self.class_instance = instance
+        self.class_instance.instance_context.fakeChild(self)
+
+    def __eq__(self, other):
+        if isinstance(other, MetaClass):
+            return self.class_instance == other.class_instance
+        return False
+
+    def __hash__(self):
+        return hash(self.class_instance)
+
+    @property
+    def static(self):
+        return self.class_instance.static
