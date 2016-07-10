@@ -200,12 +200,12 @@ def Module_emitValue(self):
 
 @patch
 def Call_emitValue(self, type):
-    with State.selfScope(self.called):
+    with State.selfScope(self.called.emitAssignment(type)):
         called = self.function.emitValue(self.function_type)
 
     bound_value = self.called.emitContext()
     with State.selfScope(bound_value):
-        context = self.function.emitContext()
+        context = self.function.resolveValue().emitContext()
 
     if context is not None:
         arguments = [State.builder.cast(context, llvm.Type.void_p(), "")]
@@ -218,7 +218,7 @@ def Call_emitValue(self, type):
         scope = self.function.target()
 
     with scope:
-        argument_types = self.function.resolveValue().resolveType().arguments
+        argument_types = self.function.resolveValue().resolveType().resolveValue().arguments
         arguments += [emitValue(value, type) for value, type in zip(self.values, argument_types)]
 
     # Get the llvm function type
