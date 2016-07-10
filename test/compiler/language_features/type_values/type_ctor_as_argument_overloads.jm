@@ -1,0 +1,22 @@
+##3\n4.3\n
+
+class Foo
+  new(a:Int)
+    puts(a)
+  end
+
+  new(b:Real)
+    puts(b)
+  end
+end
+
+def foo(arg, Type)
+  if arg
+    return Type(3)
+  else
+    return Type(4.3)
+  end
+end
+
+c = foo(true, Foo)
+d = foo(false, Foo)

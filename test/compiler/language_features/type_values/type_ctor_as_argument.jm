@@ -1,0 +1,26 @@
+##foo\n2\n
+
+class Printer
+  default:Int
+
+  new(d:Int)
+    default = d
+  end
+
+  def self()
+    puts(default)
+  end
+
+  def self(o)
+    puts(o)
+  end
+end
+
+def foo(T)
+  return T(2)
+end
+
+a = foo(Printer)
+a("foo")
+a()
+

@@ -1,0 +1,15 @@
+##1\n0.4\n
+
+class Foo
+  new(a:Int)
+    puts(a)
+  end
+
+  new(b:Real)
+    puts(b)
+  end
+end
+
+T = Foo
+a = T(1)
+b = T(0.4)
