@@ -385,9 +385,10 @@ class Parser:
         assert tokens[0].type == Tokens.integer
 
         token = self.lookAhead()
+        token2 = self.lookAhead(2)
 
         # Float with dot in the middle
-        if token is not None and token.type == Tokens.dot:
+        if token and token2 and token.type == Tokens.dot and token2.type == Tokens.integer:
             tokens.append(self.next())
 
             value = float(tokens[0].data.replace("_", "") + ".")
