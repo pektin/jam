@@ -1,0 +1,11 @@
+##0\n0\n\n
+
+def debugNew(T)
+  o = T()
+  puts(o)
+  return o
+end
+
+a = debugNew(Int)
+b = debugNew(Real)
+c = debugNew(String)
