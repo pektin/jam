@@ -3,6 +3,10 @@
 class Int
   value:_builtins.Int64
 
+  new()
+    value = 0.value
+  end
+
   new(v:_builtins.Int64)
     value = v
   end
@@ -65,6 +69,10 @@ end
 class Real
   value:_builtins.Float64
 
+  new()
+    value = 0.0.value
+  end
+
   new(v:_builtins.Float64)
     value = v
   end
@@ -99,6 +107,10 @@ end
 class String
   value:_builtins.String
 
+  new()
+    value = "".value
+  end
+
   new(v:_builtins.String)
     value = v
   end
@@ -107,6 +119,10 @@ end
 #TODO: Implement properly
 class Bool
   value:_builtins.Bool
+
+  new()
+    value = false.value
+  end
 
   new(v:_builtins.Bool)
     value = v
