@@ -1,19 +1,6 @@
 The Jam Tutorial
 ################
 
-.. toctree::
-    :numbered:
-    :titlesonly:
-
-    tooling
-    helloworld
-    comments
-    string-formatting
-    literals
-    variables
-    control-flow
-    methods
-
 Introduction
 ============
 
@@ -30,11 +17,17 @@ recommended that the tutorial be followed sequentially.
     This is currently a work in progress and is highly subject to change. It is
     definitely not yet comprehensive.
 
-Installing
-==========
+.. toctree::
+    :numbered:
+    :titlesonly:
 
-Currently Jam is only provided as a python module. In order to install the Jam
-compiler tool clone the source repository from Github_. Once downloaded, run
-``make install`` to symlink all tools into your ``/usr/bin`` directory.
-
-.. _Github: https://github.com/pektin/jam
+    installing
+    tooling
+    helloworld
+    comments
+    string-formatting
+    literals
+    variables
+    control-flow
+    methods
+    lambdas
