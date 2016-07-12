@@ -110,8 +110,7 @@ Generic Numerical Classes
 
     \
 
-        Any real may be cast to any sized floating point type, possibly
-        resulting in an exception if the sizes are incompatible.
+        Any real may be cast to any sized floating point type.
 
     ::
 
@@ -120,7 +119,8 @@ Generic Numerical Classes
     \
 
         Any real may also be explicitly cast to an integer. The resulting
-        integer is guaranteed to be rounded to the correct integer number.
+        integer is guaranteed to be rounded to the correct integer number. May
+        result in an exception if the real is too large.
 
     ::
 
