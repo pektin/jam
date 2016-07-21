@@ -619,3 +619,14 @@ def PassManager_setOptSizeLevel(self, level:int):
     _lib.LLVMPassManagerBuilderPopulateModulePassManager(builder, self)
     _lib.LLVMPassManagerBuilderDispose(builder)
 PassManager.setOptSizeLevel = PassManager_setOptSizeLevel
+
+#
+# Globals
+#
+
+class Visibility:
+    default = 0
+    hidden = 1
+    protected = 2
+
+Value.wrapInstanceProp("visibility", "LLVMGetVisibility", "LLVMSetVisibility", c_uint)
