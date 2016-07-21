@@ -1,7 +1,7 @@
-# Compiler Tests
+# Test Programs
 
 This folder is a collection of all full-stack tests for jam. These tests are
-dynamically loaded by `compiler_test.py`.
+dynamically loaded by `programs.py`.
 
 ## Test Cases
 

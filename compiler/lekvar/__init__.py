@@ -21,7 +21,7 @@ from .literal import Literal
 from .branches import Loop, Break, Branch
 from . import util
 
-def compile(source, frontend, backend, logger = logging.getLogger(), opt_level = 0):
+def _verify(source, frontend, backend, logger = logging.getLogger()):
     logger.info("Parsing")
     module = frontend.parse(source, logger)
 
@@ -33,8 +33,20 @@ def compile(source, frontend, backend, logger = logging.getLogger(), opt_level =
     logger.info("Verifying")
     verify(module, builtins, logger)
 
+    return module
+
+def compile(source, frontend, backend, logger = logging.getLogger(), opt_level = 0):
+    module = _verify(source, frontend, backend, logger)
+    print(module)
+
     logger.info("Generating Code")
     return backend.emit(module, logger, opt_level)
+
+def run(source, frontend, backend, logger = logging.getLogger(), opt_level = 0):
+    module = _verify(source, frontend, backend, logger)
+
+    logger.info("Running")
+    return backend.run(module)
 
 def verify(module:Module, builtin:Module, logger = logging.getLogger()):
     # Set up the initial state before verifying
