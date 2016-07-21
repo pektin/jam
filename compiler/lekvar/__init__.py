@@ -37,7 +37,6 @@ def _verify(source, frontend, backend, logger = logging.getLogger()):
 
 def compile(source, frontend, backend, logger = logging.getLogger(), opt_level = 0):
     module = _verify(source, frontend, backend, logger)
-    print(module)
 
     logger.info("Generating Code")
     return backend.emit(module, logger, opt_level)
