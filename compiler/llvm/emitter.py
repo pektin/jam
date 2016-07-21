@@ -395,6 +395,9 @@ def Function_emitStatic(self):
     func_type = self.resolveType().emitFunctionType(self.llvm_closure_type is not None)
     self.llvm_value = State.module.addFunction(name, func_type)
 
+    if not self.static:
+        self.llvm_value.visibility = llvm.Visibility.hidden
+
 @patch
 def Function_emitBody(self):
     entry = self.llvm_value.appendBlock("entry")
