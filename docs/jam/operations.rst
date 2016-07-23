@@ -29,8 +29,10 @@ Binary Operator Meaning
 ``**``          Exponentiation
 ``%``           Modulo
 ``in``          Containment
+``!in``         Inverse Containment
 ``&&``          Logical And
 ``||``          Logical Or
+``^^``          Logical Exclusive Or
 ``&``           Bitwise And
 ``|``           Bitwise Or
 ``^``           Bitwise Exclusive Or
@@ -65,11 +67,18 @@ Syntax
 ======
 
 .. productionlist::
-    ComparisonOperator: "!=" | "==" | "<" | "<=" | ">" | ">=" | "is" | "!is"
-    ComparisonOperation: `Value` [ `ComparisonOperator` `ComparisonOperation` ]
-    BinaryOperator: "%" | "^" | "&" | "&&" | "*" | "**" | "-" | "+" | "|" | "||" | "/" | "//" | "in"
-    BinaryOperation: ( `Value` `BinaryOperator` `Value` ) | `ComparisonOperation`
     UnaryOperator: "~" | "!"
+    MathematicalOperator: "+" | "-" | "*" | "/" | "//" | "**" | "%"
+    EquivalenceOperator: "==" | "!="
+    RelationalOperator: "<" | "<=" | ">" | ">="
+    IdentityOperator: "is" | "!is"
+    ContainmentOperator: "in" | "!in"
+    LogicalOperator: "&&" | "||" | "^^"
+    BitwiseOperator: "&" | "|" | "^"
+    ComparisonOperator: `EquivalenceOperator` | `RelationalOperator` | `IdentityOperator`
+    ComparisonOperation: `Value` [ `ComparisonOperator` `Value` ]+
+    Operator: `MathematicalOperator` | `ComparisonOperator` | `ContainmentOperator` | `LogicalOperator` | `BitwiseOperator`
+    BinaryOperation: `ComparisonOperation` | ( `Value` `BinaryOperator` `Value` )
     UnaryOperation: [`UnaryOperator`] `Value`
     IndexOperation: `Value` "[" [ `Value` "," ]* `Value` "]"
     Operation: `UnaryOperation` | `BinaryOperation` | `IndexOperation`
@@ -183,6 +192,9 @@ Logical
         difficulty = 2
     end
 
+    # Exclusive Or
+    #TODO
+
     # Logical Not
     #TODO
 
@@ -214,8 +226,8 @@ Indexing
     fifth_prime = primes[4]
 
     # Associative Arrays
-    emergency_numbers = [
-        "AUS" -> "000",
-        "USA" -> "911",
-    ]
-    aus_emergency_number = emergency_numbers["AUS"]
+    emergency_numbers = {
+        $AUS -> "000"
+        $USA -> "911"
+    }
+    aus_emergency_number = emergency_numbers[$AUS]
