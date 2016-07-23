@@ -36,6 +36,7 @@ Binary Operator Meaning
 ``&``           Bitwise And
 ``|``           Bitwise Or
 ``^``           Bitwise Exclusive Or
+``:``           Type of
 =============== =============================
 
 ============== ===============
@@ -63,6 +64,13 @@ Indexing is an operation on a value that maps one or more values to another
 value. This includes using an integer to map the index of an element in an array
 to the element itself.
 
+Type of
+-------
+
+The "Type of" operation is a constraint on the type system that the LHS must be
+of the type given on the RHS. This can be used to override type inference for
+:doc:`variables`.
+
 Syntax
 ======
 
@@ -88,7 +96,6 @@ Examples
 
 Mathematical
 ------------
-
 ::
 
     # Addition
@@ -119,7 +126,6 @@ Mathematical
 
 Equivalence
 -----------
-
 ::
 
     # Equality
@@ -135,7 +141,6 @@ Equivalence
 
 Relational
 ----------
-
 ::
 
     # Smaller than
@@ -158,7 +163,6 @@ Relational
 
 Identity
 --------
-
 ::
 
     # Identity Equivalence
@@ -169,7 +173,6 @@ Identity
 
 Containment
 -----------
-
 ::
 
     #TODO
@@ -177,7 +180,6 @@ Containment
 
 Logical
 -------
-
 ::
 
     # And
@@ -201,7 +203,6 @@ Logical
 
 Bitwise
 -------
-
 ::
 
     # And
@@ -218,7 +219,6 @@ Bitwise
 
 Indexing
 --------
-
 ::
 
     # Arrays
@@ -231,3 +231,9 @@ Indexing
         $USA -> "911"
     }
     aus_emergency_number = emergency_numbers[$AUS]
+
+Type of
+-------
+::
+
+    result:Int = long_math_function() # Ensures `result` is of type `Int`
