@@ -15,7 +15,6 @@ where possible, coded examples to demonstrate a feature in Jam.
 .. toctree::
     :numbered:
     :titlesonly:
-    :glob:
 
     comments
     instructions
