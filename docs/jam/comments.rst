@@ -14,8 +14,7 @@ Syntax
 ======
 
 .. productionlist::
-    Comment: ("#" .*
-           : )
+    Comment: "#" .* \n
 
 Examples
 ========

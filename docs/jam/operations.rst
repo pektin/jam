@@ -66,9 +66,9 @@ Syntax
 
 .. productionlist::
     ComparisonOperator: "!=" | "==" | "<" | "<=" | ">" | ">=" | "is" | "!is"
-    ComparisonOperation: `Value` [`ComparisonOperator` `ComparisonOperation`]
+    ComparisonOperation: `Value` [ `ComparisonOperator` `ComparisonOperation` ]
     BinaryOperator: "%" | "^" | "&" | "&&" | "*" | "**" | "-" | "+" | "|" | "||" | "/" | "//" | "in"
-    BinaryOperation: (`Value` `BinaryOperator` `Value`) | `ComparisonOperation`
+    BinaryOperation: ( `Value` `BinaryOperator` `Value` ) | `ComparisonOperation`
     UnaryOperator: "~" | "!"
     UnaryOperation: [`UnaryOperator`] `Value`
     IndexOperation: `Value` "[" [ `Value` "," ]* `Value` "]"

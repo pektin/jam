@@ -17,6 +17,5 @@ Syntax
 
 .. productionlist::
     AssociativeArrayType: "{" `Type` "->" `Type` "}"
-    AssociativeArrayValue: "{" `AssociativeArrayElement` (("," |
-                         : ) `AssociativeArrayElement`)* "}"
+    AssociativeArrayValue: "{" `AssociativeArrayElement` ( `ArraySeparator` `AssociativeArrayElement` )* "}"
     AssociativeArrayElement: `Value` "=>" `Value`

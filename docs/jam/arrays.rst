@@ -18,6 +18,7 @@ Syntax
 ======
 
 .. productionlist::
+    ArraySeparator: "," | \n
     ArrayType: "[" `Type` [ ";" `Integer` ] "]"
-    ArrayValue: "[" `ArrayElement` (( "," | \n ) `ArrayElement`)* "]"
-    ArrayElement: `Value` [";" `Integer`]
+    ArrayValue: "[" `ArrayElement` ( `ArraySeparator` `ArrayElement` )* "]"
+    ArrayElement: `Value` [ ";" `Integer` ]

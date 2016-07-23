@@ -21,11 +21,11 @@ where possible, coded examples to demonstrate a feature in Jam.
     instructions
     values
     identifiers
-    literals
+    literals/index
     operations
     variables
     assignments
-    control-flow
+    control-flow/index
     methods
     lambdas
     types

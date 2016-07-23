@@ -14,9 +14,7 @@ Syntax
 ======
 
 .. productionlist::
-    Trait: "trait" `identifier`
-         :   `ClassInstructionSet`
-         : "end"
+    Trait: "trait" `identifier` `ClassInstructionSet` "end"
 
 Examples
 ========

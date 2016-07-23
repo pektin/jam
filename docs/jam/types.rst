@@ -34,16 +34,15 @@ Syntax
 ======
 
 .. productionlist::
-    Type: (`Identifier` | `ArrayType` | `AssociativeArrayType` | `Class` | `Enumeration`)["?"]
-    InstanceVariable: `Variable` ["=" `Value`]
-    ClassInstructionSet:  (`ClassConstructor` | `InstanceVariable` | `Assignment` | `Method` | `TypeCastDef` | `TemplateInclude`
-                       : )*
-    ClassConstructor: "new" [`Identifier`] "(" [ [`Argument` ","]* `Argument` ] ")"
-                    :     `InstructionSet`
-                    : "end"
-    Class: [`Visibility`] "class" `Identifier` ["?"] [ "(" `Identifier` ")" ]
-         :   `ClassInstructionSet`
-         : "end"
+    NullableType: `Type` ["?"]
+    Type: `Identifier` | `ArrayType` | `AssociativeArrayType` | `Class` | `Enumeration` | `NullableType`
+    InstanceVariable: `Variable` [ "=" `Value` ]
+    ClassInstruction: `ClassConstructor` | `InstanceVariable` | `Assignment` | `Method` | `TypeCastDef` | `TemplateInclude`
+    ClassInstructionSet: ( `ClassInstruction` \n )*
+    ClassConstructorPrototype: "(" [ [`Argument` ","]* `Argument` ] ")"
+    ClassConstructor: "new" `ClassConstructorPrototype` `InstructionSet` "end"
+    ClassPrototype: `Identifier` ["?"] [ "(" `Type` ")" ]
+    Class: [`Visibility`] "class" `ClassInstructionSet` "end"
 
 .. note::
 

@@ -19,7 +19,7 @@ Syntax
 .. productionlist::
     TypeCast: `Value` "as" `Type`
     TypeCastDef: `ImplicitCastDef` | `ExplicitCastDef`
-    ImplicitCastDef: "def" "self" ":" `Type`
-                   :   `InstructionSet`
-                   : "end"
-    ExplicitCastDef: "def" "self" "as" `Type`
+    ImplicitCastPrototype: "self" ":" `Type`
+    ImplicitCastDef: "def" `ImplicitCastPrototype` `InstructionSet` "end"
+    ExplicitCastPrototype: "self" "as" `Type`
+    ExplicitCastDef: "def" `ExplicitCastPrototype` `InstructionSet` "end"

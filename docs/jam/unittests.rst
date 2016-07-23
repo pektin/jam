@@ -9,7 +9,4 @@ Syntax
 ======
 
 .. productionlist::
-    Unittest: "unittest" [ `String` ]
-            :   `InstructionSet`
-            : "end"
-
+    Unittest: "unittest" [ `String` ] `InstructionSet` "end"

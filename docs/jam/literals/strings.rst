@@ -11,7 +11,8 @@ Syntax
 ======
 
 .. productionlist::
-    String: "\"" .* "\""
+    String: (") `StringCharacters`* (")
+    StringCharacters: (.) | (\") | "\\" | "\0" | "\a" | "\b" | "\f" | "\n" | "\r" | "\t" | "\v"
 
 Format strings start and end with double quotes (``"``) and may contain any of
 the following escape sequences:
