@@ -32,7 +32,7 @@ where possible, coded examples to demonstrate a feature in Jam.
     arrays
     associative-arrays
     enumerations
-    visibility
+    modifiers/index
     imports
     foreign-language-interface
     traits
