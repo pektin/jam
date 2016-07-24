@@ -9,7 +9,7 @@ Variable Inference
 ==================
 
 Variables do not require any special syntax to create. Simply assign to an
-unused :doc:`identifier` and a new variable will be created in the current
+unused :doc:`identifiers` and a new variable will be created in the current
 scope.
 
 Type Inference
