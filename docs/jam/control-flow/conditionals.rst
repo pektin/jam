@@ -4,7 +4,7 @@ Conditionals
 Conditionals group a section of instructions and execute them depending on
 whether a condition has been met or not.
 
-Jam has two kinds of conditionals: A if conditional and a case conditional.
+Jam has two kinds of conditionals: A "if" conditional and a "case" conditional.
 
 Syntax
 ======
