@@ -34,6 +34,4 @@ where possible, coded examples to demonstrate a feature in Jam.
     enumerations
     modifiers/index
     imports
-    foreign-language-interface
     traits
-    unittests
