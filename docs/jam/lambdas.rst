@@ -9,7 +9,9 @@ Syntax
 ======
 
 .. productionlist::
-    Lambda: [ "(" [ `Argument` [ "," `Argument` ]* ] ")" | `Argument` ] "=>" `Value`
+    LambdaArgumentList: "(" [ `Argument` [ "," `Argument` ]* ] ")"
+    LambdaArguments: `LambdaArgumentList` | `Argument`
+    Lambda: [`LambdaArguments`] "=>" `Value`
 
 Example
 =======
