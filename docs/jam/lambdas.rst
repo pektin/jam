@@ -1,9 +1,9 @@
 Lambdas
 #######
 
-Lambdas are identical to :doc:`methods<methods>`, except that they are anonymous
-and therefore cannot be overloaded. They provide a quicker syntax for defining
-small, one use methods.
+Lambdas are identical to :doc:`methods`, except that they are anonymous and
+therefore cannot be overloaded. They provide a quicker syntax for defining
+small, limited use methods.
 
 Syntax
 ======

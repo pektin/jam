@@ -8,4 +8,4 @@ Syntax
 
 .. productionlist::
     Instruction: `Comment` | `Value` | `Assignment` | `FlowControl` | `Import` | `Unittest`
-    InstructionSet: (`Instruction` \n)*
+    InstructionSet: ( `Instruction` \n )*
