@@ -12,6 +12,21 @@ Variables do not require any special syntax to create. Simply assign to an
 unused :doc:`identifiers` and a new variable will be created in the current
 scope.
 
+Variables are also inferred through control flow blocks, if they are guaranteed
+to exist in all execution paths.
+
+Example
+-------
+::
+
+    if condition
+      foo = 2
+    else
+      foo = 4
+    end
+
+    puts(foo) # foo is inferred into this context
+
 Type Inference
 ==============
 
