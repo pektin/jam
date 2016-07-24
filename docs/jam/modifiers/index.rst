@@ -7,6 +7,7 @@ a group of objects.
 .. toctree::
     :titlesonly:
 
+    constant
     visibility
 
 Syntax
