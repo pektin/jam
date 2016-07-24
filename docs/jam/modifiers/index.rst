@@ -9,6 +9,7 @@ a group of objects.
 
     constant
     visibility
+    pragma
 
 Syntax
 ======
