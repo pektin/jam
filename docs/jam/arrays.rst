@@ -19,6 +19,5 @@ Syntax
 
 .. productionlist::
     ArraySeparator: "," | \n
-    ArrayType: "[" `Type` [ ";" `Integer` ] "]"
     ArrayValue: "[" `ArrayElement` ( `ArraySeparator` `ArrayElement` )* "]"
     ArrayElement: `Value` [ ";" `Integer` ]

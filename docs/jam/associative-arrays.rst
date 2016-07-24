@@ -16,6 +16,5 @@ Syntax
 ======
 
 .. productionlist::
-    AssociativeArrayType: "{" `Type` "->" `Type` "}"
     AssociativeArrayValue: "{" `AssociativeArrayElement` ( `ArraySeparator` `AssociativeArrayElement` )* "}"
     AssociativeArrayElement: `Value` "=>" `Value`

@@ -46,7 +46,7 @@ Syntax
 
 .. productionlist::
     Argument: `Variable` [ "=" `Value` ]
-    MethodPrototype: `Identifier` "(" [ `Argument` [ "," `Argument` ]* ] ")" [ "->" `Type` ]
+    MethodPrototype: `Identifier` "(" [ `Argument` [ "," `Argument` ]* ] ")" [ "->" `Value` ]
     Return: "return" [`Value`]
     MethodInstruction: `Instruction` | `Return`
     MethodInstructionSet: ( `MethodInstruction` \n )*

@@ -17,9 +17,4 @@ Syntax
 ======
 
 .. productionlist::
-    TypeCast: `Value` "as" `Type`
-    TypeCastDef: `ImplicitCastDef` | `ExplicitCastDef`
-    ImplicitCastPrototype: "self" ":" `Type`
-    ImplicitCastDef: "def" `ImplicitCastPrototype` `InstructionSet` "end"
-    ExplicitCastPrototype: "self" "as" `Type`
-    ExplicitCastDef: "def" `ExplicitCastPrototype` `InstructionSet` "end"
+    TypeCast: `Value` "as" `Value`

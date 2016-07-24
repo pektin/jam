@@ -34,17 +34,18 @@ Syntax
 ======
 
 .. productionlist::
-    NullableType: `Type` ["?"]
-    Type: `Identifier` | `ArrayType` | `AssociativeArrayType` | `Class` | `Enumeration` | `NullableType`
+    Nullable: `Value` ["?"]
     InstanceVariable: `Variable` [ "=" `Value` ]
-    ClassInstruction: `ClassConstructor` | `InstanceVariable` | `Assignment` | `Method` | `TypeCastDef` | `TemplateInclude`
+    ClassMethod: `Method` | `TypeCastDef` | `OperationDef`
+    TypeCastDef: `ImplicitCastDef` | `ExplicitCastDef`
+    ImplicitCastDef: "def" "self" ":" `Value` `InstructionSet` "end"
+    ExplicitCastDef: "def" "self" "as" `Value` `InstructionSet` "end"
+    OperationDef: `BinaryOperationDef` | `UnaryOperationDef`
+    BinaryOperationDef: "def" "self" `BinaryOperation` `Argument` [ "->" `Value` ]
+    UnaryOperationDef: "def" `UnaryOperation` "self" [ "->" `Value` ]
+    ClassInstruction: `ClassConstructor` | `InstanceVariable` | `ClassMethod`
     ClassInstructionSet: ( `ClassInstruction` \n )*
     ClassConstructorPrototype: "(" [ [`Argument` ","]* `Argument` ] ")"
     ClassConstructor: "new" `ClassConstructorPrototype` `InstructionSet` "end"
-    ClassPrototype: `Identifier` ["?"] [ "(" `Type` ")" ]
-    Class: [`Visibility`] "class" `ClassInstructionSet` "end"
-
-.. note::
-
-    The syntax for array and dictionary types is currently a place-holder
-
+    ClassPrototype: `Identifier` ["?"] [ "(" `Value` ")" ]
+    Class: "class" `ClassPrototype` `ClassInstructionSet` "end"
