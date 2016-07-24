@@ -11,4 +11,4 @@ Syntax
 .. productionlist::
     EnumerationItem: `Identifier` [ "=>" `Value` ]
     EnumerationItems: ( `EnumerationItem` \n )*
-    Enumeration: [`Visibility`] "enum" `Identifier` `EnumerationItems` "end"
+    Enumeration: "enum" `Identifier` `EnumerationItems` "end"
