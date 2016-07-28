@@ -143,6 +143,19 @@ def Method_evalContext(self):
     return None
 
 #
+# class MethodInstance
+#
+
+@patch
+def MethodInstance_evalCall(self, values):
+    method = State.self
+
+    call = lekvar.FunctionType([value.resolveType() for value in values])
+    function = method.resolveCall(call)
+
+    return function.evalCall(values)
+
+#
 # class Function
 #
 
