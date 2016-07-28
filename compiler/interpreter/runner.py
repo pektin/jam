@@ -73,8 +73,13 @@ def Attribute_evalAssign(self, value):
 # class Module
 #
 
+lekvar.Module.evaled = False
+
 @patch
 def Module_eval(self):
+    if self.evaled: return self
+    self.evaled = True
+
     for instr in self.main:
         instr.eval()
 
