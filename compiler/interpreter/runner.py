@@ -197,6 +197,48 @@ def Constructor_evalCall(self, values):
     return self_value
 
 #
+# class DependentTarget
+#
+
+@patch
+def DependentTarget_eval(self):
+    with self.target():
+        return self.value.eval()
+
+@patch
+def DependentTarget_evalContext(self):
+    raise InternalError("Not Implemented")
+
+@patch
+def DependentTarget_evalCall(self, values):
+    with self.target():
+        return self.value.evalCall(values)
+
+@patch
+def DependentTarget_evalAssign(self, value):
+    raise InternalError("Not Implemented")
+
+#
+# class DependentObject
+#
+
+@patch
+def DependentObject_eval(self):
+    return self.target.eval()
+
+@patch
+def DependentObject_evalContext(self):
+    return self.target.evalContext()
+
+@patch
+def DependentObject_evalCall(self, values):
+    return self.target.evalCall(values)
+
+@patch
+def DependentObject_evalAssign(self, value):
+    self.target.evalAssign(value)
+
+#
 # class Literal
 #
 
