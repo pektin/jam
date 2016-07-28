@@ -1,3 +1,4 @@
+from itertools import cycle
 from contextlib import ExitStack
 
 from .. import lekvar
@@ -233,11 +234,37 @@ def Branch_eval(self):
         value = self.condition.eval()
         assert isinstance(value, lekvar.Literal)
 
-        print(value)
-        if value.data is False:
+        bool_value = value.data
+        if isinstance(value.data, dict):
+            bool_value = value.data["value"].data
+
+        if bool_value is False:
             if self.next_branch is not None:
                 self.next_branch.eval()
             return
 
     for instr in self.instructions:
         instr.eval()
+
+#
+# class Loop
+#
+
+lekvar.Loop.breaking = False
+
+@patch
+def Loop_eval(self):
+    self.breaking = False
+
+    for instr in cycle(self.instructions):
+        instr.eval()
+
+        if self.breaking: break
+
+#
+# class Break
+#
+
+@patch
+def Break_eval(self):
+    self.loop.breaking = True
