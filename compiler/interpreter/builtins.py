@@ -59,14 +59,32 @@ def builtins(logger = logging.getLogger()):
             lekvar.Method(name, functions)
         )
 
-    builtin_objects.append(
-        lekvar.Method("puts",
-            [PyFunction("", [type], None, lambda v: State.print(v))
-             for type in (ints + floats + [string])],
-        ),
-    )
+    overloads = []
+    for type in ints + floats + [string]:
+        def py_func(v, type=type):
+            State.print(PRINT_MAP[type.name] % v)
+
+        function = PyFunction("", [type], None, py_func)
+        overloads.append(function)
+
+    puts = lekvar.Method("puts", overloads)
+    builtin_objects.append(puts)
 
     return lekvar.Module("_builtins", builtin_objects)
+
+PRINT_MAP = {
+    "String": "%s",
+
+    "Int8": "%hhd",
+    "Int16": "%hd",
+    "Int32": "%d",
+    "Int64": "%ld",
+    "Int128": "%lld",
+
+    "Float16": "%hg",
+    "Float32": "%g",
+    "Float64": "%lg",
+}
 
 class PyType(lekvar.Type, lekvar.BoundObject):
     py_type = None
@@ -92,6 +110,9 @@ class PyType(lekvar.Type, lekvar.BoundObject):
             if self.name == other.name:
                 return True
         return False
+
+    def eval(self):
+        return None
 
     def __repr__(self):
         return "{}<{}>".format(self.__class__.__name__, self.name)
