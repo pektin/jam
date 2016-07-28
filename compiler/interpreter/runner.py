@@ -177,6 +177,7 @@ def Function_evalContext(self):
 def Function_evalCall(self, values):
     self.eval_returning = None
 
+    previous_values = [arg.eval_value for arg in self.arguments]
     for arg, val in zip(self.arguments, values):
         arg.evalAssign(val)
 
@@ -185,6 +186,9 @@ def Function_evalCall(self, values):
 
         if self.eval_returned:
             break
+
+    for arg, val in zip(self.arguments, previous_values):
+        arg.evalAssign(val)
 
     return self.eval_returning
 
