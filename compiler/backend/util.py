@@ -1,6 +1,6 @@
 from .. import lekvar
 
-# Resolves the name of a scope, starting with a extraneous .
+# Resolves the name of a scope
 def resolveName(scope:lekvar.BoundObject):
     name = ""
     while scope.bound_context is not None:
