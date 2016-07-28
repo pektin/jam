@@ -1,3 +1,5 @@
+from contextlib import ExitStack
+
 from .. import lekvar
 from ..errors import InternalError
 
@@ -12,6 +14,18 @@ from .state import State
 def Object_eval(self):
     raise InternalError("Not Implemented")
 
+@patch
+def Object_evalContext(self):
+    raise InternalError("Not Implemented")
+
+@patch
+def Object_evalCall(self, values):
+    raise InternalError("Not Implemented")
+
+@patch
+def Object_evalAssign(self, value):
+    raise InternalError("Not Implemented")
+
 #
 # class Link
 #
@@ -21,8 +35,16 @@ def Link_eval(self):
     return self.value.eval()
 
 @patch
+def Link_evalContext(self):
+    return self.value.evalContext()
+
+@patch
 def Link_evalCall(self, values):
     return self.value.evalCall(values)
+
+@patch
+def Link_evalAssign(self, value):
+    self.value.evalAssign(value)
 
 #
 # class Attribute
@@ -34,9 +56,18 @@ def Attribute_eval(self):
         return self.value.eval()
 
 @patch
+def Attribute_evalContext(self):
+    return self.object.eval()
+
+@patch
 def Attribute_evalCall(self, values):
     with State.selfScope(self.object.eval()):
         return self.value.evalCall(values)
+
+@patch
+def Attribute_evalAssign(self, value):
+    with State.selfScope(self.object.eval()):
+        self.value.evalAssign(value)
 
 #
 # class Module
@@ -62,9 +93,36 @@ lekvar.Variable.eval_value = None
 def Variable_eval(self):
     if isinstance(self.parent, lekvar.Class):
         assert State.self is not None
+        assert isinstance(State.self, lekvar.Literal)
 
-        return State.self
+        if not isinstance(State.self.data, dict):
+            return State.self
+        return State.self.data[self.name]
+
+    assert self.eval_value is not None
     return self.eval_value
+
+@patch
+def Variable_evalContext(self):
+    return None
+
+@patch
+def Variable_evalAssign(self, value):
+    if isinstance(self.parent, lekvar.Class):
+        assert State.self is not None
+        assert isinstance(State.self, lekvar.Literal)
+
+        State.self.data[self.name] = value
+    else:
+        self.eval_value = value
+
+#
+# class Assignment
+#
+
+@patch
+def Assignment_eval(self):
+    self.assigned.evalAssign(self.value.eval())
 
 #
 # class Method
@@ -73,6 +131,10 @@ def Variable_eval(self):
 @patch
 def Method_eval(self):
     return self
+
+@patch
+def Method_evalContext(self):
+    return None
 
 #
 # class Function
@@ -85,16 +147,48 @@ def Function_eval(self):
     return self
 
 @patch
+def Function_evalContext(self):
+    #TODO: Implement closures
+    assert len(self.closed_context) == 0
+
+    return None
+
+@patch
 def Function_evalCall(self, values):
     self.eval_returning = None
 
     for arg, val in zip(self.arguments, values):
-        arg.eval_value = val
+        arg.evalAssign(val)
 
     for instr in self.instructions:
         instr.eval()
 
     return self.eval_returning
+
+#
+# class Class
+#
+
+@patch
+def Class_eval(self):
+    return self
+
+@patch
+def Class_evalContext(self):
+    return None
+
+#
+# class Constructor
+#
+
+@patch
+def Constructor_evalCall(self, values):
+    self_value = lekvar.Literal({}, self.constructing)
+
+    with State.selfScope(self_value):
+        lekvar.Function.evalCall(self, values)
+
+    return self_value
 
 #
 # class Literal
@@ -112,7 +206,8 @@ def Literal_eval(self):
 def Call_eval(self):
     values = [value.eval() for value in self.values]
 
-    return self.function.evalCall(values)
+    with State.selfScope(self.called.evalContext()):
+        return self.function.evalCall(values)
 
 #
 # class Return
@@ -121,5 +216,23 @@ def Call_eval(self):
 @patch
 def Return_eval(self):
     self.function.eval_returning = self.value.eval()
-
     return None
+
+#
+# class Branch
+#
+
+@patch
+def Branch_eval(self):
+    if self.condition is not None:
+        value = self.condition.eval()
+        assert isinstance(value, lekvar.Literal)
+
+        print(value)
+        if value.data is False:
+            if self.next_branch is not None:
+                self.next_branch.eval()
+            return
+
+    for instr in self.instructions:
+        instr.eval()
