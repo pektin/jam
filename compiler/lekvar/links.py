@@ -62,11 +62,6 @@ class Link(Type):
         return repr(self.value)
 
 class BoundLink(Link, BoundObject):
-    def __init__(self, value:Object, tokens = None):
-        Link.__init__(self, value, tokens)
-
-    # Dispatches BoundObject parameters as well
-
     @property
     def name(self):
         return self.value.name
