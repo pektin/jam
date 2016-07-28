@@ -85,9 +85,12 @@ class Class(Type, Scope):
         return "class {}".format(self.name)
 
 class Constructor(Function):
+    constructing = None
+
     def __init__(self, function:Function, constructing:Type, tokens = None):
         Function.__init__(self, function.name, function.arguments, function.instructions, [], constructing, tokens)
         self.local_context = function.local_context
+        self.constructing = constructing
 
     def verifySelf(self):
         # Constructors may not return
