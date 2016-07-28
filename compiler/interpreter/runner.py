@@ -147,6 +147,7 @@ def Method_evalContext(self):
 #
 
 lekvar.Function.eval_returning = None
+lekvar.Function.eval_returned = None
 
 @patch
 def Function_eval(self):
@@ -168,6 +169,9 @@ def Function_evalCall(self, values):
 
     for instr in self.instructions:
         instr.eval()
+
+        if self.eval_returned:
+            break
 
     return self.eval_returning
 
@@ -272,6 +276,7 @@ def Call_eval(self):
 @patch
 def Return_eval(self):
     self.function.eval_returning = self.value.eval()
+    self.function.eval_returned = True
     return None
 
 #
