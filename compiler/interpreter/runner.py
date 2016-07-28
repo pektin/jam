@@ -172,6 +172,14 @@ def Function_evalCall(self, values):
     return self.eval_returning
 
 #
+# class FunctionInstance
+#
+
+@patch
+def FunctionInstance_evalCall(self, values):
+    return State.self.evalCall(values)
+
+#
 # class Class
 #
 
