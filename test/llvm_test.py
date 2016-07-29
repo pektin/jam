@@ -101,10 +101,11 @@ for file in TEST_FILES:
         logging.basicConfig(level=logging.WARNING - verbosity*10, stream=sys.stdout)
 
         with open(file.path, "r") as f_in, open(file.build + ".ll", "wb") as f_out:
-            code = lekvar.compile(f_in, jam, llvm)
-            f_out.write(code)
-            output = llvm.interpret(code)
-            assert file.output == output
+            with lekvar.use(jam, llvm):
+                code = lekvar.compile(f_in, jam, llvm)
+                f_out.write(code)
+                output = llvm.interpret(code)
+                assert file.output == output
 
     if file.expect_fail:
         _test = pytest.mark.xfail(_test)

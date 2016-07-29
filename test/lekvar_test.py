@@ -16,7 +16,8 @@ for file in TEST_FILES:
             error_name = file.output.decode("UTF-8")
 
             with pytest.raises(getattr(errors, error_name)):
-                lekvar.compile(f_in, jam, llvm)
+                with lekvar.use(jam, llvm):
+                    lekvar.compile(f_in, jam, llvm)
 
     if file.expect_fail:
         test = pytest.mark.xfail(test)

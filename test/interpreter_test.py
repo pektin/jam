@@ -13,8 +13,9 @@ for file in TEST_FILES:
         logging.basicConfig(level=logging.WARNING - verbosity*10, stream=sys.stdout)
 
         with open(file.path, "r") as f_in:
-            output = lekvar.run(f_in, jam, interpreter)
-            assert file.output == output
+            with lekvar.use(jam, interpreter):
+                output = lekvar.run(f_in, jam, interpreter)
+                assert file.output == output
 
     if file.expect_fail:
         test = pytest.mark.xfail(test)
