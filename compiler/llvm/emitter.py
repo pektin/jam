@@ -273,6 +273,7 @@ def Context_emitType(self):
 
     for child in self.children.values():
         if child.name == "self": continue
+        if child.static: continue
 
         child.llvm_context_index = index
         index += 1
@@ -429,6 +430,7 @@ def Function_emitInstructions(self):
     with self_stack:
         for object in self.closed_context:
             if object.name == "self": continue
+            if object.static: continue
 
             index = object.llvm_context_index
             object.llvm_value = State.builder.structGEP(self.llvm_context, index, "")
@@ -481,6 +483,7 @@ def Function_emitContext(self):
 
         for object in self.closed_context:
             if object.name == "self": continue
+            if object.static: continue
 
             obj_ptr = State.builder.structGEP(context, object.llvm_context_index, "")
             value = object.emitLinkValue(None)

@@ -222,6 +222,8 @@ class DependentObject(Type, BoundObject):
         if self.locked: return self.checkLockedCompatibility(other, check_cache)
 
         if State.type_switching:
+            other = other.resolveValue()
+
             self.compatible_type_switch = self.compatible_type_switch or []
             self.compatible_type_switch.append(other)
             State.type_switch_cleanups.append(self.typeSwitchCleanup)
@@ -263,7 +265,7 @@ class DependentObject(Type, BoundObject):
 
     def __repr__(self):
         if self.target is None:
-            return "{}".format(self.__class__.__name__)
+            return "{}{{{}}}".format(self.__class__.__name__, self.name or id(self))
         return "{} as {}".format(self.__class__.__name__, self.target)
 
 
