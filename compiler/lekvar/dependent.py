@@ -8,11 +8,30 @@ from .core import Context, Object, BoundObject, Scope, Type
 from .util import inScope
 from .links import Link
 
+# Python Predefines
+DependentObject = None
+
 # Like util.checkCompatibility, but type1 can be dependent whose compatibility check takes more arguments
 def checkDependentCompatibility(type1:Type, type2:Type, *args):
     if isinstance(type1, DependentObject):
         return type1.checkCompatibility(type2, *args)
     return type1.checkCompatibility(type2)
+
+# Apply targeting to a set of dependent objects and their dependencies
+@contextmanager
+def target(objects:[(DependentObject, Object)]):
+    with ExitStack() as stack:
+        dependencies = iter(objects)
+        while True:
+            dep = next(dependencies, 0)
+            if dep is 0: break
+            if dep is None: continue
+
+            object, target = dep
+            next_dependencies = object.targetAt(target)
+            dependencies = chain(dependencies, stack.enter_context(next_dependencies))
+
+        yield
 
 # A dependent object is a collector for behaviour
 # Initially the object is used like any other, creating dependencies
@@ -251,17 +270,7 @@ class DependentTarget(Link):
 
     @contextmanager
     def target(self):
-        with ExitStack() as stack:
-            dependencies = iter(self.dependencies)
-            while True:
-                dep = next(dependencies, 0)
-                if dep is 0: break
-                if dep is None: continue
-
-                object, target = dep
-                next_dependencies = object.targetAt(target)
-                dependencies = chain(dependencies, stack.enter_context(next_dependencies))
-
+        with target(self.dependencies):
             yield
 
     def __repr__(self):
