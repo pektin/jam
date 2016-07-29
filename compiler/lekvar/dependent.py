@@ -48,6 +48,7 @@ class DependentObject(Type, BoundObject):
     scope = None
 
     # Child Dependencies
+    _context = None
     _instance_context = None
     resolved_type = None
     resolved_calls = None
@@ -127,6 +128,9 @@ class DependentObject(Type, BoundObject):
 
             # Pass on dependency checks
             def target_generator():
+                if self._context is not None:
+                    yield self.context, target.context
+
                 if self._instance_context is not None:
                     yield self.instance_context, target.instance_context
 
@@ -173,6 +177,10 @@ class DependentObject(Type, BoundObject):
         return self, target
 
     # Create and cache dependencies for standard object functionality
+    @property
+    def context(self):
+        self._context = self._context or DependentContext(self)
+        return self._context
 
     @property
     def instance_context(self):
@@ -193,15 +201,13 @@ class DependentObject(Type, BoundObject):
 
     # Can be ignored, as context is superseded by instance_context
     @property
-    def context(self):
-        pass
-
-    @property
     def static(self):
+        if self.target is None: return False
         return self.target.static
 
     @property
     def static_scope(self):
+        if self.target is None: return False
         return self.target.static_scope
 
     # Hack!
