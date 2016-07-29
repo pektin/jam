@@ -6,6 +6,7 @@ from .. errors import *
 from .. import lekvar
 
 from .lexer import Lexer, Tokens
+from . import pragma
 
 #
 # Tools
@@ -56,8 +57,9 @@ UNARY_OPERATIONS = [
 ]
 
 MODIFIERS = {
-    Tokens.const_kwd : lekvar.Constant,
-    Tokens.ref_kwd : lekvar.Reference,
+    Tokens.const_kwd  : lekvar.Constant,
+    Tokens.ref_kwd    : lekvar.Reference,
+    Tokens.pragma_kwd : lekvar.Pragma,
 }
 
 UNARY_OPERATION_TOKENS = set(UNARY_OPERATIONS)
