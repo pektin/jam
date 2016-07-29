@@ -16,7 +16,8 @@ class Identifier(BoundLink):
         # Use sets to ignore duplicate entries
         #TODO: Fix duplicate entries
         found = set(State.scope.resolveIdentifier(self.name))
-        found |= set(State.builtins.resolveIdentifier(self.name))
+        if State.builtins is not None:
+            found |= set(State.builtins.resolveIdentifier(self.name))
 
         if len(found) > 1:
             err = AmbiguityError(message="Ambiguous reference to").add(content=self.name, object=self).addNote(message="Matches:")
