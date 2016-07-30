@@ -151,9 +151,10 @@ class DependentObject(Type, BoundObject):
 
                     yield self._return_type, target.return_type
 
+            previous_target = self.target
             self.target = target
             yield target_generator()
-            self.target = None
+            self.target = previous_target
 
     def _targetCall(self, target, calls, resolution_function):
         for call, obj in calls.items():
