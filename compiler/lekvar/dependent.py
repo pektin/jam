@@ -19,7 +19,7 @@ def checkDependentCompatibility(type1:Type, type2:Type, *args):
 
 # Apply targeting to a set of dependent objects and their dependencies
 @contextmanager
-def target(objects:[(DependentObject, Object)]):
+def target(objects:[(DependentObject, Object)], checkTypes = True):
     with ExitStack() as stack:
         dependencies = iter(objects)
         while True:
@@ -28,7 +28,7 @@ def target(objects:[(DependentObject, Object)]):
             if dep is None: continue
 
             object, target = dep
-            next_dependencies = object.targetAt(target)
+            next_dependencies = object.targetAt(target, checkTypes)
             dependencies = chain(dependencies, stack.enter_context(next_dependencies))
 
         yield
@@ -107,7 +107,7 @@ class DependentObject(Type, BoundObject):
 
     # Targets this dependent object
     @contextmanager
-    def targetAt(self, target):
+    def targetAt(self, target, checkTypes = True):
         if isinstance(target, DependentObject):
             target = target.resolveValue()
 
@@ -123,7 +123,7 @@ class DependentObject(Type, BoundObject):
                 #TODO: There should be a safer way to handle this
 
             # Local checks
-            if not self.checkLockedCompatibility(target):
+            if checkTypes and not self.checkLockedCompatibility(target):
                 raise TypeError(message="TODO: Write this")
 
             # Pass on dependency checks
@@ -266,7 +266,7 @@ class DependentObject(Type, BoundObject):
 
     def __repr__(self):
         if self.target is None:
-            return "{}{{{}}}".format(self.__class__.__name__, self.name or id(self))
+            return "{}{{{}, {}}}".format(self.__class__.__name__, self.name or id(self), self.scope)
         return "{} as {}".format(self.__class__.__name__, self.target)
 
 
@@ -306,7 +306,7 @@ class DependentContext(Context):
         raise InternalError("Not Implemented.")
 
     @contextmanager
-    def targetAt(self, target):
+    def targetAt(self, target, checkTypes = True):
         def target_generator():
             if isinstance(target, DependentContext) and self.scope.scope is target.scope.scope:
                 target.scope._instance_context = self
@@ -315,6 +315,7 @@ class DependentContext(Context):
 
             for name in self.children:
                 if name not in target.children:
-                    raise DependencyError(message="Dependent target context does not have attribute").add(content=name).add(message="", object=target.scope)
+                    raise (DependencyError(message="Dependent target context does not have attribute")
+                           .add(content=name).add(message="", object=target.scope))
                 yield self[name], target[name]
         yield target_generator()

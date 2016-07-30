@@ -51,6 +51,7 @@ def Link_emit(self):
 
 @patch
 def Link_emitValue(self, type):
+    if self.value is None: return
     return self.value.emitValue(type)
 
 @patch

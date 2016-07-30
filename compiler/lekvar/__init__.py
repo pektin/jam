@@ -79,5 +79,5 @@ def useBackend(backend, logger = logging.getLogger()):
     backend_builtins = backend.builtins(logger)
     builtins = State.builtins.context["_builtins"]
 
-    with dependent.target([(builtins, backend_builtins)]):
+    with dependent.target([(builtins, backend_builtins)], False):
         yield
