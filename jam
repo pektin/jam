@@ -78,7 +78,8 @@ compile_parser.add_argument("source",
 )
 
 def compile(args):
-    ir = lekvar.compile(args.source, jam, llvm, opt_level=args.opt_level)
+    with lekvar.use(jam, llvm):
+        ir = lekvar.compile(args.source, jam, llvm, opt_level=args.opt_level)
 
     if args.out_asm:
         out = ir
@@ -103,8 +104,9 @@ def compile(args):
 
 def run(args):
     if args.source is not None:
-        ir = lekvar.compile(args.source, jam, llvm)
-        llvm.run_direct(ir)
+        with lekvar.use(jam, llvm):
+            ir = lekvar.compile(args.source, jam, llvm)
+            llvm.interpret_direct(ir)
         return
 
     class INWrapper:
@@ -132,9 +134,10 @@ def run(args):
     print(INTERACTIVE_STARTUP)
     while True:
         try:
-            print(INTERACTIVE_PROMPT_RESTART)
-            ir = lekvar.compile(INWrapper(), jam, llvm)
-            llvm.run_direct(ir)
+            with lekvar.use(jam, llvm):
+                print(INTERACTIVE_PROMPT_RESTART)
+                ir = lekvar.compile(INWrapper(), jam, llvm)
+                llvm.interpret_direct(ir)
         except compiler.CompilerError as e:
             print("{}: {}".format(e.__class__.__name__, e))
         except EOFError:
