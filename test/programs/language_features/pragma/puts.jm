@@ -1,0 +1,4 @@
+##bar\n
+
+pragma puts("foo")
+puts("bar")
