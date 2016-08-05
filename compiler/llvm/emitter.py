@@ -100,22 +100,27 @@ def Attribute_emitAssignment(self, type):
 def Literal_emitValue(self, type):
     struct_type = self.type.emitType()
 
-    if isinstance(self.data, str):
-        data = State.builder.globalString(self.data, "")
-    elif isinstance(self.data, bool):
-        data = llvm.Value.constInt(llvm.Int.new(1), self.data, False)
-    elif isinstance(self.data, int):
-        data = llvm.Value.constInt(llvm.Int.new(64), self.data, False)
-    elif isinstance(self.data, float):
-        data = llvm.Value.constFloat(llvm.Float.double(), self.data)
-    else:
-        raise InternalError("Not Implemented")
+    data = emitConstant(self.data)
 
     return llvm.Value.constStruct(struct_type, [data])
 
 @patch
 def Literal_emitAssignment(self, type):
     return State.pointer(self.emitValue(None))
+
+def emitConstant(value):
+    if isinstance(value, str):
+        return State.builder.globalString(value, "")
+    elif isinstance(value, bool):
+        return llvm.Value.constInt(llvm.Int.new(1), value, False)
+    elif isinstance(value, int):
+        return llvm.Value.constInt(llvm.Int.new(64), value, False)
+    elif isinstance(value, float):
+        return llvm.Value.constFloat(llvm.Float.double(), value)
+    elif isinstance(value, dict) and len(value) == 1 and "value" in value:
+        return emitConstant(value["value"].data)
+    else:
+        raise InternalError("Not Implemented")
 
 #
 # class Variable
