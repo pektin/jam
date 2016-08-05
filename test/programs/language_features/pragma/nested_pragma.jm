@@ -1,0 +1,14 @@
+##foo\n
+
+def foo()
+  pragma bar()
+  def bar()
+    puts("foo")
+    pragma puts("bar")
+  end
+
+  return bar
+end
+
+a = foo()
+a()
