@@ -102,8 +102,11 @@ class MetaClass(Class):
     class_instance = None
 
     def __init__(self, instance:Class):
-        constructor = Variable("", instance.constructor.resolveType())
-        Class.__init__(self, "meta " + instance.name, None, [constructor])
+        fields = []
+        if instance.constructor is not None:
+            constructor = Variable("", instance.constructor.resolveType())
+            fields.append(constructor)
+        Class.__init__(self, "meta " + instance.name, None, fields)
 
         self.class_instance = instance
         self.class_instance.instance_context.fakeChild(self)

@@ -700,7 +700,11 @@ def Class_emitValue(self, type):
         type = type.resolveValue()
         assert isinstance(type, lekvar.Class)
 
-    attributes = [self.constructor.emitValue(type.instance_context[""].resolveType())]
+    attributes = []
+
+    if self.constructor is not None:
+        value = self.constructor.emitValue(type.instance_context[""].resolveType())
+        attributes.append(value)
 
     return llvm.Value.constStruct(type.emitType(), attributes)
 
