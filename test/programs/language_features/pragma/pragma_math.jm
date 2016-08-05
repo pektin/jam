@@ -1,0 +1,6 @@
+##5\n-1.9\n
+
+a = pragma (2 + 3)
+puts(a)
+b = pragma (5.4 - 7.3)
+puts(b)
