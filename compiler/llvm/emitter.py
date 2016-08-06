@@ -192,10 +192,11 @@ def Module_emit(self):
     if self.llvm_value is not None: return
     self.llvm_value = State.main
 
-    State.addMainInstructions(self.main)
-
     for child in self.context:
+        print(child)
         child.emit()
+
+    State.addMainInstructions(self.main)
 
 @patch
 def Module_emitValue(self):

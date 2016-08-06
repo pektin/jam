@@ -1,4 +1,4 @@
-##foo\nbar\n
+##bar\nfoo\n
 
 import .modules.file_imported
 
