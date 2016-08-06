@@ -175,9 +175,10 @@ def Function_evalContext(self):
 
 @patch
 def Function_evalCall(self, values):
+    self.eval_returned = False
     self.eval_returning = None
 
-    previous_values = [arg.eval_value for arg in self.arguments]
+    previous_values = [arg.resolveValue().eval_value for arg in self.arguments]
     for arg, val in zip(self.arguments, values):
         arg.evalAssign(val)
 
@@ -190,7 +191,11 @@ def Function_evalCall(self, values):
     for arg, val in zip(self.arguments, previous_values):
         arg.evalAssign(val)
 
-    return self.eval_returning
+    returning = self.eval_returning
+    self.eval_returned = False
+    self.eval_returning = None
+
+    return returning
 
 #
 # class FunctionInstance
