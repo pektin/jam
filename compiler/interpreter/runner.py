@@ -84,7 +84,7 @@ def Module_eval(self):
     for instr in self.main:
         instr.eval()
 
-    for obj in self.local_context:
+    for obj in self.context:
         obj.eval()
 
     return self
