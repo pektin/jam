@@ -206,7 +206,7 @@ def FunctionInstance_evalCall(self, values):
 
 @patch
 def Class_eval(self):
-    return self
+    return lekvar.Literal({"": self.constructor}, self.resolveType())
 
 @patch
 def Class_evalContext(self):
