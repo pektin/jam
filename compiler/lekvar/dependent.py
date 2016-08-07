@@ -266,7 +266,7 @@ class DependentObject(Type, BoundObject):
 
     def __repr__(self):
         if self.target is None:
-            return "{}{{{}, {}}}".format(self.__class__.__name__, self.name or id(self), self.scope)
+            return "{}{{{}}}".format(self.__class__.__name__, self.name or id(self))
         return "{} as {}".format(self.__class__.__name__, self.target)
 
 
