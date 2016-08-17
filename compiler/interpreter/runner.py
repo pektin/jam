@@ -274,7 +274,10 @@ def DependentTarget_evalAssign(self, value):
 
 @patch
 def DependentObject_eval(self):
-    return self.target.eval()
+    value = self.target.eval()
+    if value is self.target:
+        return self
+    return value
 
 @patch
 def DependentObject_evalContext(self):
