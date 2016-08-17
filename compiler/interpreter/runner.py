@@ -110,7 +110,7 @@ def Variable_eval(self):
 
 @patch
 def Variable_evalContext(self):
-    return None
+    return self.eval()
 
 @patch
 def Variable_evalAssign(self, value):
