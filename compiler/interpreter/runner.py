@@ -305,10 +305,24 @@ def Literal_eval(self):
 
 @patch
 def Call_eval(self):
-    values = [value.eval() for value in self.values]
+    with State.selfScope(self.called):
+        called = self.function.eval()
 
-    with State.selfScope(self.called.evalContext()):
-        return self.function.evalCall(values)
+    # Hack, for now
+    scope = ExitStack()
+    if isinstance(self.function, lekvar.DependentTarget):
+        scope = self.function.target()
+
+    with scope:
+        values = [value.eval() for value in self.values]
+
+    context = self.called.evalContext()
+    with State.selfScope(context):
+        return called.evalCall(values)
+
+@patch
+def Call_evalContext(self):
+    return self.called.evalContext()
 
 #
 # class Return
