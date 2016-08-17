@@ -206,6 +206,10 @@ def Function_evalCall(self, values):
 #
 
 @patch
+def FunctionInstance_eval(self):
+    return self
+
+@patch
 def FunctionInstance_evalCall(self, values):
     return State.self.evalCall(values)
 
