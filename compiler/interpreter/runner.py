@@ -147,6 +147,10 @@ def Method_evalContext(self):
 #
 
 @patch
+def MethodInstance_eval(self):
+    return self
+
+@patch
 def MethodInstance_evalCall(self, values):
     method = State.self
 
