@@ -214,6 +214,14 @@ def FunctionInstance_evalCall(self, values):
     return State.self.evalCall(values)
 
 #
+# class ExternalFunction
+#
+
+@patch
+def ExternalFunction_eval(self):
+    return self
+
+#
 # class Class
 #
 
