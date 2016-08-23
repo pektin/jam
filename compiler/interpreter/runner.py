@@ -316,13 +316,13 @@ def Call_eval(self):
     with scope:
         values = [value.eval() for value in self.values]
 
-    context = self.called.evalContext()
-    with State.selfScope(context):
-        return called.evalCall(values)
+        context = self.called.evalContext()
+        with State.selfScope(context):
+            return called.evalCall(values)
 
 @patch
 def Call_evalContext(self):
-    return self.called.evalContext()
+    return self.called.eval()
 
 #
 # class Return
