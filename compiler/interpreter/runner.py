@@ -330,7 +330,9 @@ def Call_evalContext(self):
 
 @patch
 def Return_eval(self):
-    self.function.eval_returning = self.value.eval()
+    if self.value is not None:
+        self.function.eval_returning = self.value.eval()
+
     self.function.eval_returned = True
     return None
 
