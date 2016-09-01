@@ -23,6 +23,6 @@ class Pragma(lekvar.BoundLink):
                 print(interpreter.State.stdout, end="")
 
     def eval(self):
-        pass
+        return self.value
 
 lekvar.Pragma = Pragma
