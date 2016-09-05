@@ -19,6 +19,9 @@ Preface any expected result with a `?` to mark that test as expected to fail.
 
 ## Organisation
 
-Tests are grouped by which language feature they test. Tests specifically for
-the parser are in `syntax`. Tests for odd edge cases that should be reviewed are
-in `odds`. Well known example programs are located in `standard_programs`.
+Tests are first grouped by what kind of test they are. Tests for error handling
+are put in `invalid_programs`, tests for language features are put in
+`language_features` and common programs that show off the language and act as
+tests go in `standard_programs`. Tests that don't fit in these categories go in
+`odds`. Tests are then grouped by what they test, if more than one test is
+required to test a feature.
