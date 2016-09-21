@@ -35,3 +35,4 @@ where possible, coded examples to demonstrate a feature in Jam.
     modifiers/index
     imports
     traits
+    dependent-types
