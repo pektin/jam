@@ -71,6 +71,26 @@ def Attribute_evalAssign(self, value):
         self.value.evalAssign(value)
 
 #
+# class Reference
+#
+
+@patch
+def Reference_eval(self):
+    return self.value.eval()
+
+@patch
+def Reference_evalContext(self):
+    return self.value.evalContext()
+
+@patch
+def Reference_evalCall(self, values):
+    return self.value.evalCall(values)
+
+@patch
+def Reference_evalAssign(self, value):
+    self.value.evalAssign(value)
+
+#
 # class Module
 #
 
