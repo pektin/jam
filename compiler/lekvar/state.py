@@ -29,8 +29,7 @@ class State:
     type_switching = False
 
     @classmethod
-    def init(cls, builtins:Module, logger:logging.Logger):
-        cls.builtins = builtins
+    def init(cls, logger:logging.Logger):
         cls.logger = logger
         cls.scope_stack = []
         cls.sources = None

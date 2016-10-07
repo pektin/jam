@@ -1,10 +1,13 @@
 import os
+import sys
+import logging
 from subprocess import check_output
 
 import pytest
 
-from compiler import llvm, errors
+from compiler import jam, lekvar, llvm, errors
 from compiler.llvm import bindings as c
+from programs import TEST_FILES
 
 BUILD_PATH = "build/tests"
 
@@ -43,7 +46,7 @@ def test_llvm_running():
     with open(path, 'wb') as f:
         f.write(source)
 
-    assert b"Hello World!\n" == llvm.run(source)
+    assert b"Hello World!\n" == llvm.interpret(source)
 
 def test_llvm_compiling():
     source = hello_world()
@@ -77,7 +80,7 @@ def rec() { ret rec() }
 
 def test_lli_failure():
     with pytest.raises(errors.ExecutionError):
-        llvm.run(INVALID_SOURCE)
+        llvm.interpret(INVALID_SOURCE)
 
 def test_llc_failure():
     with pytest.raises(errors.ExecutionError):
@@ -88,3 +91,22 @@ def test_builtin_lib():
 
     with open(BUILD_PATH + "/builtins.ll", "wb") as f:
         f.write(source)
+
+
+for file in TEST_FILES:
+    if file.has_error:
+        continue
+
+    def _test(verbosity, file = file):
+        logging.basicConfig(level=logging.WARNING - verbosity*10, stream=sys.stdout)
+
+        with open(file.path, "r") as f_in, open(file.build + ".ll", "wb") as f_out:
+            with lekvar.use(jam, llvm):
+                code = lekvar.compile(f_in, jam, llvm)
+                f_out.write(code)
+                output = llvm.interpret(code)
+                assert file.output == output
+
+    if file.expect_fail:
+        _test = pytest.mark.xfail(_test)
+    globals()["test_llvm_" + file.name] = _test

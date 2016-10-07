@@ -3,23 +3,15 @@ Type Casting
 
 Type casting allows the programmer to convert between different types of
 variables. Type casting is either implicit or explicit. Implicit casts are
-inferred by the compiler, while explicit casts require the programmer to specify
-the cast.
+inferred by the compiler, while explicit casts require the programmer to
+explicitly perform the cast.
 
-When an operation is done to a value all implicit casts are checked for that
-same operation. Although the direct type of the value takes precedence, having
-ambiguity between implicitly cast types is invalid.
-
-When a value is passed to a method, the value may be implicitly cast to the type
-of the respective argument if required.
+When a value is used in an invalid situation (eg. wrong type), all implicit
+casts of that value are checked for a working variant. Only one implicit cast
+may be a valid cast at any time.
 
 Syntax
 ======
 
 .. productionlist::
-    TypeCast: `Value` "as" `Type`
-    TypeCastDef: `ImplicitCastDef` | `ExplicitCastDef`
-    ImplicitCastDef: "def" "self" ":" `Type`
-                   :   `InstructionSet`
-                   : "end"
-    ExplicitCastDef: "def" "self" "as" `Type`
+    TypeCast: `Value` "as" `Value`

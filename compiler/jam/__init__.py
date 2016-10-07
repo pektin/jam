@@ -8,6 +8,7 @@ from .builtins import builtins
 from . import import_
 from . import operation
 from . import lambda_
+from . import pragma
 
 def parse(input:IOBase, logger = logging.getLogger()):
     return parser.parseFile(input, logger=logger)

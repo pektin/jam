@@ -9,4 +9,21 @@ Syntax
 ======
 
 .. productionlist::
-    Symbol: "$"`Identifier`
+    Symbol: "$" `Identifier`
+
+Examples
+--------
+::
+
+    foo = $symbol
+    bar = "symbol"
+    baz = $symbol
+
+    # foo and baz hold the same object
+    puts(foo is baz) #=> true
+
+    # foo, baz and bar all hold the same data
+    puts(foo == bar == baz) #=> true
+
+    # foo (or baz) does not hold the same object as bar
+    puts(foo is bar) #=> false

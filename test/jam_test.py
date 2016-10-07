@@ -68,6 +68,6 @@ def test_builtin_lib(verbosity):
     ir = jam.builtins()
     ir.context.addChild(llvm.builtins())
 
-    lekvar.verify(ir, ir)
+    lekvar.verify(ir)
 
     module = llvm.emit(ir)

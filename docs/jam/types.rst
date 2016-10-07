@@ -34,18 +34,18 @@ Syntax
 ======
 
 .. productionlist::
-    Type: (`Identifier` | `ArrayType` | `AssociativeArrayType` | `Class` | `Enumeration`)["?"]
-    InstanceVariable: `Variable` ["=" `Value`]
-    ClassInstructionSet:  (`ClassConstructor` | `InstanceVariable` | `Assignment` | `Method` | `TypeCastDef` | `TemplateInclude`
-                       : )*
-    ClassConstructor: "new" [`Identifier`] "(" [ [`Argument` ","]* `Argument` ] ")"
-                    :     `InstructionSet`
-                    : "end"
-    Class: [`Visibility`] "class" `Identifier` ["?"] [ "(" `Identifier` ")" ]
-         :   `ClassInstructionSet`
-         : "end"
-
-.. note::
-
-    The syntax for array and dictionary types is currently a place-holder
-
+    Nullable: `Value` ["?"]
+    InstanceVariable: `Variable` [ "=" `Value` ]
+    ClassMethod: `Method` | `TypeCastDef` | `OperationDef`
+    TypeCastDef: `ImplicitCastDef` | `ExplicitCastDef`
+    ImplicitCastDef: "def" "self" ":" `Value` `InstructionSet` "end"
+    ExplicitCastDef: "def" "self" "as" `Value` `InstructionSet` "end"
+    OperationDef: `BinaryOperationDef` | `UnaryOperationDef`
+    BinaryOperationDef: "def" "self" `BinaryOperation` `Argument` [ "->" `Value` ]
+    UnaryOperationDef: "def" `UnaryOperation` "self" [ "->" `Value` ]
+    ClassInstruction: `ClassConstructor` | `InstanceVariable` | `ClassMethod`
+    ClassInstructionSet: ( `ClassInstruction` \n )*
+    ClassConstructorPrototype: "(" [ [`Argument` ","]* `Argument` ] ")"
+    ClassConstructor: "new" `ClassConstructorPrototype` `InstructionSet` "end"
+    ClassPrototype: `Identifier` ["?"] [ "(" `Value` ")" ]
+    Class: "class" `ClassPrototype` `ClassInstructionSet` "end"

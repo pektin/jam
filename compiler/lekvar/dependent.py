@@ -8,11 +8,30 @@ from .core import Context, Object, BoundObject, Scope, Type
 from .util import inScope
 from .links import Link
 
+# Python Predefines
+DependentObject = None
+
 # Like util.checkCompatibility, but type1 can be dependent whose compatibility check takes more arguments
 def checkDependentCompatibility(type1:Type, type2:Type, *args):
     if isinstance(type1, DependentObject):
         return type1.checkCompatibility(type2, *args)
     return type1.checkCompatibility(type2)
+
+# Apply targeting to a set of dependent objects and their dependencies
+@contextmanager
+def target(objects:[(DependentObject, Object)], checkTypes = True):
+    with ExitStack() as stack:
+        dependencies = iter(objects)
+        while True:
+            dep = next(dependencies, 0)
+            if dep is 0: break
+            if dep is None: continue
+
+            object, target = dep
+            next_dependencies = object.targetAt(target, checkTypes)
+            dependencies = chain(dependencies, stack.enter_context(next_dependencies))
+
+        yield
 
 # A dependent object is a collector for behaviour
 # Initially the object is used like any other, creating dependencies
@@ -29,6 +48,7 @@ class DependentObject(Type, BoundObject):
     scope = None
 
     # Child Dependencies
+    _context = None
     _instance_context = None
     resolved_type = None
     resolved_calls = None
@@ -87,7 +107,7 @@ class DependentObject(Type, BoundObject):
 
     # Targets this dependent object
     @contextmanager
-    def targetAt(self, target):
+    def targetAt(self, target, checkTypes = True):
         if isinstance(target, DependentObject):
             target = target.resolveValue()
 
@@ -103,11 +123,14 @@ class DependentObject(Type, BoundObject):
                 #TODO: There should be a safer way to handle this
 
             # Local checks
-            if not self.checkLockedCompatibility(target):
+            if checkTypes and not self.checkLockedCompatibility(target):
                 raise TypeError(message="TODO: Write this")
 
             # Pass on dependency checks
             def target_generator():
+                if self._context is not None:
+                    yield self.context, target.context
+
                 if self._instance_context is not None:
                     yield self.instance_context, target.instance_context
 
@@ -128,9 +151,10 @@ class DependentObject(Type, BoundObject):
 
                     yield self._return_type, target.return_type
 
+            previous_target = self.target
             self.target = target
             yield target_generator()
-            self.target = None
+            self.target = previous_target
 
     def _targetCall(self, target, calls, resolution_function):
         for call, obj in calls.items():
@@ -154,6 +178,10 @@ class DependentObject(Type, BoundObject):
         return self, target
 
     # Create and cache dependencies for standard object functionality
+    @property
+    def context(self):
+        self._context = self._context or DependentContext(self)
+        return self._context
 
     @property
     def instance_context(self):
@@ -174,15 +202,13 @@ class DependentObject(Type, BoundObject):
 
     # Can be ignored, as context is superseded by instance_context
     @property
-    def context(self):
-        pass
-
-    @property
     def static(self):
+        if self.target is None: return False
         return self.target.static
 
     @property
     def static_scope(self):
+        if self.target is None: return False
         return self.target.static_scope
 
     # Hack!
@@ -197,6 +223,8 @@ class DependentObject(Type, BoundObject):
         if self.locked: return self.checkLockedCompatibility(other, check_cache)
 
         if State.type_switching:
+            other = other.resolveValue()
+
             self.compatible_type_switch = self.compatible_type_switch or []
             self.compatible_type_switch.append(other)
             State.type_switch_cleanups.append(self.typeSwitchCleanup)
@@ -238,7 +266,7 @@ class DependentObject(Type, BoundObject):
 
     def __repr__(self):
         if self.target is None:
-            return "{}".format(self.__class__.__name__)
+            return "{}{{{}}}".format(self.__class__.__name__, self.name or id(self))
         return "{} as {}".format(self.__class__.__name__, self.target)
 
 
@@ -251,17 +279,7 @@ class DependentTarget(Link):
 
     @contextmanager
     def target(self):
-        with ExitStack() as stack:
-            dependencies = iter(self.dependencies)
-            while True:
-                dep = next(dependencies, 0)
-                if dep is 0: break
-                if dep is None: continue
-
-                object, target = dep
-                next_dependencies = object.targetAt(target)
-                dependencies = chain(dependencies, stack.enter_context(next_dependencies))
-
+        with target(self.dependencies):
             yield
 
     def __repr__(self):
@@ -288,7 +306,7 @@ class DependentContext(Context):
         raise InternalError("Not Implemented.")
 
     @contextmanager
-    def targetAt(self, target):
+    def targetAt(self, target, checkTypes = True):
         def target_generator():
             if isinstance(target, DependentContext) and self.scope.scope is target.scope.scope:
                 target.scope._instance_context = self
@@ -297,6 +315,7 @@ class DependentContext(Context):
 
             for name in self.children:
                 if name not in target.children:
-                    raise DependencyError(message="Dependent target context does not have attribute").add(content=name).add(message="", object=target.scope)
+                    raise (DependencyError(message="Dependent target context does not have attribute")
+                           .add(content=name).add(message="", object=target.scope))
                 yield self[name], target[name]
         yield target_generator()

@@ -7,7 +7,7 @@ Syntax
 ======
 
 .. productionlist::
-    Float: ([`Integer`]"." `Integer` ) | ( `Integer` "."[`Integer`])
+    Float: ( [`Integer`] "." `Integer` ) | ( `Integer` "." [`Integer`] )
 
 Examples
 --------

@@ -1,4 +1,4 @@
-##0\n0\n\n
+##0\n0\n0\n0\n\n\n
 
 def debugNew(T)
   o = T()
@@ -7,5 +7,8 @@ def debugNew(T)
 end
 
 a = debugNew(Int)
+puts(a)
 b = debugNew(Real)
+puts(b)
 c = debugNew(String)
+puts(c)

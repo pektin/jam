@@ -61,6 +61,7 @@ Tokens = Enum("Tokens", [
     "elif_kwd",
     "else_kwd",
     "import_kwd",
+    "pragma_kwd",
 
     "true_kwd",
     "false_kwd",
@@ -191,6 +192,7 @@ DIRECT_MAP = [
     ("if", Tokens.if_kwd),
     ("else", Tokens.else_kwd),
     ("import", Tokens.import_kwd),
+    ("pragma", Tokens.pragma_kwd),
 
     # Constants
     ("true", Tokens.true_kwd),

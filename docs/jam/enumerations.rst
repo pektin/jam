@@ -9,6 +9,6 @@ Syntax
 ======
 
 .. productionlist::
-    Enumeration: [`Visibility`] "enum" `Identifier`
-               :   (`Identifier`[ "=>" `Value` ]
-               : )* "end"
+    EnumerationItem: `Identifier` [ "=>" `Value` ]
+    EnumerationItems: ( `EnumerationItem` \n )*
+    Enumeration: "enum" `Identifier` `EnumerationItems` "end"

@@ -15,7 +15,7 @@ Syntax
 ======
 
 .. productionlist::
-    Identifier: ([a-zA-Z_][a-zA-Z_0-9]*)
+    Identifier: [a-zA-Z_][a-zA-Z_0-9]*
     Attribute: `Value` "." `Identifier`
 
 Examples

@@ -85,9 +85,12 @@ class Class(Type, Scope):
         return "class {}".format(self.name)
 
 class Constructor(Function):
+    constructing = None
+
     def __init__(self, function:Function, constructing:Type, tokens = None):
         Function.__init__(self, function.name, function.arguments, function.instructions, [], constructing, tokens)
         self.local_context = function.local_context
+        self.constructing = constructing
 
     def verifySelf(self):
         # Constructors may not return
@@ -99,8 +102,11 @@ class MetaClass(Class):
     class_instance = None
 
     def __init__(self, instance:Class):
-        constructor = Variable("", instance.constructor.resolveType())
-        Class.__init__(self, "meta " + instance.name, None, [constructor])
+        fields = []
+        if instance.constructor is not None:
+            constructor = Variable("", instance.constructor.resolveType())
+            fields.append(constructor)
+        Class.__init__(self, "meta " + instance.name, None, fields)
 
         self.class_instance = instance
         self.class_instance.instance_context.fakeChild(self)

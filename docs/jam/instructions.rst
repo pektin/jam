@@ -7,6 +7,5 @@ Syntax
 ======
 
 .. productionlist::
-    InstructionSet: (`Comment` | `Value` | `Assignment` | `FlowControl` | `Import` | `Unittest`
-                  : )*
-
+    Instruction: `Comment` | `Value` | `Assignment` | `FlowControl` | `Import` | `Unittest`
+    InstructionSet: ( `Instruction` \n )*

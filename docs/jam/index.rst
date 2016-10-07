@@ -15,17 +15,16 @@ where possible, coded examples to demonstrate a feature in Jam.
 .. toctree::
     :numbered:
     :titlesonly:
-    :glob:
 
     comments
     instructions
     values
     identifiers
-    literals
+    literals/index
     operations
     variables
     assignments
-    control-flow
+    control-flow/index
     methods
     lambdas
     types
@@ -33,8 +32,7 @@ where possible, coded examples to demonstrate a feature in Jam.
     arrays
     associative-arrays
     enumerations
-    visibility
+    modifiers/index
     imports
-    foreign-language-interface
     traits
-    unittests
+    dependent-types

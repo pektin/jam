@@ -10,12 +10,12 @@ syntax.
 .. toctree::
     :titlesonly:
 
-    literals/integers
-    literals/floats
-    literals/strings
-    literals/symbols
-    literals/booleans
-    literals/null
+    integers
+    floats
+    strings
+    symbols
+    booleans
+    null
 
 Syntax
 ======

@@ -47,6 +47,8 @@ class JamLexer(RegexLexer):
                     "in",
                     "as",
                     "import",
+                    "pragma",
+                    "trait",
                 ), suffix = r'\b'),
              Keyword)
         ],
@@ -88,6 +90,7 @@ class JamLexer(RegexLexer):
                     "UFloat32",
                     "UFloat64",
                     "Bool",
+                    "String",
                 ), suffix = r'\b'),
              Name.Builtin)
         ],

@@ -10,7 +10,7 @@ Syntax
 ======
 
 .. productionlist::
-    Integer: [0-9][ [0-9_]*[0-9] ]
+    Integer: [0-9] [ [0-9_]*[0-9] ]
 
 
 Examples

@@ -51,6 +51,7 @@ def Link_emit(self):
 
 @patch
 def Link_emitValue(self, type):
+    if self.value is None: return
     return self.value.emitValue(type)
 
 @patch
@@ -99,22 +100,27 @@ def Attribute_emitAssignment(self, type):
 def Literal_emitValue(self, type):
     struct_type = self.type.emitType()
 
-    if isinstance(self.data, str):
-        data = State.builder.globalString(self.data, "")
-    elif isinstance(self.data, bool):
-        data = llvm.Value.constInt(llvm.Int.new(1), self.data, False)
-    elif isinstance(self.data, int):
-        data = llvm.Value.constInt(llvm.Int.new(64), self.data, False)
-    elif isinstance(self.data, float):
-        data = llvm.Value.constFloat(llvm.Float.double(), self.data)
-    else:
-        raise InternalError("Not Implemented")
+    data = emitConstant(self.data)
 
     return llvm.Value.constStruct(struct_type, [data])
 
 @patch
 def Literal_emitAssignment(self, type):
     return State.pointer(self.emitValue(None))
+
+def emitConstant(value):
+    if isinstance(value, str):
+        return State.builder.globalString(value, "")
+    elif isinstance(value, bool):
+        return llvm.Value.constInt(llvm.Int.new(1), value, False)
+    elif isinstance(value, int):
+        return llvm.Value.constInt(llvm.Int.new(64), value, False)
+    elif isinstance(value, float):
+        return llvm.Value.constFloat(llvm.Float.double(), value)
+    elif isinstance(value, dict) and len(value) == 1 and "value" in value:
+        return emitConstant(value["value"].data)
+    else:
+        raise InternalError("Not Implemented")
 
 #
 # class Variable
@@ -186,10 +192,11 @@ def Module_emit(self):
     if self.llvm_value is not None: return
     self.llvm_value = State.main
 
-    State.addMainInstructions(self.main)
-
     for child in self.context:
+        print(child)
         child.emit()
+
+    State.addMainInstructions(self.main)
 
 @patch
 def Module_emitValue(self):
@@ -273,6 +280,7 @@ def Context_emitType(self):
 
     for child in self.children.values():
         if child.name == "self": continue
+        if child.static: continue
 
         child.llvm_context_index = index
         index += 1
@@ -395,6 +403,9 @@ def Function_emitStatic(self):
     func_type = self.resolveType().emitFunctionType(self.llvm_closure_type is not None)
     self.llvm_value = State.module.addFunction(name, func_type)
 
+    if not self.static:
+        self.llvm_value.visibility = llvm.Visibility.hidden
+
 @patch
 def Function_emitBody(self):
     entry = self.llvm_value.appendBlock("entry")
@@ -426,6 +437,7 @@ def Function_emitInstructions(self):
     with self_stack:
         for object in self.closed_context:
             if object.name == "self": continue
+            if object.static: continue
 
             index = object.llvm_context_index
             object.llvm_value = State.builder.structGEP(self.llvm_context, index, "")
@@ -478,6 +490,7 @@ def Function_emitContext(self):
 
         for object in self.closed_context:
             if object.name == "self": continue
+            if object.static: continue
 
             obj_ptr = State.builder.structGEP(context, object.llvm_context_index, "")
             value = object.emitLinkValue(None)
@@ -688,7 +701,11 @@ def Class_emitValue(self, type):
         type = type.resolveValue()
         assert isinstance(type, lekvar.Class)
 
-    attributes = [self.constructor.emitValue(type.instance_context[""].resolveType())]
+    attributes = []
+
+    if self.constructor is not None:
+        value = self.constructor.emitValue(type.instance_context[""].resolveType())
+        attributes.append(value)
 
     return llvm.Value.constStruct(type.emitType(), attributes)
 

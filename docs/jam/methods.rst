@@ -8,17 +8,17 @@ A method may be overloaded with different kinds of inputs or outputs.
 The input of a method comes in the form of a collection of variables called
 arguments. Input to a method must match exactly one overload.
 
-A method may be defined with a name or anonymously. To overload a method the
-same name must be used for each definition in the same scope.
+A method must be defined with a name (see. :doc:`lambdas` for anonymous methods)
+and can be overloaded with multiple definitions.
 
 At any point in the method a return statement may be made to cause the method to
 complete and take the given value as the output of the method call. When the
 return value of a method is explicitly defined, all possible execution paths
 must end with a return statement.
 
-Methods can also be assigned to :doc:`variables<variables>`, like any other
-value. A variable that is of a method type may be assigned any methods with
-compatible overloads.
+Methods are also valid values, and can thus be assigned to :doc:`variables`. A
+variable that is of a method type may be assigned any methods with compatible
+overloads.
 
 .. seealso::
 
@@ -38,19 +38,19 @@ For instance, if a method is defined as::
       return x + y
     end
 
-Then the type expectation of ``x`` is that it has a method (``+``) that takes
-one argument (``y``) and returns a type compatible with ``Int``.
+Then the type expectation of ``x`` is that it has a method ``+`` that can take
+one argument ``y`` and returns a type compatible with ``Int``.
 
 Syntax
 ======
 
 .. productionlist::
-    Argument: `Variable` ["=" `Value`]
-    MethodType: "(" [`Type` ","]* `Type` ")" [ "->" `Type` ]
-    MethodPrototype: `Identifier` "(" [ [`Argument` ","]* `Argument` ] ")" [ "->" `Type` ]
-    Method: [`Visibility`] "def" `MethodPrototype`
-          :   (`InstructionSet` | ("return" [`Value`])
-          : )* "end"
+    Argument: `Variable` [ "=" `Value` ]
+    MethodPrototype: `Identifier` "(" [ `Argument` [ "," `Argument` ]* ] ")" [ "->" `Value` ]
+    Return: "return" [`Value`]
+    MethodInstruction: `Instruction` | `Return`
+    MethodInstructionSet: ( `MethodInstruction` \n )*
+    Method: "def" `MethodPrototype` `MethodInstructionSet` "end"
 
 Examples
 ========

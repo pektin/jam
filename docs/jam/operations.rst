@@ -29,11 +29,14 @@ Binary Operator Meaning
 ``**``          Exponentiation
 ``%``           Modulo
 ``in``          Containment
+``!in``         Inverse Containment
 ``&&``          Logical And
 ``||``          Logical Or
+``^^``          Logical Exclusive Or
 ``&``           Bitwise And
 ``|``           Bitwise Or
 ``^``           Bitwise Exclusive Or
+``:``           Type of
 =============== =============================
 
 ============== ===============
@@ -61,15 +64,29 @@ Indexing is an operation on a value that maps one or more values to another
 value. This includes using an integer to map the index of an element in an array
 to the element itself.
 
+Type of
+-------
+
+The "Type of" operation is a constraint on the type system that the LHS must be
+of the type given on the RHS. This can be used to override type inference for
+:doc:`variables`.
+
 Syntax
 ======
 
 .. productionlist::
-    ComparisonOperator: "!=" | "==" | "<" | "<=" | ">" | ">=" | "is" | "!is"
-    ComparisonOperation: `Value` [`ComparisonOperator` `ComparisonOperation`]
-    BinaryOperator: "%" | "^" | "&" | "&&" | "*" | "**" | "-" | "+" | "|" | "||" | "/" | "//" | "in"
-    BinaryOperation: (`Value` `BinaryOperator` `Value`) | `ComparisonOperation`
     UnaryOperator: "~" | "!"
+    MathematicalOperator: "+" | "-" | "*" | "/" | "//" | "**" | "%"
+    EquivalenceOperator: "==" | "!="
+    RelationalOperator: "<" | "<=" | ">" | ">="
+    IdentityOperator: "is" | "!is"
+    ContainmentOperator: "in" | "!in"
+    LogicalOperator: "&&" | "||" | "^^"
+    BitwiseOperator: "&" | "|" | "^"
+    ComparisonOperator: `EquivalenceOperator` | `RelationalOperator` | `IdentityOperator`
+    ComparisonOperation: `Value` [ `ComparisonOperator` `Value` ]+
+    Operator: `MathematicalOperator` | `ComparisonOperator` | `ContainmentOperator` | `LogicalOperator` | `BitwiseOperator`
+    BinaryOperation: `ComparisonOperation` | ( `Value` `BinaryOperator` `Value` )
     UnaryOperation: [`UnaryOperator`] `Value`
     IndexOperation: `Value` "[" [ `Value` "," ]* `Value` "]"
     Operation: `UnaryOperation` | `BinaryOperation` | `IndexOperation`
@@ -79,7 +96,6 @@ Examples
 
 Mathematical
 ------------
-
 ::
 
     # Addition
@@ -110,7 +126,6 @@ Mathematical
 
 Equivalence
 -----------
-
 ::
 
     # Equality
@@ -126,7 +141,6 @@ Equivalence
 
 Relational
 ----------
-
 ::
 
     # Smaller than
@@ -149,7 +163,6 @@ Relational
 
 Identity
 --------
-
 ::
 
     # Identity Equivalence
@@ -160,7 +173,6 @@ Identity
 
 Containment
 -----------
-
 ::
 
     #TODO
@@ -168,7 +180,6 @@ Containment
 
 Logical
 -------
-
 ::
 
     # And
@@ -183,13 +194,15 @@ Logical
         difficulty = 2
     end
 
+    # Exclusive Or
+    #TODO
+
     # Logical Not
     #TODO
 
 
 Bitwise
 -------
-
 ::
 
     # And
@@ -206,7 +219,6 @@ Bitwise
 
 Indexing
 --------
-
 ::
 
     # Arrays
@@ -214,8 +226,14 @@ Indexing
     fifth_prime = primes[4]
 
     # Associative Arrays
-    emergency_numbers = [
-        "AUS" -> "000",
-        "USA" -> "911",
-    ]
-    aus_emergency_number = emergency_numbers["AUS"]
+    emergency_numbers = {
+        $AUS -> "000"
+        $USA -> "911"
+    }
+    aus_emergency_number = emergency_numbers[$AUS]
+
+Type of
+-------
+::
+
+    result:Int = long_math_function() # Ensures `result` is of type `Int`

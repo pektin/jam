@@ -23,6 +23,11 @@ def emit(module:lekvar.Module, logger = logging.getLogger(), opt_level = 1):
     _optimise(State.module, opt_level, opt_level)
     return State.module.toString()
 
+def run(module:lekvar.Module, logger = logging.getLogger(), opt_level = 1):
+    code = emit(module, logger, opt_level)
+
+    return interpret(code)
+
 def _optimise(module:bindings.Module, level:int, size_level:int):
     manager = bindings.PassManager.new()
     manager.setOptLevel(level)
@@ -38,7 +43,7 @@ def _get_tempname(suffix = ""):
 
 # Wrapping around lli
 #TODO: Replace with direct calls to llvm
-def run(source:bytes, precommands = []):
+def interpret(source:bytes, precommands = []):
     try:
         return subprocess.check_output(precommands + [bindings.LLI],
             input = source,
@@ -47,8 +52,8 @@ def run(source:bytes, precommands = []):
     except subprocess.CalledProcessError as e:
         raise ExecutionError("lli error running source: {}".format(e.output))
 
-# Same as run, except doesn't capture output
-def run_direct(source:bytes):
+# Same as interpret, except doesn't capture output
+def interpret_direct(source:bytes):
     subprocess.Popen([bindings.LLI],
         stdin = subprocess.PIPE,
         stdout = sys.stdout,

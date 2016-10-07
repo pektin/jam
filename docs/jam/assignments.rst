@@ -11,8 +11,8 @@ Syntax
 
 .. productionlist::
     Assignable: `Variable` | `IndexOperation` | `Attribute`
-    AssignmentVars: [`Assignable` ","]* `Assignable`
-    Assignment: [`AssignmentVars` "="]* `AssignmentVars` "=" [`Value` ","]* `Value`
+    AssignmentVars: [ `Assignable` "," ]* `Assignable`
+    Assignment: [ `AssignmentVars` "=" ]* `AssignmentVars` "=" [ `Value` "," ]* `Value`
 
 Examples
 ========

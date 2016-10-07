@@ -1,21 +1,23 @@
 Lambdas
 #######
 
-Lambdas are identical to :doc:`methods<methods>`, except that they are anonymous
-and therefore cannot be overloaded. They provide a quicker syntax for defining
-small, one use methods.
+Lambdas are identical to :doc:`methods`, except that they are anonymous and
+therefore cannot be overloaded. They provide a quicker syntax for defining
+small, limited use methods.
 
 Syntax
 ======
 
 .. productionlist::
-    Lambda: [ "(" [ [`Argument` ","]* `Argument` ] ")" | `Argument` ] "=>" `Value`
+    LambdaArgumentList: "(" [ `Argument` [ "," `Argument` ]* ] ")"
+    LambdaArguments: `LambdaArgumentList` | `Argument`
+    Lambda: [`LambdaArguments`] "=>" `Value`
 
 Example
 =======
 
 ::
 
-    map(a => a**2, [1, 2, 3, 4]) #=> [1, 4, 9, 16]
-    reduce((a, b) => a*b, [1, 2, 3, 4]) #=> 24
+    [1, 2, 3, 4].map(a => a**2) #=> [1, 4, 9, 16]
+    [1, 2, 3, 4].reduce((a, b) => a*b) #=> 24
     12.times(=> puts("Hi"))
