@@ -142,13 +142,20 @@ def Method_eval(self):
 def Method_evalContext(self):
     return None
 
+@patch
+def Method_evalCall(self, values):
+    call = lekvar.FunctionType([value.resolveType() for value in values])
+    function = self.resolveCall(call)
+
+    return function.evalCall(values)
+
 #
 # class MethodInstance
 #
 
 @patch
 def MethodInstance_eval(self):
-    return self
+    return State.self
 
 @patch
 def MethodInstance_evalCall(self, values):
@@ -305,7 +312,7 @@ def Literal_eval(self):
 
 @patch
 def Call_eval(self):
-    with State.selfScope(self.called):
+    with State.selfScope(self.called.eval()):
         called = self.function.eval()
 
     # Hack, for now
