@@ -260,7 +260,11 @@ def Constructor_evalCall(self, values):
 @patch
 def DependentTarget_eval(self):
     with self.target():
-        return self.value.eval()
+        result = self.value.eval()
+
+    if result is self.value:
+        return self
+    return result
 
 @patch
 def DependentTarget_evalContext(self):
