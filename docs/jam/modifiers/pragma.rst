@@ -13,7 +13,7 @@ Syntax
     Pragma: "pragma" `ModifierValue`
 
 Examples
--------
+--------
 ::
 
     fibonacci_cache = [1, 1]
