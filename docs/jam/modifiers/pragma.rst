@@ -2,9 +2,9 @@ Pragma
 ######
 
 Pragma is a modifier that enforces that its value must be evaluated at compile
-time. This is designed to be used as a guarantee that CTFE (Compile Time
-Function Evaluation) and constant folding are used as an optimisation for a
-particular value.
+time. This is designed to be used as a guarantee that something is evaluated at
+compile time, such as calculating a complicated constant, reading a file or even
+testing.
 
 Syntax
 ======
@@ -12,27 +12,40 @@ Syntax
 .. productionlist::
     Pragma: "pragma" `ModifierValue`
 
-Example
+Examples
 -------
 ::
 
-    # Enforces that `Kind` is evaluated at compile time
-    def spawn(pragma Kind, position:Vec2)
-      object = Kind()
-      object.position = position
-      return object
+    fibonacci_cache = [1, 1]
+
+    # Pre-fill fibonacci_cache with the first 200 values
+    pragma build_fibonacci_cache(200)
+
+    def build_fibonacci_cache(n:Int)
+      i = 0
+      while i < n
+        # fibonacci auto-fills the cache
+        fibonacci(i)
+        i += 1
+      end
     end
 
-    new_enemy = spawn(Enemy, Vec2(2, 1)) # `Enemy` is a constant, so this is valid
+    # Naive cached fibonacci implementation
+    def fibonacci(n:Int)
+      if n < fibonacci_cache.length
+        return fibonacci_cache[n]
+      else
+        value = fibonacci(n - 1) + fibonacci(n - 2)
+        fibonacci_cache[n] = value
+        return value
+      end
+    end
 
-    # `EnemyKind` is not known at compile time
-    EnemyKind = read("enemy.txt").constantize
-    # This fails
-    new_enemy = spawn(EnemyKind, Vec2(2, 1))
+::
 
-    # Force evaluation of `read` at compile time
-    enemy_kind = pragma read("enemy.txt")
-    # `EnemyKind` is known at compile time
-    EnemyKind = enemy_kind.constantize
-    # This succeeds
-    new_enemy = spawn(EnemyKind, Vec2(2, 1))
+    # Read a file at compile time
+    constants = pragma read("player_constants.txt").lines
+
+    const MAX_HEALTH = constants[0]
+    const MAX_ARMOUR = constants[1]
+    const MAX_SPEED  = constants[1]
