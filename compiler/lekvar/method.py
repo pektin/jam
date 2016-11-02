@@ -119,14 +119,14 @@ class MethodType(Type):
     def local_context(self):
         raise InternalError("Not Implemented")
 
-    def checkCompatibility(self, other:Type):
+    def checkCompatibility(self, other:Type, check_cache = None):
         if not isinstance(other, MethodType):
             return False
 
         for self_fn_type in self.overloads:
             compat_fn_type = None
             for other_fn_type in other.overloads:
-                if self_fn_type.checkCompatibility(other_fn_type):
+                if self_fn_type.checkCompatibility(other_fn_type, check_cache):
                     compat_fn_type = other_fn_type
                     break
 
@@ -139,7 +139,7 @@ class MethodType(Type):
 
         for self_fn_type in self.dependent_overloads:
             for other_fn_type in other.overloads:
-                if self_fn_type.checkCompatibility(other_fn_type):
+                if self_fn_type.checkCompatibility(other_fn_type, check_cache):
                     #TODO: Actually check these
                     pass
 

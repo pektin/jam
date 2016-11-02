@@ -141,7 +141,7 @@ class FunctionType(Type):
             raise TypeError(object=self).add(message="is not callable with").add(object=call)
         return FunctionInstance(self)
 
-    def checkCompatibility(self, other:Type):
+    def checkCompatibility(self, other:Type, check_cache = None):
         other = other.resolveValue()
 
         if isinstance(other, FunctionType):
@@ -149,7 +149,7 @@ class FunctionType(Type):
                 return False
 
             for self_arg, other_arg in zip(self.arguments, other.arguments):
-                if not checkCompatibility(self_arg, other_arg):
+                if not checkCompatibility(self_arg, other_arg, check_cache):
                     return False
 
             # Only check for return type compatibility when the other has one
@@ -158,7 +158,7 @@ class FunctionType(Type):
                 if self.return_type is None:
                     return False
 
-                return checkCompatibility(self.return_type, other.return_type)
+                return checkCompatibility(self.return_type, other.return_type, check_cache)
             return True
         return False
 

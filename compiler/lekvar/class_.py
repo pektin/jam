@@ -81,7 +81,7 @@ class Class(Type, Closure):
     def local_context(self):
         return self.instance_context
 
-    def checkCompatibility(self, other:Type) -> bool:
+    def checkCompatibility(self, other:Type, check_cache = None) -> bool:
         return other.resolveValue() == self
 
     def __repr__(self):

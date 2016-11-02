@@ -49,8 +49,11 @@ class Link(Type):
     def resolveValue(self):
         return self.value.resolveValue()
 
-    def checkCompatibility(self, other:Type):
-        return self.value.checkCompatibility(other)
+    def checkCompatibility(self, other:Type, check_cache = None):
+        return self.value.checkCompatibility(other, check_cache)
+
+    def revCheckCompatibility(self, other:Type, check_cache = None):
+        return self.value.revCheckCompatibility(other, check_cache)
 
     def resolveCompatibility(self, other:Type):
         return self.value.resolveCompatibility(other)

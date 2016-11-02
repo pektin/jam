@@ -131,7 +131,7 @@ class LLVMType(lekvar.Type, lekvar.BoundObject):
     def local_context(self):
         raise InternalError("LLVMTypes do not have a local context")
 
-    def checkCompatibility(self, other:lekvar.Type):
+    def checkCompatibility(self, other:lekvar.Type, check_cache = None):
         other = other.resolveValue()
 
         if isinstance(other, LLVMType):

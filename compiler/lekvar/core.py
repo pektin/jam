@@ -182,8 +182,8 @@ class Type(Object):
 
     # Returns whether or not a given type is compatible with this type
     @abstract
-    def checkCompatibility(self, other:Type) -> bool:
+    def checkCompatibility(self, other:Type, check_cache:{Type: {Type} } = None) -> bool:
         pass
 
-    def revCheckCompatibility(self, other:Type) -> bool:
+    def revCheckCompatibility(self, other:Type, check_cache:{Type: {Type} } = None) -> bool:
         return self.checkCompatibility(other)

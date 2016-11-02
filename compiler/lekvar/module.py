@@ -34,7 +34,7 @@ class Module(Type, Scope):
     def local_context(self):
         return self.context
 
-    def checkCompatibility(self, other:Type):
+    def checkCompatibility(self, other:Type, check_cache = None):
         raise InternalError("Not Implemented")
 
     def __repr__(self):

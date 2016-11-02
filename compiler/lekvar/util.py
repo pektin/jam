@@ -9,10 +9,10 @@ from .core import Object, BoundObject, Scope, Type
 # Python predefines
 Module = None
 
-def checkCompatibility(type1:Type, type2:Type):
-    if type1.checkCompatibility(type2):
+def checkCompatibility(type1:Type, type2:Type, check_cache = None):
+    if type1.checkCompatibility(type2, check_cache):
         return True
-    return type2.revCheckCompatibility(type1)
+    return type2.revCheckCompatibility(type1, check_cache)
 
 # Resolve a attribute of a given object
 def resolveAttribute(object:Object, reference:str):

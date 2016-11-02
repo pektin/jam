@@ -11,12 +11,6 @@ from .links import Link
 # Python Predefines
 DependentObject = None
 
-# Like util.checkCompatibility, but type1 can be dependent whose compatibility check takes more arguments
-def checkDependentCompatibility(type1:Type, type2:Type, *args):
-    if isinstance(type1, DependentObject):
-        return type1.checkCompatibility(type2, *args)
-    return type1.checkCompatibility(type2)
-
 # Apply targeting to a set of dependent objects and their dependencies
 @contextmanager
 def target(objects:[(DependentObject, Object)], checkTypes = True):
@@ -219,7 +213,7 @@ class DependentObject(Type, BoundObject):
 
     def checkCompatibility(self, other:Type, check_cache = None):
         if self is other.resolveValue(): return True
-        if self.target is not None: return checkDependentCompatibility(self.target, other, check_cache)
+        if self.target is not None: return self.target.checkCompatibility(other, check_cache)
         if self.locked: return self.checkLockedCompatibility(other, check_cache)
 
         if State.type_switching:
@@ -234,7 +228,7 @@ class DependentObject(Type, BoundObject):
 
     def revCheckCompatibility(self, other:Type, check_cache = None):
         if self is other.resolveValue(): return True
-        if self.target is not None: return self.target.revCheckCompatibility(other)
+        if self.target is not None: return self.target.revCheckCompatibility(other, check_cache)
 
         # On reverse checks, we're always locked
         return self.checkLockedCompatibility(other, check_cache)
@@ -252,7 +246,7 @@ class DependentObject(Type, BoundObject):
                     matches.append(type)
                 else:
                     cache.add(type)
-                    if checkDependentCompatibility(type, other, check_cache):
+                    if type.checkCompatibility(other, check_cache):
                         matches.append(type)
 
             if len(matches) != 1:

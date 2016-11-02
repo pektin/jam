@@ -58,11 +58,11 @@ class Reference(BoundLink):
     def resolveType(self):
         return Reference(self.value.resolveType())
 
-    def checkCompatibility(self, other):
+    def checkCompatibility(self, other, check_cache = None):
         if isinstance(other, Reference):
-            return self.value.checkCompatibility(other.value)
+            return self.value.checkCompatibility(other.value, check_cache)
 
-        return self.value.checkCompatibility(other)
+        return self.value.checkCompatibility(other, check_cache)
 
     def __repr__(self):
         return "ref {}".format(self.value)
