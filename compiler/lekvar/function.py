@@ -5,6 +5,7 @@ from .state import State
 from .core import Context, Object, BoundObject, SoftScope, Scope, Type
 from .util import checkCompatibility
 from .links import BoundLink
+from .closure import Closure
 from .variable import Variable
 from .dependent import DependentObject, DependentTarget
 
@@ -13,9 +14,8 @@ FunctionType = None
 
 # A function is a single callable entity. It is defined through a set of inputs,
 # a set of instructions, and a singular output.
-class Function(Scope):
+class Function(Closure):
     local_context = None
-    closed_context = None
 
     arguments = None
     instructions = None
@@ -27,10 +27,9 @@ class Function(Scope):
     dependent_target_cache = None
 
     def __init__(self, name:str, arguments:[Variable], instructions:[Object], children:[Object] = [], return_type:Type = None, tokens = None):
-        Scope.__init__(self, name, tokens)
+        Closure.__init__(self, name, tokens)
 
         self.local_context = Context(self, arguments + children)
-        self.closed_context = Context(self, [])
 
         self.arguments = arguments
         self.instructions = instructions
@@ -43,20 +42,6 @@ class Function(Scope):
         self.type = FunctionType([arg.resolveType() for arg in arguments], return_type)
 
         self.dependent_target_cache = {}
-
-    def resolveIdentifier(self, name:str):
-        found = BoundObject.resolveIdentifier(self, name)
-
-        # Collect externally identifier, non-statics in the closed context
-        for index, match in enumerate(found):
-            if not match.static:
-                if match.name in self.closed_context:
-                    found[index] = self.closed_context[match.name]
-                else:
-                    found[index] = match = ClosedLink(match)
-                    self.closed_context.addChild(match)
-
-        return found + SoftScope.resolveIdentifier(self, name)
 
     def verify(self):
         if self.verified: return
@@ -239,6 +224,3 @@ class Return(Object):
 
     def __repr__(self):
         return "return {}".format(self.value)
-
-class ClosedLink(BoundLink):
-    pass

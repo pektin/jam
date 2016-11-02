@@ -2,19 +2,22 @@ from ..errors import *
 
 from .state import State
 from .core import Context, Object, BoundObject, Scope, Type
+from .closure import Closure
 from .function import Function, FunctionType, Return
 from .method import Method, MethodType
 from .variable import Variable
 
-class Class(Type, Scope):
+class Class(Type, Closure):
     constructor = None
     instance_context = None
     type = None
 
     verified = False
+    static = True
+    static_scope = True
 
     def __init__(self, name:str, constructor:Method, attributes:[BoundObject], tokens = None):
-        Scope.__init__(self, name, tokens)
+        Closure.__init__(self, name, tokens)
 
         self.instance_context = Context(self, attributes)
 

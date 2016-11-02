@@ -6,7 +6,8 @@ from ..errors import CompilerError
 from .state import State
 from .core import Context, Object, BoundObject, SoftScope, Scope, Type
 from .module import Module
-from .function import Function, FunctionType, FunctionInstance, Return, ClosedLink
+from .closure import Closure, ClosedLink, ClosedTarget
+from .function import Function, FunctionType, FunctionInstance, Return
 from .external_function import ExternalFunction
 from .call import Call
 from .method import Method, MethodType, MethodInstance

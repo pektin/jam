@@ -71,6 +71,30 @@ def Attribute_evalAssign(self, value):
         self.value.evalAssign(value)
 
 #
+# class ClosedTarget
+#
+
+@patch
+def ClosedTarget_eval(self):
+    with self.target():
+        return self.value.eval()
+
+@patch
+def ClosedTarget_evalContext(self):
+    with self.target():
+        return self.value.evalContext()
+
+@patch
+def ClosedTarget_evalCall(self, values):
+    with self.target():
+        return self.value.evalCall(values)
+
+@patch
+def ClosedTarget_evalAssign(self, value):
+    with self.target():
+        self.value.evalAssign(value)
+
+#
 # class Reference
 #
 
