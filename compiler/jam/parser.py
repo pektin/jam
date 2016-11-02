@@ -128,7 +128,7 @@ class Parser:
         value = self.parseLine()
         if value is None: return None
 
-        if isinstance(value, lekvar.BoundObject) and not isinstance(value, lekvar.BoundLink):
+        if isinstance(value, lekvar.BoundObject) and (not isinstance(value, lekvar.BoundLink) or value.is_bound):
             self.addChild(children, value)
         else:
             instructions.append(value)

@@ -76,6 +76,10 @@ class BoundLink(Link, BoundObject):
     def bound_context(self, value):
         self.value.bound_context = value
 
+    @property
+    def is_bound(self):
+        return isinstance(self.value, BoundObject)
+
 class ContextLink:
     value = None
 
