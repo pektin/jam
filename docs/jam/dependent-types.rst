@@ -7,7 +7,7 @@ dependent types.
 
 A set of assumptions can be applied to any value in Jam. These assumptions must
 hold when using the type. An assumption can be any derivative value that results
-in a boolean (such as a method call).
+in a boolean (such as a method call, or comparison).
 
 Syntax
 ======

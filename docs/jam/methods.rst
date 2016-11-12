@@ -41,6 +41,9 @@ For instance, if a method is defined as::
 Then the type expectation of ``x`` is that it has a method ``+`` that can take
 one argument ``y`` and returns a type compatible with ``Int``.
 
+The compiler may create multiple actual functions for each kind of call, for
+these sorts of methods.
+
 Syntax
 ======
 

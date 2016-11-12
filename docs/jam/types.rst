@@ -1,7 +1,8 @@
 Types
 #####
 
-Types describe how values behave and what they are made of.
+Types describe how values behave and what they are made of. Since everything in
+Jam is a value, types are also values and can be used as such.
 
 Nullability
 ===========
