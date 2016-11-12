@@ -4,8 +4,8 @@ Comments
 Comments allow the programmer to add a form of metadata to code in the form of
 natural language. They allow a programmer to add descriptions otherwise
 impossible to add with standard code for themselves or others. It is advised to
-use comments in order to maintain the maintainability of code without causing
-clutter.
+use comments in order to keep code maintainable, avoiding any duplicate
+descriptions between the code and the comments.
 
 Multi-line comments do not exist, primarily because most modern code editing
 tools have shortcuts to achieve the same thing.
