@@ -287,16 +287,20 @@ class DependentContext(Context):
         Context.__init__(self, scope, [])
 
     def __contains__(self, name:str):
-        if self.scope.locked: return Context.__contains__(self, name)
+        if self.locked: return Context.__contains__(self, name)
         return True
 
     def __getitem__(self, name:str):
-        if not self.scope.locked and name not in self.children:
+        if not self.locked and name not in self.children:
             self.addChild(DependentObject(self.scope.scope, name))
         return self.children[name]
 
     def __setitem__(self, name:str, value:BoundObject):
         raise InternalError("Not Implemented.")
+
+    @property
+    def locked(self):
+        return self.scope.locked
 
     @contextmanager
     def targetAt(self, target, checkTypes = True):
