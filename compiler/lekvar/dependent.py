@@ -194,15 +194,14 @@ class DependentObject(Type, BoundObject):
     def resolveInstanceCall(self, call):
         return self.resolved_instance_calls.setdefault(call, DependentObject(self.scope))
 
-    # Can be ignored, as context is superseded by instance_context
     @property
     def static(self):
-        if self.target is None: return False
+        if self.target is None: return True
         return self.target.static
 
     @property
     def static_scope(self):
-        if self.target is None: return False
+        if self.target is None: return True
         return self.target.static_scope
 
     # Hack!
