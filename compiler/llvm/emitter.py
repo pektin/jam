@@ -2,7 +2,7 @@ from abc import abstractmethod as abstract
 from contextlib import ExitStack
 
 from .. import lekvar
-from ..errors import InternalError
+from ..errors import InternalError, TypeError
 
 from .state import State
 from .util import *
@@ -167,6 +167,10 @@ def Variable_emitAssignment(self, type):
 
     assert State.self is not None
     return State.builder.structGEP(State.self, self.llvm_self_index, "")
+
+@patch
+def Variable_emitType(self):
+    raise TypeError(message="Not Implemented")
 
 @patch
 def Variable_emitContext(self):
