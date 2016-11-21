@@ -28,6 +28,8 @@ class Closure(Scope):
         return found + SoftScope.resolveIdentifier(self, name)
 
 class ClosedLink(BoundLink):
+    bound_context = None
+
     def __str__(self):
         return "C({})".format(str(self.value))
 
