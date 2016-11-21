@@ -1,10 +1,10 @@
-##1\nfoo\n
+##1\nfoo\nfoo\n
 
 def foo(a, b)
   puts(b)
   if a > 0
-    foo(0, "foo")
+    foo(a - 1, "foo")
   end
 end
 
-foo(1, 1)
+foo(2, 1)
