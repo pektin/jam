@@ -137,8 +137,6 @@ def Module_eval(self):
 # class Variable
 #
 
-lekvar.Variable.eval_value = None
-
 @patch
 def Variable_eval(self):
     if isinstance(self.parent, lekvar.Class):
@@ -149,8 +147,8 @@ def Variable_eval(self):
             return State.self
         return State.self.data[self.name]
 
-    assert self.eval_value is not None
-    return self.eval_value
+    assert self.value is not None
+    return self.value
 
 @patch
 def Variable_evalContext(self):
@@ -164,7 +162,7 @@ def Variable_evalAssign(self, value):
 
         State.self.data[self.name] = value
     else:
-        self.eval_value = value
+        self.value = value
 
 #
 # class Assignment
@@ -233,7 +231,7 @@ def Function_evalCall(self, values):
     self.eval_returned = False
     self.eval_returning = None
 
-    previous_values = [arg.resolveValue().eval_value for arg in self.arguments]
+    previous_values = [arg.resolveValue().value for arg in self.arguments]
     for arg, val in zip(self.arguments, values):
         arg.evalAssign(val)
 
