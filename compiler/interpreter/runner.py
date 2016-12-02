@@ -141,9 +141,8 @@ def Module_eval(self):
 def Variable_eval(self):
     if isinstance(self.parent, lekvar.Class):
         assert State.self is not None
-        assert isinstance(State.self, lekvar.Literal)
 
-        if not isinstance(State.self.data, dict):
+        if not isinstance(State.self, lekvar.Literal) or not isinstance(State.self.data, dict):
             return State.self
         return State.self.data[self.name]
 
@@ -276,7 +275,11 @@ def ExternalFunction_eval(self):
 
 @patch
 def Class_eval(self):
-    return lekvar.Literal({"": self.constructor}, self.resolveType())
+    return self
+
+@patch
+def Class_evalCall(self, values):
+    return self.constructor.evalCall(values)
 
 @patch
 def Class_evalContext(self):
