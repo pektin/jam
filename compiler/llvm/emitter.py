@@ -240,7 +240,7 @@ def Call_emitValue(self, type):
         scope = self.function.target()
 
     with scope:
-        argument_types = self.function.resolveValue().resolveType().resolveValue().arguments
+        argument_types = self.function.resolveType().extractValue().arguments
         arguments += [emitValue(value, type) for value, type in zip(self.values, argument_types)]
 
     # Get the llvm function type
