@@ -132,8 +132,6 @@ lekvar.Variable.llvm_self_index = -1
 @patch
 def Variable_resetEmission(self):
     self.llvm_value = None
-    self.llvm_context_index = -1
-    self.llvm_self_index = -1
 
 @patch
 def Variable_emit(self):
