@@ -398,6 +398,38 @@ def ClosedLink_emitLinkValue(self, type):
     return self.value.emitValue(type)
 
 #
+# class ClosedTarget
+#
+
+lekvar.ClosedTarget.llvm_value = None
+lekvar.ClosedTarget.llvm_type = None
+
+@patch
+def ClosedTarget_emitValue(self, type):
+    print("CT!", self.value, self.value.static)
+    if self.llvm_value is None:
+        self.origin.resetEmission()
+
+        with self.target():
+            self.value.resetEmission()
+            self.llvm_value = self.value.emitValue(type)
+
+    return self.llvm_value
+
+@patch
+def ClosedTarget_emitContext(self):
+    with self.target():
+        return self.value.emitContext()
+
+@patch
+def ClosedTarget_emitType(self):
+    if self.llvm_type is None:
+        with self.target():
+            self.value.resetEmission()
+            self.llvm_type = self.value.emitType()
+
+    return self.llvm_type
+#
 # class Function
 #
 
