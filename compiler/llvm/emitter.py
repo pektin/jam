@@ -208,7 +208,6 @@ def Module_emit(self):
     self.llvm_value = State.main
 
     for child in self.context:
-        print(child)
         child.emit()
 
     State.addMainInstructions(self.main)
@@ -277,6 +276,14 @@ def Return_emitValue(self, type):
 #
 
 lekvar.Context.llvm_type = None
+
+@patch
+def Context_resetEmission(self):
+    self.llvm_type = None
+
+    for child in self:
+        child.resetEmission()
+    self.emitType()
 
 @patch
 def Context_emitType(self):
@@ -403,6 +410,8 @@ def Function_resetEmission(self):
     for child in self.local_context:
         child.resetEmission()
 
+    self.closed_context.resetEmission()
+
 @patch
 def Function_emit(self):
     if self.llvm_value is not None: return
@@ -444,6 +453,7 @@ def Function_emitInstructions(self):
     # Exit stack that might contain a selfScope
     self_stack = ExitStack()
     if "self" in self.closed_context:
+        assert self.closed_context["self"].llvm_context_index >= 0
         index = self.closed_context["self"].llvm_context_index
         self_value = State.builder.structGEP(self.llvm_context, index, "")
         self_value = State.builder.load(self_value, "")
@@ -499,6 +509,7 @@ def Function_emitContext(self):
 
         #TODO: Remove this special case
         if State.self is not None and "self" in self.closed_context:
+            assert self.closed_context["self"].llvm_context_index >= 0
             index = self.closed_context["self"].llvm_context_index
             self_ptr = State.builder.structGEP(context, index, "")
             State.builder.store(State.self, self_ptr)
@@ -613,6 +624,13 @@ def ExternalFunction_emitContext(self):
 #
 
 @patch
+def Method_resetEmission(self):
+    for overload in self.overload_context:
+        overload.resetEmission()
+    for overload in self.dependent_overload_context:
+        overload.resetEmission()
+
+@patch
 def Method_emit(self):
     for overload in self.overload_context:
         overload.emit()
@@ -699,6 +717,10 @@ def MethodInstance_emitContext(self):
 #
 
 lekvar.Class.llvm_type = None
+
+@patch
+def Class_resetEmission(self):
+    self.llvm_type = None
 
 @patch
 def Class_emit(self):
