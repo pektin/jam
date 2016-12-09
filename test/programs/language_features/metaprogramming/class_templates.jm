@@ -1,0 +1,26 @@
+##2\n3.2\n5\n
+
+pragma def foo(T)
+  class Foo
+    value:T
+
+    new(v:T)
+      value = v
+    end
+
+    def self + other:Foo
+      return Foo(value + other.value)
+    end
+  end
+
+  return Foo
+end
+
+a = (pragma foo(Int))(2)
+puts(a.value)
+b = (pragma foo(Real))(3.2)
+puts(b.value)
+
+c = (pragma foo(Int))(3)
+d = a + c
+puts(d.value)
