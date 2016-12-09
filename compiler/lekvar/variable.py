@@ -30,7 +30,7 @@ class Variable(BoundObject, Type):
         self.type.verify()
 
         if not isinstance(self.type.resolveValue(), Type):
-            raise TypeError(object=self.type).add("cannot be used as a type for").add(object=self)
+            raise TypeError(object=self.type).add(message="cannot be used as a type for").add(object=self)
 
     def resolveType(self):
         return self.type
