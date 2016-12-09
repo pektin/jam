@@ -383,10 +383,14 @@ lekvar.ClosedLink.llvm_value = None
 
 @patch
 def ClosedLink_emitValue(self, type):
+    if self.llvm_value is None:
+        return self.value.emitValue(type)
     return State.builder.load(self.emitAssignment(type), "")
 
 @patch
 def ClosedLink_emitAssignment(self, type):
+    if self.llvm_value is None:
+        return self.value.emitAssignment(type)
     return self.llvm_value
 
 @patch
