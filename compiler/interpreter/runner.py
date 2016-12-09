@@ -77,7 +77,11 @@ def Attribute_evalAssign(self, value):
 @patch
 def ClosedTarget_eval(self):
     with self.target():
-        return self.value.eval()
+        result = self.value.eval()
+
+        if result == self.value:
+            return self
+        return result
 
 @patch
 def ClosedTarget_evalContext(self):
@@ -275,7 +279,11 @@ def ExternalFunction_eval(self):
 
 @patch
 def Class_eval(self):
-    return self
+    targets = [(value, value.eval()) for value in self.closed_context]
+
+    if len(targets) == 0:
+        return self
+    return lekvar.ClosedTarget(self, targets)
 
 @patch
 def Class_evalCall(self, values):
