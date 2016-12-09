@@ -1,4 +1,5 @@
 from copy import copy
+from contextlib import contextmanager, ExitStack
 
 from ..errors import *
 
@@ -7,6 +8,7 @@ from .util import checkCompatibility
 from .core import Context, Object, BoundObject, Type
 from .links import Link, Attribute
 from .dependent import DependentObject, DependentContext
+from . import dependent
 
 #
 # Variable
@@ -19,7 +21,6 @@ class Variable(BoundObject, Type):
     value = None
 
     _static_value_type = None
-    _static_value_type_instance_context = None
 
     def __init__(self, name:str, type:Type = None, tokens = None):
         BoundObject.__init__(self, name, tokens)
@@ -54,12 +55,14 @@ class Variable(BoundObject, Type):
 
     @property
     def instance_context(self):
-        self._static_value_type_instance_context = self._static_value_type_instance_context or DependentContext(self.static_value_type)
-        return self._static_value_type_instance_context
+        return self.static_value_type.instance_context
 
     def checkCompatibility(self, other:Type, check_cache = None):
         if other.resolveValue() is self:
             return True
+
+        if self.value is not None:
+            return self.value.checkCompatibility(other, check_cache)
 
         if self._static_value_type is None:
             if self.value is None: raise TypeError()
@@ -72,8 +75,24 @@ class Variable(BoundObject, Type):
     @property
     def static_value_type(self):
         self._static_value_type = self._static_value_type or DependentObject(self.parent)
+        if isinstance(self.type, DependentObject) and self._static_value_type.resolved_type is None:
+            self._static_value_type.resolved_type = self.type
         return self._static_value_type
 
+    @contextmanager
+    def targetValue(self, value):
+        old_value = self.value
+        self.value = value
+
+        stack = ExitStack()
+        if self._static_value_type is not None:
+            targets = [(self._static_value_type, value)]
+            stack.enter_context(dependent.target(targets))
+
+        with stack:
+            yield
+
+        self.value = old_value
 
     def __copy__(self):
         return Variable(self.name, copy(self.type), self.tokens)
