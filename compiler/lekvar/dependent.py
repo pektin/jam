@@ -99,6 +99,10 @@ class DependentObject(Type, BoundObject):
     def resolveValue(self):
         return self.target or self
 
+    def extractValue(self):
+        assert self.target is not None
+        return self.target
+
     # Targets this dependent object
     @contextmanager
     def targetAt(self, target, checkTypes = True):

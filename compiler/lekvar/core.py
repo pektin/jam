@@ -86,9 +86,14 @@ class Object(ABC):
     def resolveType(self) -> Type:
         pass
 
-    # Should return a Object inplace of the current one
-    # only useful for objects that link to other objects
+    # Resolve transparent links to other objects.
+    # Only links which act solely as proxies should resolve to their linked value.
     def resolveValue(self) -> Object:
+        return self
+
+    # Deep extract a linked value.
+    # Should bypass any features proxies on top of a linked value.
+    def extractValue(self) -> Object:
         return self
 
     # Resolves a call operation using this object's type.
