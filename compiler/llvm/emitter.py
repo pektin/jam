@@ -135,6 +135,7 @@ def Variable_resetEmission(self):
 
 @patch
 def Variable_emit(self):
+    if self.value is not None: return
     if (self.llvm_value is not None or
         self.llvm_context_index >= 0 or
         self.llvm_self_index >= 0): return
@@ -149,12 +150,18 @@ def Variable_emit(self):
 
 @patch
 def Variable_emitValue(self, type):
+    if self.value is not None:
+        return self.value.emitValue(type)
+
     self.emit()
 
     return State.builder.load(self.emitAssignment(type), "")
 
 @patch
 def Variable_emitAssignment(self, type):
+    if self.value is not None:
+        return self.value.emitAssignment(type)
+
     self.emit()
 
     if self.llvm_value is not None:
@@ -168,10 +175,16 @@ def Variable_emitAssignment(self, type):
 
 @patch
 def Variable_emitType(self):
-    raise TypeError(message="Not Implemented")
+    if self.value is None:
+        # This check should be done during verification
+        raise TypeError(message="Not Implemented")
+
+    return self.value.emitType()
 
 @patch
 def Variable_emitContext(self):
+    if self.value is not None:
+        return self.value.emitContext()
     return self.emitAssignment(None)
 
 #
