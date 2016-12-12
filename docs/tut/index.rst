@@ -5,7 +5,7 @@ Introduction
 ============
 
 This tutorial serves as a guide for those new to the language and its tools. For
-more detailed and technical description of the language and its library please
+a more detailed and technical description of the language and its library please
 refer to the :doc:`language reference<../jam/index>` and the
 :doc:`library reference<../lib/index>`.
 
