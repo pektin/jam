@@ -98,4 +98,6 @@ class Variable(BoundObject, Type):
         return Variable(self.name, copy(self.type), self.tokens)
 
     def __repr__(self):
+        if self.value is not None:
+            return "{}:= {}".format(self.name, self.value)
         return "{}:{}".format(self.name, self.type)
