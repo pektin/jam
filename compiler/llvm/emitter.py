@@ -401,14 +401,6 @@ def DependentObject_emitContext(self):
 lekvar.DependentTarget.emitted = False
 
 @patch
-def DependentTarget_checkEmission(self):
-    if not self.emitted:
-        self.value.resetEmission()
-        self.emitted = True
-        return False
-    return True
-
-@patch
 def DependentTarget_emit(self):
     raise InternalError("Not Implemented")
 
@@ -420,15 +412,17 @@ def DependentTarget_emitValue(self, type):
 
     with self.target():
         if type not in cache:
-            assert not self.checkEmission()
+            assert not self.emitted
 
             #TODO: Make this generic, currently specific for Function
             # Maybe turn the entire emitter into a sequenced collection of generators,
             # like dependent object targeting, which would also allow for multithreading
             assert isinstance(self.value, lekvar.Function)
-            self.value.emitStatic()
-            cache[type] = self.value.llvm_value
-            self.value.emitBody()
+
+            with self.value.resetEmission():
+                self.value.emitStatic()
+                cache[type] = self.value.llvm_value
+                self.value.emitBody()
         return cache[type]
 
 #
@@ -474,27 +468,26 @@ lekvar.ClosedTarget.llvm_type = None
 
 @patch
 def ClosedTarget_emitValue(self, type):
-    print("CT!", self.value, self.value.static)
     if self.llvm_value is None:
-        self.origin.resetEmission()
 
-        with self.target():
-            self.value.resetEmission()
-            self.llvm_value = self.value.emitValue(type)
+        with self.origin.resetEmission():
+            with self.target():
+                self.llvm_value = self.value.emitValue(type)
 
     return self.llvm_value
 
 @patch
 def ClosedTarget_emitContext(self):
-    with self.target():
-        return self.value.emitContext()
+    with self.origin.resetEmission():
+        with self.target():
+            return self.value.emitContext()
 
 @patch
 def ClosedTarget_emitType(self):
     if self.llvm_type is None:
-        with self.target():
-            self.value.resetEmission()
-            self.llvm_type = self.value.emitType()
+        with self.origin.resetEmission():
+            with self.target():
+                self.llvm_type = self.value.emitType()
 
     return self.llvm_type
 #
