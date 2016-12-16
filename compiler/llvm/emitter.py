@@ -122,7 +122,8 @@ def Attribute_emitValue(self, type):
 
 @patch
 def Attribute_emitContext(self):
-    return emitAssignment(self.object, None)
+    with State.selfScope(emitAssignment(self.object, None)):
+        return self.value.emitContext()
 
 @patch
 def Attribute_emitAssignment(self, type):
@@ -268,7 +269,7 @@ def Call_emitValue(self, type):
 
     bound_value = self.called.emitContext()
     with State.selfScope(bound_value):
-        context = self.function.resolveValue().emitContext()
+        context = self.function.emitContext()
 
     if context is not None:
         arguments = [State.builder.cast(context, llvm.Type.void_p(), "")]
@@ -424,6 +425,11 @@ def DependentTarget_emitValue(self, type):
                 cache[type] = self.value.llvm_value
                 self.value.emitBody()
         return cache[type]
+
+@patch
+def DependentTarget_emitContext(self):
+    with self.target():
+        return self.value.emitContext()
 
 #
 # class ClosedLink
@@ -610,11 +616,15 @@ def Function_emitValue(self, type):
 
 @patch
 def Function_emitContext(self):
+    closure_type = self.llvm_closure_type or self.closed_context.emitType()
+    assert closure_type is not None
+
     if len(self.closed_context) > 0:
-        context = State.alloca(self.llvm_closure_type, "")
+        context = State.alloca(closure_type, "")
 
         #TODO: Remove this special case
-        if State.self is not None and "self" in self.closed_context:
+        if "self" in self.closed_context and State.self != 0:
+            assert State.self is not None
             assert self.closed_context["self"].llvm_context_index >= 0
             index = self.closed_context["self"].llvm_context_index
             self_ptr = State.builder.structGEP(context, index, "")
@@ -630,9 +640,7 @@ def Function_emitContext(self):
 
         return context
 
-    assert self.llvm_closure_type is not None
-
-    return llvm.Value.null(llvm.Pointer.new(self.llvm_closure_type, 0))
+    return llvm.Value.null(llvm.Pointer.new(closure_type, 0))
 
 #
 # Contructor
@@ -661,7 +669,8 @@ def Constructor_emitReturn(self):
 
 @patch
 def Constructor_emitContext(self):
-    with State.selfScope(None):
+    # TODO: Add inits here
+    with State.selfScope(0):
         return lekvar.Function.emitContext(self)
 
 #
@@ -788,7 +797,7 @@ def Method_emitValueForMethodType(self, type):
 
 @patch
 def Method_emitContext(self):
-    return None
+    return State.self
 
 #
 # class MethodType
