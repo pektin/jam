@@ -1,5 +1,6 @@
 from abc import abstractmethod as abstract
-from contextlib import ExitStack
+from itertools import chain
+from contextlib import contextmanager, ExitStack
 
 from .. import lekvar
 from ..errors import InternalError, TypeError
@@ -13,6 +14,14 @@ from . import bindings as llvm
 lekvar.BoundObject.llvm_value = None
 
 # Extension abstract methods apparently don't work
+
+@patch
+def Object_resetLocalEmission(self):
+    raise InternalError("Not Implemented")
+
+@patch
+def Object_gatherEmissionResets(self):
+    return []
 
 @patch
 #@abstract
@@ -38,12 +47,40 @@ def Type_emitInstanceAssignment(self, value:lekvar.Object, type:lekvar.Type) -> 
     return value.emitAssignment(type)
 
 #
+# class Object
+#
+
+# Context for resetting the emission of a value
+@patch
+def Object_resetEmission(self):
+    cache = set()
+    stack = ExitStack()
+    objects = iter([self])
+
+    while True:
+        obj = next(objects, None)
+        if obj is None: break
+        if obj in cache: continue
+
+        cache.add(obj)
+        local_resets = obj.resetLocalEmission()
+        if local_resets is not None:
+            stack.enter_context(local_resets)
+        objects = chain(objects, obj.gatherEmissionResets())
+
+    return stack
+
+#
 # class Link
 #
 
 @patch
-def Link_resetEmission(self):
-    self.value.resetEmission()
+def Link_resetLocalEmission(self):
+    return self.value.resetLocalEmission()
+
+@patch
+def Link_gatherEmissionResets(self):
+    return self.value.gatherEmissionResets()
 
 @patch
 def Link_emit(self):
@@ -130,8 +167,12 @@ lekvar.Variable.llvm_context_index = -1
 lekvar.Variable.llvm_self_index = -1
 
 @patch
-def Variable_resetEmission(self):
+@contextmanager
+def Variable_resetLocalEmission(self):
+    old_value = self.llvm_value
     self.llvm_value = None
+    yield
+    self.llvm_value = old_value
 
 @patch
 def Variable_emit(self):
@@ -278,12 +319,17 @@ def Return_emitValue(self, type):
 lekvar.Context.llvm_type = None
 
 @patch
-def Context_resetEmission(self):
-    self.llvm_type = None
-
+def Context_gatherEmissionResets(self):
     for child in self:
-        child.resetEmission()
-    self.emitType()
+        yield child
+
+@patch
+@contextmanager
+def Context_resetLocalEmission(self):
+    old_type = self.llvm_type
+    self.llvm_type = None
+    yield
+    self.llvm_type = old_type
 
 @patch
 def Context_emitType(self):
@@ -318,6 +364,16 @@ def Context_emitType(self):
 #
 # class DependentObject
 #
+
+@patch
+def DependentObject_gatherEmissionResets(self):
+    assert self.target is not None
+    return self.target.gatherEmissionResets()
+
+@patch
+def DependentObject_resetLocalEmission(self):
+    assert self.target is not None
+    return self.target.resetLocalEmission()
 
 @patch
 def DependentObject_emit(self):
@@ -382,6 +438,18 @@ def DependentTarget_emitValue(self, type):
 lekvar.ClosedLink.llvm_value = None
 
 @patch
+def ClosedLink_gatherEmissionResets(self):
+    return []
+
+@patch
+@contextmanager
+def ClosedLink_resetLocalEmission(self):
+    old_value = self.llvm_value
+    self.llvm_value = None
+    yield
+    self.llvm_value = old_value
+
+@patch
 def ClosedLink_emitValue(self, type):
     if self.llvm_value is None:
         return self.value.emitValue(type)
@@ -439,14 +507,23 @@ lekvar.Function.llvm_closure_type = None
 lekvar.Function.emitted_cache = None
 
 @patch
-def Function_resetEmission(self):
-    self.llvm_value = None
-    self.llvm_closure_type = None
+def Function_gatherEmissionResets(self):
+    yield self.type
+    yield self.closed_context
 
     for child in self.local_context:
-        child.resetEmission()
+        yield child
 
-    self.closed_context.resetEmission()
+@patch
+@contextmanager
+def Function_resetLocalEmission(self):
+    old_value = self.llvm_value
+    self.llvm_value = None
+    old_closure_type = self.llvm_closure_type
+    self.llvm_closure_type = None
+    yield
+    self.llvm_value = old_value
+    self.llvm_closure_type = old_closure_type
 
 @patch
 def Function_emit(self):
@@ -599,6 +676,17 @@ def Constructor_emitContext(self):
 #
 
 @patch
+def FunctionType_gatherEmissionResets(self):
+    yield self.return_type
+
+    for type in self.arguments:
+        yield type
+
+@patch
+def FunctionType_resetLocalEmission(self):
+    return None
+
+@patch
 def FunctionType_emitType(self):
     return llvm.Pointer.new(self.emitFunctionType(), 0)
 
@@ -660,11 +748,13 @@ def ExternalFunction_emitContext(self):
 #
 
 @patch
-def Method_resetEmission(self):
-    for overload in self.overload_context:
-        overload.resetEmission()
-    for overload in self.dependent_overload_context:
-        overload.resetEmission()
+def Method_gatherEmissionResets(self):
+    yield self.overload_context
+    yield self.dependent_overload_context
+
+@patch
+def Method_resetLocalEmission(self):
+    return None
 
 @patch
 def Method_emit(self):
@@ -714,6 +804,15 @@ def Method_emitContext(self):
 lekvar.MethodType.llvm_type = None
 
 @patch
+def MethodType_gatherEmissionResets(self):
+    for fn_type in self.used_overload_types + self.used_dependent_overload_types:
+        yield fn_type
+
+@patch
+def MethodType_resetLocalEmission(self):
+    return None
+
+@patch
 def MethodType_emitType(self):
     if self.llvm_type is None:
         fn_types = [type.emitType() for type in self.used_overload_types]
@@ -755,8 +854,19 @@ def MethodInstance_emitContext(self):
 lekvar.Class.llvm_type = None
 
 @patch
-def Class_resetEmission(self):
+def Class_gatherEmissionResets(self):
+    yield self.constructor
+
+    for child in self.instance_context:
+        yield child
+
+@patch
+@contextmanager
+def Class_resetLocalEmission(self):
+    old_type = self.llvm_type
     self.llvm_type = None
+    yield
+    self.llvm_type
 
 @patch
 def Class_emit(self):

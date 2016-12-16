@@ -146,6 +146,9 @@ class LLVMType(lekvar.Type, lekvar.BoundObject):
 
     LLVM_MAP = None
 
+    def resetLocalEmission(self):
+        return None
+
     def emit(self):
         pass
 
@@ -177,6 +180,9 @@ class LLVMFunction(lekvar.ExternalFunction):
         raise InternalError("LLVMFunctions do not have a local context")
 
     # Emission
+
+    def resetLocalEmission(self):
+        return None
 
     def emit(self):
         if self.llvm_value is None:
