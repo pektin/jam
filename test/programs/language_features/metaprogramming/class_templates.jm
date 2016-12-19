@@ -1,4 +1,4 @@
-##2\n3.2\n5\n
+#?#2\n3.2\n5\n
 
 pragma def foo(T)
   class Foo
@@ -11,6 +11,10 @@ pragma def foo(T)
     def self + other:Foo
       return Foo(value + other.value)
     end
+
+    def print()
+      puts(value)
+    end
   end
 
   return Foo
@@ -19,8 +23,8 @@ end
 a = (pragma foo(Int))(2)
 puts(a.value)
 b = (pragma foo(Real))(3.2)
-puts(b.value)
+b.print()
 
 c = (pragma foo(Int))(3)
 d = a + c
-puts(d.value)
+d.print()

@@ -1,0 +1,37 @@
+#?#2\n
+
+pragma def Foo(T)
+  class foo
+    value:pragma Bar(T)
+
+    new(v:pragma Bar(T))
+      value = v
+    end
+
+    def print()
+      value.print()
+    end
+  end
+
+  return foo
+end
+
+pragma def Bar(T)
+  class bar
+    value:T
+
+    new(v:T)
+      value = v
+    end
+
+    def print()
+      puts(value)
+    end
+  end
+
+  return bar
+end
+
+b = Bar(Int)(2)
+f = Foo(Int)(b)
+f.print()
