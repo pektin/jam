@@ -278,7 +278,7 @@ def Call_emitValue(self, type):
 
     # Hack, for now
     scope = ExitStack()
-    if isinstance(self.function, lekvar.DependentTarget):
+    if isinstance(self.function, lekvar.ForwardTarget):
         scope = self.function.target()
 
     with scope:
@@ -363,50 +363,50 @@ def Context_emitType(self):
     return self.llvm_type
 
 #
-# class DependentObject
+# class ForwardObject
 #
 
 @patch
-def DependentObject_gatherEmissionResets(self):
+def ForwardObject_gatherEmissionResets(self):
     assert self.target is not None
     return self.target.gatherEmissionResets()
 
 @patch
-def DependentObject_resetLocalEmission(self):
+def ForwardObject_resetLocalEmission(self):
     assert self.target is not None
     return self.target.resetLocalEmission()
 
 @patch
-def DependentObject_emit(self):
+def ForwardObject_emit(self):
     raise InternalError("Not Implemented")
 
 @patch
-def DependentObject_emitValue(self, type):
+def ForwardObject_emitValue(self, type):
     assert self.target is not None
     return self.target.emitValue(type)
 
 @patch
-def DependentObject_emitType(self):
+def ForwardObject_emitType(self):
     assert self.target is not None
     return self.target.emitType()
 
 @patch
-def DependentObject_emitContext(self):
+def ForwardObject_emitContext(self):
     assert self.target is not None
     return self.target.emitContext()
 
 #
-# class DependentTarget
+# class ForwardTarget
 #
 
-lekvar.DependentTarget.emitted = False
+lekvar.ForwardTarget.emitted = False
 
 @patch
-def DependentTarget_emit(self):
+def ForwardTarget_emit(self):
     raise InternalError("Not Implemented")
 
 @patch
-def DependentTarget_emitValue(self, type):
+def ForwardTarget_emitValue(self, type):
     if self.value.emitted_cache is None:
         self.value.emitted_cache = {}
     cache = self.value.emitted_cache
@@ -417,7 +417,7 @@ def DependentTarget_emitValue(self, type):
 
             #TODO: Make this generic, currently specific for Function
             # Maybe turn the entire emitter into a sequenced collection of generators,
-            # like dependent object targeting, which would also allow for multithreading
+            # like forward object targeting, which would also allow for multithreading
             assert isinstance(self.value, lekvar.Function)
 
             with self.value.resetEmission():
@@ -427,7 +427,7 @@ def DependentTarget_emitValue(self, type):
         return cache[type]
 
 @patch
-def DependentTarget_emitContext(self):
+def ForwardTarget_emitContext(self):
     with self.target():
         return self.value.emitContext()
 
@@ -752,7 +752,7 @@ def ExternalFunction_emitContext(self):
 @patch
 def Method_gatherEmissionResets(self):
     yield self.overload_context
-    yield self.dependent_overload_context
+    yield self.forward_overload_context
 
 @patch
 def Method_resetLocalEmission(self):
@@ -785,11 +785,11 @@ def Method_emitValueForMethodType(self, type):
                 overloads.pop(index)
                 break
 
-    overloads = list(self.dependent_overload_context)
-    for overload_type in type.used_dependent_overload_types:
+    overloads = list(self.forward_overload_context)
+    for overload_type in type.used_forward_overload_types:
         for overload in overloads:
             if overload.resolveType().checkCompatibility(overload_type):
-                fn = overload.dependentTarget(overload_type)
+                fn = overload.forwardTarget(overload_type)
                 values.append(fn.emitValue(overload_type))
                 break
 
@@ -807,7 +807,7 @@ lekvar.MethodType.llvm_type = None
 
 @patch
 def MethodType_gatherEmissionResets(self):
-    for fn_type in self.used_overload_types + self.used_dependent_overload_types:
+    for fn_type in self.used_overload_types + self.used_forward_overload_types:
         yield fn_type
 
 @patch
@@ -818,7 +818,7 @@ def MethodType_resetLocalEmission(self):
 def MethodType_emitType(self):
     if self.llvm_type is None:
         fn_types = [type.emitType() for type in self.used_overload_types]
-        fn_types += [type.emitType() for type in self.used_dependent_overload_types]
+        fn_types += [type.emitType() for type in self.used_forward_overload_types]
         self.llvm_type = llvm.Struct.newAnonym(fn_types, False)
     return self.llvm_type
 
@@ -841,7 +841,7 @@ def MethodInstance_emitAssignment(self):
         index = self.type.used_overload_types.index(self.target)
     except ValueError:
         index = len(self.type.used_overload_types)
-        index += self.type.used_dependent_overload_types.index(self.target)
+        index += self.type.used_forward_overload_types.index(self.target)
 
     return State.builder.structGEP(value, index, "")
 

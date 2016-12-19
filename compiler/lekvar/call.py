@@ -5,7 +5,7 @@ from ..errors import *
 from .state import State
 from .core import Context, Object, BoundObject, Type
 from .function import FunctionType
-from .dependent import DependentTarget
+from .forward import ForwardTarget
 
 class Call(Object):
     called = None
@@ -45,8 +45,8 @@ class Call(Object):
                 raise
 
     def resolveType(self):
-        # Hack for dependent types
-        context = self.function.target() if isinstance(self.function, DependentTarget) else ExitStack()
+        # Hack for forward types
+        context = self.function.target() if isinstance(self.function, ForwardTarget) else ExitStack()
         with context:
             type = self.function.resolveType().return_type
 

@@ -122,7 +122,7 @@ class Object(ABC):
 # other objects bound to it through a context must also be a bound object.
 class BoundObject(Object):
     name = None
-    dependent = False
+    forward = False
     bound_context = None
 
     def __init__(self, name, tokens = None):

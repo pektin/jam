@@ -9,11 +9,11 @@ from .util import inScope
 from .links import Link
 
 # Python Predefines
-DependentObject = None
+ForwardObject = None
 
-# Apply targeting to a set of dependent objects and their dependencies
+# Apply targeting to a set of forward objects and their dependencies
 @contextmanager
-def target(objects:[(DependentObject, Object)], checkTypes = True):
+def target(objects:[(ForwardObject, Object)], checkTypes = True):
     with ExitStack() as stack:
         dependencies = iter(objects)
         while True:
@@ -27,18 +27,18 @@ def target(objects:[(DependentObject, Object)], checkTypes = True):
 
         yield
 
-# A dependent object is a collector for behaviour
+# A forward object is a collector for behaviour
 # Initially the object is used like any other, creating dependencies
-# Later a object can be chosen to "replace" the dependent object,
+# Later a object can be chosen to "replace" the forward object,
 # Which is then checked for all the dependencies.
 # This is similar to templating, but much more powerful and less context
-# dependent.
-class DependentObject(Type, BoundObject):
-    dependent = True
+# forward.
+class ForwardObject(Type, BoundObject):
+    forward = True
 
-    # The target object which which to replace the dependent object
+    # The target object which which to replace the forward object
     target = None
-    # The scope in which the dependent object is mutable
+    # The scope in which the forward object is mutable
     scope = None
 
     # Child Dependencies
@@ -55,7 +55,7 @@ class DependentObject(Type, BoundObject):
     compatible_type_switch = None
     switches = None
 
-    # Hack for dependent functions
+    # Hack for forward functions
     _return_type = None
 
     def __init__(self, scope:Scope, name:str = None, tokens = None):
@@ -79,7 +79,7 @@ class DependentObject(Type, BoundObject):
 
     @classmethod
     def switch(self, scope:Scope, targets:[Object], determiner:(lambda Object: bool)):
-        out = DependentObject(scope)
+        out = ForwardObject(scope)
         out.target_switch = targets
         out.target_switch_determiner = determiner
         return out
@@ -103,10 +103,10 @@ class DependentObject(Type, BoundObject):
         assert self.target is not None
         return self.target
 
-    # Targets this dependent object
+    # Targets this forward object
     @contextmanager
     def targetAt(self, target, checkTypes = True):
-        if isinstance(target, DependentObject):
+        if isinstance(target, ForwardObject):
             target = target.resolveValue()
 
         with ExitStack() as stack:
@@ -159,10 +159,10 @@ class DependentObject(Type, BoundObject):
             target_call = resolution_function(target)(call)
 
             yield obj, target_call
-            # The call itself may also be dependent, so we have to target that
-            if not all(arg.resolved for arg in call.arguments if isinstance(arg, DependentObject)):
+            # The call itself may also be forward, so we have to target that
+            if not all(arg.resolved for arg in call.arguments if isinstance(arg, ForwardObject)):
                 for arg, target_arg in zip(call.arguments, target_call.arguments):
-                    if isinstance(arg, DependentObject):
+                    if isinstance(arg, ForwardObject):
                         yield arg, target_arg
 
     # Same as targetAt but for switches
@@ -178,25 +178,25 @@ class DependentObject(Type, BoundObject):
     # Create and cache dependencies for standard object functionality
     @property
     def context(self):
-        self._context = self._context or DependentContext(self)
+        self._context = self._context or ForwardContext(self)
         return self._context
 
     @property
     def instance_context(self):
-        self._instance_context = self._instance_context or DependentContext(self)
+        self._instance_context = self._instance_context or ForwardContext(self)
         return self._instance_context
 
     def resolveType(self):
         if self.target is not None: return self.target.resolveType()
 
-        self.resolved_type = self.resolved_type or DependentObject(self.scope)
+        self.resolved_type = self.resolved_type or ForwardObject(self.scope)
         return self.resolved_type
 
     def resolveCall(self, call):
-        return self.resolved_calls.setdefault(call, DependentObject(self.scope))
+        return self.resolved_calls.setdefault(call, ForwardObject(self.scope))
 
     def resolveInstanceCall(self, call):
-        return self.resolved_instance_calls.setdefault(call, DependentObject(self.scope))
+        return self.resolved_instance_calls.setdefault(call, ForwardObject(self.scope))
 
     @property
     def static(self):
@@ -211,7 +211,7 @@ class DependentObject(Type, BoundObject):
     # Hack!
     @property
     def return_type(self):
-        self._return_type = self._return_type or DependentObject(self.scope)
+        self._return_type = self._return_type or ForwardObject(self.scope)
         return self._return_type
 
     def checkCompatibility(self, other:Type, check_cache = None):
@@ -267,10 +267,10 @@ class DependentObject(Type, BoundObject):
         return "{} as {}".format(self.__class__.__name__, self.target)
 
 
-class DependentTarget(Link):
+class ForwardTarget(Link):
     dependencies = None
 
-    def __init__(self, value:Object, dependencies:[(DependentObject, Object)], tokens = None):
+    def __init__(self, value:Object, dependencies:[(ForwardObject, Object)], tokens = None):
         Link.__init__(self, value, tokens)
         self.dependencies = dependencies
 
@@ -282,10 +282,10 @@ class DependentTarget(Link):
     def __repr__(self):
         return "Target({}, {})".format(self.value, self.dependencies)
 
-# The dependent context compliments the dependent object with the creation
+# The forward context compliments the forward object with the creation
 # of dependencies for contexts.
-class DependentContext(Context):
-    dependent = True
+class ForwardContext(Context):
+    forward = True
 
     def __init__(self, scope:BoundObject):
         Context.__init__(self, scope, [])
@@ -296,7 +296,7 @@ class DependentContext(Context):
 
     def __getitem__(self, name:str):
         if not self.locked and name not in self.children:
-            self.addChild(DependentObject(self.scope.scope, name))
+            self.addChild(ForwardObject(self.scope.scope, name))
         return self.children[name]
 
     def __setitem__(self, name:str, value:BoundObject):
@@ -309,14 +309,14 @@ class DependentContext(Context):
     @contextmanager
     def targetAt(self, target, checkTypes = True):
         def target_generator():
-            if isinstance(target, DependentContext) and self.scope.scope is target.scope.scope:
+            if isinstance(target, ForwardContext) and self.scope.scope is target.scope.scope:
                 target.scope._instance_context = self
                 yield None
                 return
 
             for name in self.children:
                 if name not in target.children:
-                    raise (DependencyError(message="Dependent target context does not have attribute")
+                    raise (DependencyError(message="Forward target context does not have attribute")
                            .add(content=name).add(message="", object=target.scope))
                 yield self[name], target[name]
         yield target_generator()

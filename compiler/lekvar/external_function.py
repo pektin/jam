@@ -8,7 +8,7 @@ class ExternalFunction(BoundObject):
     external_name = None
     type = None
 
-    dependent = False
+    forward = False
     verified = False
 
     def __init__(self, name:str, external_name:str, arguments:[Type], return_type:Type, tokens = None):

@@ -4,27 +4,27 @@ from .state import State
 from .core import Context, Object, BoundObject, SoftScope, Type
 from .util import checkCompatibility
 from .function import Function, FunctionType
-from .dependent import DependentObject, DependentTarget
+from .forward import ForwardObject, ForwardTarget
 
 # Python Predefines
 Method = None
 
 class Method(BoundObject, SoftScope):
     overload_context = None
-    dependent_overload_context = None
+    forward_overload_context = None
 
     def __init__(self, name:str, overloads:[Function], tokens = None):
         BoundObject.__init__(self, name, tokens)
 
         self.overload_context = Context(self, [])
-        self.dependent_overload_context = Context(self, [])
+        self.forward_overload_context = Context(self, [])
         for overload in overloads:
             self.addOverload(overload)
 
     def addOverload(self, overload:Function):
         context = self.overload_context
-        if overload.dependent:
-            context = self.dependent_overload_context
+        if overload.forward:
+            context = self.forward_overload_context
 
         overload.name = str(len(context.children))
         context.addChild(overload)
@@ -33,17 +33,17 @@ class Method(BoundObject, SoftScope):
         for overload in other.overload_context:
             self.addOverload(overload)
 
-        for overload in other.dependent_overload_context:
+        for overload in other.forward_overload_context:
             self.addOverload(overload)
 
     def verify(self):
         with State.scoped(self):
             self.overload_context.verify()
-            self.dependent_overload_context.verify()
+            self.forward_overload_context.verify()
 
     def resolveType(self):
         return MethodType([fn.resolveType() for fn in self.overload_context],
-                          [fn.resolveType() for fn in self.dependent_overload_context])
+                          [fn.resolveType() for fn in self.forward_overload_context])
 
     def resolveCall(self, call:FunctionType):
         matches = []
@@ -53,20 +53,20 @@ class Method(BoundObject, SoftScope):
             if checkCompatibility(call, overload.resolveType()):
                 matches.append(overload)
 
-        # Check dependent types if no other ones were found
+        # Check forward types if no other ones were found
         if len(matches) == 0:
-            for overload in self.dependent_overload_context:
+            for overload in self.forward_overload_context:
                 if checkCompatibility(call, overload.resolveType()):
                     matches.append(overload)
 
             if len(matches) == 1:
-                return matches[0].dependentTarget(call)
+                return matches[0].forwardTarget(call)
 
-        elif len(matches) > 1 and call.dependent and State.scope.dependent:
-            fn = DependentObject.switch(self, matches, lambda overload: checkCompatibility(call, overload.resolveType()))
-            # Find last argument that is dependent (the last one whose target is resolved)
+        elif len(matches) > 1 and call.forward and State.scope.forward:
+            fn = ForwardObject.switch(self, matches, lambda overload: checkCompatibility(call, overload.resolveType()))
+            # Find last argument that is forward (the last one whose target is resolved)
             for arg in reversed(call.arguments):
-                if isinstance(arg, DependentObject):
+                if isinstance(arg, ForwardObject):
                     arg.switches.append(fn)
                     return fn
 
@@ -74,7 +74,7 @@ class Method(BoundObject, SoftScope):
         if len(matches) < 1:
             err = (TypeError(object=self).add(message="does not have an overload for")
                                          .add(object=call).addNote(message="Possible overloads:"))
-            for overload in list(self.overload_context) + list(self.dependent_overload_context):
+            for overload in list(self.overload_context) + list(self.forward_overload_context):
                 err.addNote(object=overload, message="")
             raise err
         elif len(matches) > 1:
@@ -96,23 +96,23 @@ class Method(BoundObject, SoftScope):
 class MethodType(Type):
     overloads = None
     used_overloads = None
-    dependent_overloads = None
-    used_dependent_overloads = None
-    dependent = False
+    forward_overloads = None
+    used_forward_overloads = None
+    forward = False
 
-    def __init__(self, overloads:[FunctionType], dependent_overloads:[FunctionType], tokens = None):
+    def __init__(self, overloads:[FunctionType], forward_overloads:[FunctionType], tokens = None):
         Type.__init__(self, tokens)
         self.overloads = overloads
         self.used_overloads = {}
-        self.dependent_overloads = dependent_overloads
-        self.used_dependent_overloads = {}
-        self.dependent = len(dependent_overloads) > 0
+        self.forward_overloads = forward_overloads
+        self.used_forward_overloads = {}
+        self.forward = len(forward_overloads) > 0
 
     def resolveType(self):
         raise InternalError("Not Implemented")
 
     def verify(self):
-        for fn_type in self.overloads + self.dependent_overloads:
+        for fn_type in self.overloads + self.forward_overloads:
             fn_type.verify()
 
     @property
@@ -137,7 +137,7 @@ class MethodType(Type):
                     pass
             #TODO: More type checks
 
-        for self_fn_type in self.dependent_overloads:
+        for self_fn_type in self.forward_overloads:
             for other_fn_type in other.overloads:
                 if self_fn_type.checkCompatibility(other_fn_type, check_cache):
                     #TODO: Actually check these
@@ -153,12 +153,12 @@ class MethodType(Type):
                 matches.append(fn_type)
 
         if len(matches) == 0:
-            for fn_type in self.dependent_overloads:
+            for fn_type in self.forward_overloads:
                 if fn_type.checkCompatibility(call):
                     matches.append(fn_type)
 
             if len(matches) == 1:
-                self.used_dependent_overloads[call] = True
+                self.used_forward_overloads[call] = True
                 return MethodInstance(self, call)
 
         elif len(matches) == 1:
@@ -172,8 +172,8 @@ class MethodType(Type):
         return [type for type, used in self.used_overloads.items() if used]
 
     @property
-    def used_dependent_overload_types(self):
-        return [type for type, used in self.used_dependent_overloads.items() if used]
+    def used_forward_overload_types(self):
+        return [type for type, used in self.used_forward_overloads.items() if used]
 
 class MethodInstance(Object):
     def __init__(self, type:MethodType, target:FunctionType):

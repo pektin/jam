@@ -307,11 +307,11 @@ def Constructor_evalCall(self, values):
     return self_value
 
 #
-# class DependentTarget
+# class ForwardTarget
 #
 
 @patch
-def DependentTarget_eval(self):
+def ForwardTarget_eval(self):
     with self.target():
         result = self.value.eval()
 
@@ -320,39 +320,39 @@ def DependentTarget_eval(self):
     return result
 
 @patch
-def DependentTarget_evalContext(self):
+def ForwardTarget_evalContext(self):
     raise InternalError("Not Implemented")
 
 @patch
-def DependentTarget_evalCall(self, values):
+def ForwardTarget_evalCall(self, values):
     with self.target():
         return self.value.evalCall(values)
 
 @patch
-def DependentTarget_evalAssign(self, value):
+def ForwardTarget_evalAssign(self, value):
     raise InternalError("Not Implemented")
 
 #
-# class DependentObject
+# class ForwardObject
 #
 
 @patch
-def DependentObject_eval(self):
+def ForwardObject_eval(self):
     value = self.target.eval()
     if value is self.target:
         return self
     return value
 
 @patch
-def DependentObject_evalContext(self):
+def ForwardObject_evalContext(self):
     return self.target.evalContext()
 
 @patch
-def DependentObject_evalCall(self, values):
+def ForwardObject_evalCall(self, values):
     return self.target.evalCall(values)
 
 @patch
-def DependentObject_evalAssign(self, value):
+def ForwardObject_evalAssign(self, value):
     self.target.evalAssign(value)
 
 #
@@ -374,7 +374,7 @@ def Call_eval(self):
 
     # Hack, for now
     scope = ExitStack()
-    if isinstance(self.function, lekvar.DependentTarget):
+    if isinstance(self.function, lekvar.ForwardTarget):
         scope = self.function.target()
 
     with scope:

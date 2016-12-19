@@ -17,11 +17,11 @@ from .modifiers import Constant, Reference
 from .variable import Variable
 from .assignment import Assignment
 from .class_ import Class, Constructor
-from .dependent import DependentObject, DependentTarget
+from .forward import ForwardObject, ForwardTarget
 from .literal import Literal
 from .branches import Loop, Break, Branch
 from . import util
-from . import dependent
+from . import forward
 
 def _verify(source, frontend, logger = logging.getLogger()):
     logger.info("Parsing")
@@ -65,7 +65,7 @@ def use(frontend, backend, logger = logging.getLogger()):
 def useFrontend(frontend, logger = logging.getLogger()):
     builtins = frontend.builtins(logger)
     # Hack backend into frontend builtins
-    builtins.context.addChild(DependentObject(builtins, "_builtins"))
+    builtins.context.addChild(ForwardObject(builtins, "_builtins"))
     verify(builtins)
 
     try:
@@ -80,5 +80,5 @@ def useBackend(backend, logger = logging.getLogger()):
     backend_builtins = backend.builtins(logger)
     builtins = State.builtins.context["_builtins"]
 
-    with dependent.target([(builtins, backend_builtins)], False):
+    with forward.target([(builtins, backend_builtins)], False):
         yield

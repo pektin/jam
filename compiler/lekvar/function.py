@@ -7,7 +7,7 @@ from .util import checkCompatibility
 from .links import BoundLink
 from .closure import Closure
 from .variable import Variable
-from .dependent import DependentObject, DependentTarget
+from .forward import ForwardObject, ForwardTarget
 
 # Python Predefines
 FunctionType = None
@@ -24,7 +24,7 @@ class Function(Closure):
     verified = False
     static_scope = False
 
-    dependent_target_cache = None
+    forward_target_cache = None
 
     def __init__(self, name:str, arguments:[Variable], instructions:[Object], children:[Object] = [], return_type:Type = None, tokens = None):
         Closure.__init__(self, name, tokens)
@@ -36,12 +36,12 @@ class Function(Closure):
 
         for arg in self.arguments:
             if arg.resolveType() is None:
-                arg.type = DependentObject(self)
-                self.dependent = True
+                arg.type = ForwardObject(self)
+                self.forward = True
 
         self.type = FunctionType([arg.resolveType() for arg in arguments], return_type)
 
-        self.dependent_target_cache = {}
+        self.forward_target_cache = {}
 
     def verify(self):
         if self.verified: return
@@ -80,15 +80,15 @@ class Function(Closure):
             raise TypeError(object=self).add(message="is not callable with").add(object=call)
         return self
 
-    def dependentTarget(self, type):
+    def forwardTarget(self, type):
         args = [(arg_t, call_t) for arg_t, call_t in zip(self.type.arguments, type.arguments)
-                                if isinstance(arg_t, DependentObject)]
+                                if isinstance(arg_t, ForwardObject)]
 
         # Cache targets by arguments
         cache_args = tuple(arg[1] for arg in args)
-        if cache_args not in self.dependent_target_cache:
-            self.dependent_target_cache[cache_args] = DependentTarget(self, args)
-        return self.dependent_target_cache[cache_args]
+        if cache_args not in self.forward_target_cache:
+            self.forward_target_cache[cache_args] = ForwardTarget(self, args)
+        return self.forward_target_cache[cache_args]
 
     def __repr__(self):
         return "def {}({}) -> {}".format(self.name,
@@ -97,14 +97,14 @@ class Function(Closure):
 class FunctionType(Type):
     arguments = None
     return_type = None
-    dependent = False
+    forward = False
 
     verified = False
 
     def __init__(self, arguments:[Type], return_type:Type = None, tokens = None):
         Type.__init__(self, tokens)
         self.arguments = arguments
-        self.dependent = any(isinstance(arg, DependentObject) for arg in arguments)
+        self.forward = any(isinstance(arg, ForwardObject) for arg in arguments)
         self.return_type = return_type
 
     def __eq__(self, other):

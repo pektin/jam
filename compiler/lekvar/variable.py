@@ -7,8 +7,8 @@ from .state import State
 from .util import checkCompatibility
 from .core import Context, Object, BoundObject, Type
 from .links import Link, Attribute
-from .dependent import DependentObject, DependentContext
-from . import dependent
+from .forward import ForwardObject
+from . import forward
 
 #
 # Variable
@@ -74,8 +74,8 @@ class Variable(BoundObject, Type):
 
     @property
     def static_value_type(self):
-        self._static_value_type = self._static_value_type or DependentObject(self.parent)
-        if isinstance(self.type, DependentObject) and self._static_value_type.resolved_type is None:
+        self._static_value_type = self._static_value_type or ForwardObject(self.parent)
+        if isinstance(self.type, ForwardObject) and self._static_value_type.resolved_type is None:
             self._static_value_type.resolved_type = self.type
         return self._static_value_type
 
@@ -87,7 +87,7 @@ class Variable(BoundObject, Type):
         stack = ExitStack()
         if self._static_value_type is not None:
             targets = [(self._static_value_type, value)]
-            stack.enter_context(dependent.target(targets))
+            stack.enter_context(forward.target(targets))
 
         with stack:
             yield
