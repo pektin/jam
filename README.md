@@ -1,5 +1,7 @@
 # Jam
 
+[lets Jam!](https://lets-jam.org)
+
 [![Join the chat at https://gitter.im/pektin/jam](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/pektin/jam?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/pektin/jam.svg?branch=master)](https://travis-ci.org/pektin/jam)
 [![Coverage Status](https://coveralls.io/repos/pektin/jam/badge.svg?branch=master&service=github)](https://coveralls.io/github/pektin/jam?branch=master)
@@ -8,12 +10,7 @@ Jam is a general purpose programming language that tries to combine the
 advantages of dynamic, interpreted programming languages with those of static,
 compiled ones.
 
-Jam syntax is heavily inspired by [Ruby](https://ruby-lang.org) with a hint of
-[Python](https://python.org) and [D](http://dlang.org/), designed with
-readability and writeability in mind.
-
-Supported by a powerful, fully static gradual type system, Jam can compile
-untyped code, written in the style of dynamic languages to fast, native code.
+See the [website](https://lets-jam.org) for more information.
 
 Currently the compiler is being written in python, speed being a secondary
 concern. The plan is to bootstrap the compiler once the language is capable.
@@ -50,32 +47,7 @@ make install
 
 ## Usage
 
-The Jam toolbox is entirely contained within the `jam` script. To install the
-script on your local path, run `make install`.
-
-To access the Jam REPL simply run:
-
-```bash
-jam
-```
-
-To directly execute a jam script, run:
-
-```bash
-jam FILE
-```
-
-To compile a script to an executable, run:
-
-```bash
-jam c FILE
-```
-
-For further help run:
-
-```bash
-jam --help
-```
+See [tutorial](https://lets-jam.org/docs/tut/tooling.html).
 
 ## Development
 
