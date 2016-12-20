@@ -7,6 +7,7 @@ Jam v\ |release| Documentation
     jam/index
     lib/index
     tut/index
+    roadmap/index
 
 This collection of documents tries to provide comprehensive documentation
 coverage on the Jam programming language. This is still a heavy work in progress
@@ -26,3 +27,6 @@ Documents:
 
     * :doc:`Tutorial<tut/index>`
         *the official Jam language tutorial*
+
+    * :doc:`Roadmap<roadmap/index>`
+        *roadmap for the development of Jam*
