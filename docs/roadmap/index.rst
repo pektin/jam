@@ -4,6 +4,9 @@ Jam Roadmap
 This document outlines the future plans for developing Jam. Although the order
 may slightly change, the milestones themselves are mostly stable.
 
+After version 0.1, releases will happen alongside milestones.
+After version 1.0, Jam will follow semantic versioning.
+
 Milestones
 ==========
 
