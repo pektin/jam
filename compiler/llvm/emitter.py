@@ -212,7 +212,7 @@ def Variable_emitAssignment(self, type):
     if self.llvm_self_index < 0:
         raise InternalError()
 
-    assert State.self is not None
+    assert State.self is not None and State.self is not 0
     return State.builder.structGEP(State.self, self.llvm_self_index, "")
 
 @patch
