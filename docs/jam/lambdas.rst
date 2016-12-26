@@ -15,9 +15,13 @@ Syntax
 
 Example
 =======
-
 ::
 
-    [1, 2, 3, 4].map(a => a**2) #=> [1, 4, 9, 16]
-    [1, 2, 3, 4].reduce((a, b) => a*b) #=> 24
-    12.times(=> puts("Hi"))
+    array = [1, 2, 3, 4]
+
+    array.map(a => a**2) #=> [1, 4, 9, 16]
+
+    array.reduce((a, b) => a*b) #=> 24
+
+    a = => puts("hi")
+    12.times(a)
