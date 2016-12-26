@@ -1,15 +1,13 @@
 Identifiers
 ###########
 
-Identifiers are used to identify values in Jam. When an identifier is used by
-itself, it is understood as a reference to everything that was defined with that
-same identifier.
+Identifiers are names used to reference values in Jam. Any identifier must
+uniquely map to a single value inside the current scope, or any parent scopes.
+Identifiers with a leading ``"."`` do not check the current scope for matching
+values.
 
-When a reference is resolved, each scope up the tree is checked for the
-reference as an attribute. When no references are found, or when there is an
-ambiguity for which attribute is referenced, the reference becomes invalid.
-
-Identifiers are also used to get attributes of values explicit.
+Identifiers may contain more than one name, separated by a ``"."``. Any names
+after the first are used to access attributes on the referenced value.
 
 Syntax
 ======
@@ -20,15 +18,24 @@ Syntax
 
 Examples
 ========
+
+.. note::
+    These are non-working examples, purely meant to display the syntax of
+    identifiers
+
 ::
 
-    # Identifiers can begin with a lower case letter and then follow CamelCase structure
+    # Valid Identifiers
     fooBar
+    foo_bar
+    _foo_bar_
+    foo9
+    foo.bar
+    .foo
+    ._foo_._bar_
 
-
-    # They can also start with an underscore and then follow _under_score structure
-    _foo_bar_fizz_bazz_
-
-
-    # Identifiers can also be Natural numbers
-    _9
+    # Invalid Identifiers
+    9foo
+    bar.
+    foo-bar
+    foo::bar
