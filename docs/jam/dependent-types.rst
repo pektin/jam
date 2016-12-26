@@ -43,6 +43,18 @@ Example
       puts("n must be >= 0")
     end
 
+    # Jam does not have a deep understanding
+    if n < 0
+      puts("n is < 0")
+    else
+      # Type error, n doesn't meet condition n >= 0
+      puts(sqrt(n))
+    end
+
+    # Can be explicitly overridden, if required
+    assume n >= 0
+    puts(sqrt(n))
+
     # Will fail at runtime if assertion is not met
     # Thus it also implicitly creates an assumption
     assert n >= 0
