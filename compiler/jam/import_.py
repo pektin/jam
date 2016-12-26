@@ -85,4 +85,7 @@ class Import(lekvar.Link, lekvar.BoundObject):
 
         lekvar.State.sources = previous_sources
 
+    def __repr__(self):
+        return "import({})".format(self.value)
+
 lekvar.Import = Import
