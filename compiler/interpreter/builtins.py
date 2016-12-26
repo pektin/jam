@@ -70,7 +70,9 @@ def builtins(logger = logging.getLogger()):
     puts = lekvar.Method("puts", overloads)
     builtin_objects.append(puts)
 
-    return lekvar.Module("_builtins", builtin_objects)
+    module = lekvar.Module("_builtins", builtin_objects)
+    module.verify()
+    return module
 
 PRINT_MAP = {
     "String": "%s",

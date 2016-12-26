@@ -70,7 +70,9 @@ def builtins(logger = logging.getLogger()):
         ),
     )
 
-    return lekvar.Module("_builtins", builtin_objects)
+    module = lekvar.Module("_builtins", builtin_objects)
+    module.verify()
+    return module
 
 def llvmInstructionWrapper(instruction, self, additional_arguments = []):
     entry = self.llvm_value.appendBlock("")
