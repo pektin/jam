@@ -99,7 +99,8 @@ class ForwardObject(Type, BoundObject):
         return self.target or self
 
     def extractValue(self):
-        assert self.target is not None
+        if self.target is None:
+            return self
         return self.target
 
     # Targets this forward object
@@ -279,7 +280,7 @@ class ForwardTarget(Link):
             yield
 
     def __repr__(self):
-        return "Target({}, {})".format(self.value, self.dependencies)
+        return "FT({}, {})".format(self.value, self.dependencies)
 
 # The forward context compliments the forward object with the creation
 # of dependencies for contexts.
