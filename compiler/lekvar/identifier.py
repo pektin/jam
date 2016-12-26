@@ -56,8 +56,7 @@ class Identifier(BoundLink):
             self.value.tokens = self.tokens
             self.value.source = self.source
 
-            BoundLink.verifyAssignment(self, value)
-            raise InferVariable()
+            raise InferVariable(self.value)
 
     def __repr__(self):
         return "{}".format(self.name)
