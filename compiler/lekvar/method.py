@@ -10,31 +10,25 @@ from .forward import ForwardObject, ForwardTarget
 # Python Predefines
 Method = None
 
-class Method(BoundObject, SoftScope):
+class Method(Scope):
+    verified = False
     overload_context = None
-    forward_overload_context = None
 
     def __init__(self, name:str, overloads:[Function], tokens = None):
         BoundObject.__init__(self, name, tokens)
 
         self.overload_context = Context(self, [])
-        self.forward_overload_context = Context(self, [])
         for overload in overloads:
             self.addOverload(overload)
 
+    # Pre-verification method
     def addOverload(self, overload:Function):
-        context = self.overload_context
-        if overload.forward:
-            context = self.forward_overload_context
+        overload.name = str(len(self.overload_context))
+        self.overload_context.addChild(overload)
 
-        overload.name = str(len(context.children))
-        context.addChild(overload)
-
+    # Pre-verification method
     def assimilate(self, other:Method):
         for overload in other.overload_context:
-            self.addOverload(overload)
-
-        for overload in other.forward_overload_context:
             self.addOverload(overload)
 
     def verify(self):
@@ -45,30 +39,30 @@ class Method(BoundObject, SoftScope):
 
         with State.scoped(self):
             self.overload_context.verify()
-            self.forward_overload_context.verify()
 
     def resolveType(self):
-        return MethodType([fn.resolveType() for fn in self.overload_context],
-                          [fn.resolveType() for fn in self.forward_overload_context])
+        return MethodType([fn.resolveType() for fn in self.overload_context])
 
     def resolveCall(self, call:FunctionType):
         matches = []
 
         # Collect overloads which match the call type
         for overload in self.overload_context:
+            overload.verify()
             if checkCompatibility(call, overload.resolveType()):
                 matches.append(overload)
 
+        normal_matches = [match for match in matches if not match.stats.forward]
+        forward_matches = [match for match in matches if match.stats.forward]
+
         # Check forward types if no other ones were found
-        if len(matches) == 0:
-            for overload in self.forward_overload_context:
-                if checkCompatibility(call, overload.resolveType()):
-                    matches.append(overload)
+        if len(normal_matches) == 0:
+            if len(forward_matches) == 1:
+                return forward_matches[0].forwardTarget(call)
+            else:
+                normal_matches = forward_matches
 
-            if len(matches) == 1:
-                return matches[0].forwardTarget(call)
-
-        elif len(matches) > 1 and call.forward and State.scope.forward:
+        elif len(normal_matches) > 1 and call.stats.forward:# and State.scope.stats.forward:
             fn = ForwardObject.switch(self, matches, lambda overload: checkCompatibility(call, overload.resolveType()))
             # Find last argument that is forward (the last one whose target is resolved)
             for arg in reversed(call.arguments):
@@ -77,20 +71,20 @@ class Method(BoundObject, SoftScope):
                     return fn
 
         # Allow only one match
-        if len(matches) < 1:
+        if len(normal_matches) < 1:
             err = (TypeError(object=self).add(message="does not have an overload for")
                                          .add(object=call).addNote(message="Possible overloads:"))
-            for overload in list(self.overload_context) + list(self.forward_overload_context):
+            for overload in self.overload_context:
                 err.addNote(object=overload, message="")
             raise err
-        elif len(matches) > 1:
+        elif len(normal_matches) > 1:
             err = (TypeError(message="Ambiguous call").add(object=call).add(message="to")
                                                       .add(object=self).add(message="Matches:"))
-            for match in matches:
+            for match in normal_matches:
                 err.addNote(object=match, message="")
             raise err
 
-        return matches[0]
+        return normal_matches[0]
 
     @property
     def local_context(self):
@@ -102,23 +96,20 @@ class Method(BoundObject, SoftScope):
 class MethodType(Type):
     overloads = None
     used_overloads = None
-    forward_overloads = None
-    used_forward_overloads = None
-    forward = False
 
-    def __init__(self, overloads:[FunctionType], forward_overloads:[FunctionType], tokens = None):
+    def __init__(self, overloads:[FunctionType], tokens = None):
         Type.__init__(self, tokens)
         self.overloads = overloads
         self.used_overloads = {}
-        self.forward_overloads = forward_overloads
-        self.used_forward_overloads = {}
-        self.forward = len(forward_overloads) > 0
 
     def resolveType(self):
         raise InternalError("Not Implemented")
 
     def verify(self):
-        for fn_type in self.overloads + self.forward_overloads:
+        self._stats = Stats(None)
+        self._stats.static = True
+
+        for fn_type in self.overloads:
             fn_type.verify()
 
     @property
@@ -143,11 +134,11 @@ class MethodType(Type):
                     pass
             #TODO: More type checks
 
-        for self_fn_type in self.forward_overloads:
-            for other_fn_type in other.overloads:
-                if self_fn_type.checkCompatibility(other_fn_type, check_cache):
-                    #TODO: Actually check these
-                    pass
+        # for self_fn_type in self.forward_overloads:
+        #     for other_fn_type in other.overloads:
+        #         if self_fn_type.checkCompatibility(other_fn_type, check_cache):
+        #             #TODO: Actually check these
+        #             pass
 
         return True
 
@@ -158,28 +149,25 @@ class MethodType(Type):
             if fn_type.checkCompatibility(call):
                 matches.append(fn_type)
 
-        if len(matches) == 0:
-            for fn_type in self.forward_overloads:
-                if fn_type.checkCompatibility(call):
-                    matches.append(fn_type)
+        normal_matches = [match for match in matches if not match.stats.forward]
+        forward_matches = [match for match in matches if match.stats.forward]
 
-            if len(matches) == 1:
-                self.used_forward_overloads[call] = True
+        if len(normal_matches) == 0:
+            if len(forward_matches) == 1:
+                self.used_overloads[call] = True
                 return MethodInstance(self, call)
+            else:
+                normal_matches = forward_matches
 
-        elif len(matches) == 1:
-            self.used_overloads[matches[0]] = True
-            return MethodInstance(self, matches[0])
+        elif len(normal_matches) == 1:
+            self.used_overloads[normal_matches[0]] = True
+            return MethodInstance(self, normal_matches[0])
 
         raise TypeError(message="TODO: Write This")
 
     @property
     def used_overload_types(self):
         return [type for type, used in self.used_overloads.items() if used]
-
-    @property
-    def used_forward_overload_types(self):
-        return [type for type, used in self.used_forward_overloads.items() if used]
 
 class MethodInstance(Object):
     def __init__(self, type:MethodType, target:FunctionType):

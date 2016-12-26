@@ -752,7 +752,6 @@ def ExternalFunction_emitContext(self):
 @patch
 def Method_gatherEmissionResets(self):
     yield self.overload_context
-    yield self.forward_overload_context
 
 @patch
 def Method_resetLocalEmission(self):
@@ -778,21 +777,26 @@ def Method_emitValue(self, type):
 @patch
 def Method_emitValueForMethodType(self, type):
     values = []
-    overloads = list(self.overload_context)
     for overload_type in type.used_overload_types:
-        for index, overload in enumerate(overloads):
-            if overload.resolveType().checkCompatibility(overload_type):
-                values.append(overload.emitValue(overload_type))
-                overloads.pop(index)
-                break
+        normal_matches = []
+        forward_matches = []
 
-    overloads = list(self.forward_overload_context)
-    for overload_type in type.used_forward_overload_types:
-        for overload in overloads:
+        for overload in self.overload_context:
             if overload.resolveType().checkCompatibility(overload_type):
-                fn = overload.forwardTarget(overload_type)
-                values.append(fn.emitValue(overload_type))
-                break
+                if overload.stats.forward:
+                    forward_matches.append(overload)
+                else:
+                    normal_matches.append(overload)
+
+        if len(normal_matches) > 0:
+            assert len(normal_matches) == 1
+            overload = normal_matches[0]
+            values.append(overload.emitValue(overload_type))
+        else:
+            assert len(forward_matches) == 1
+            overload = forward_matches[0]
+            fn = overload.forwardTarget(overload_type)
+            values.append(fn.emitValue(overload_type))
 
     return llvm.Value.constStruct(type.emitType(), values)
 
@@ -808,7 +812,7 @@ lekvar.MethodType.llvm_type = None
 
 @patch
 def MethodType_gatherEmissionResets(self):
-    for fn_type in self.used_overload_types + self.used_forward_overload_types:
+    for fn_type in self.used_overload_types:
         yield fn_type
 
 @patch
@@ -819,7 +823,6 @@ def MethodType_resetLocalEmission(self):
 def MethodType_emitType(self):
     if self.llvm_type is None:
         fn_types = [type.emitType() for type in self.used_overload_types]
-        fn_types += [type.emitType() for type in self.used_forward_overload_types]
         self.llvm_type = llvm.Struct.newAnonym(fn_types, False)
     return self.llvm_type
 
@@ -838,11 +841,7 @@ def MethodInstance_emitValue(self, type):
 @patch
 def MethodInstance_emitAssignment(self):
     value = State.self
-    try:
-        index = self.type.used_overload_types.index(self.target)
-    except ValueError:
-        index = len(self.type.used_overload_types)
-        index += self.type.used_forward_overload_types.index(self.target)
+    index = self.type.used_overload_types.index(self.target)
 
     return State.builder.structGEP(value, index, "")
 
