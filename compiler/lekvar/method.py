@@ -66,9 +66,12 @@ class Method(Scope):
             fn = ForwardObject.switch(self, matches, lambda overload: checkCompatibility(call, overload.resolveType()))
             # Find last argument that is forward (the last one whose target is resolved)
             for arg in reversed(call.arguments):
-                if isinstance(arg, ForwardObject):
-                    arg.switches.append(fn)
+                if arg.stats.forward:
+                    forward = arg.extractValue()
+                    assert isinstance(forward, ForwardObject)
+                    forward.switches.append(fn)
                     return fn
+            raise InternalError()
 
         # Allow only one match
         if len(normal_matches) < 1:
