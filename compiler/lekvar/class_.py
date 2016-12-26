@@ -63,6 +63,7 @@ class Class(Type, Closure):
 
         while len(attributes) > 0:
             attr = attributes.pop(0)
+            attr.verify()
             type = attr.resolveType().resolveValue()
 
             if type is self:
