@@ -11,8 +11,8 @@ class Closure(Scope):
 
         self.closed_context = Context(self, [])
 
-    def resolveIdentifier(self, name:str):
-        found = BoundObject.resolveIdentifier(self, name)
+    def resolveIdentifier(self, name:str, exclude = []):
+        found = BoundObject.resolveIdentifier(self, name, exclude)
 
         # Collect externally identifier, non-statics in the closed context
         for index, match in enumerate(found):
@@ -26,7 +26,7 @@ class Closure(Scope):
                     found[index] = match = ClosedLink(match)
                     self.closed_context.addChild(match)
 
-        return found + SoftScope.resolveIdentifier(self, name)
+        return found + SoftScope.resolveIdentifier(self, name, exclude)
 
 class ClosedLink(BoundLink):
     bound_context = None

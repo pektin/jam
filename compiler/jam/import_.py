@@ -27,12 +27,7 @@ class Import(lekvar.Link, lekvar.BoundObject):
 
         index = 0 # in path
 
-        found = lekvar.State.scope.resolveIdentifier(self.path[index])
-        # Handle circular imports
-        try:
-            found.remove(self)
-        except ValueError:
-            pass
+        found = lekvar.State.scope.resolveIdentifier(self.path[index], [self])
 
         if len(found) == 1:
             self.value = found[0]
