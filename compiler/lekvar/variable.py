@@ -74,7 +74,9 @@ class Variable(BoundObject, Type):
 
     @property
     def static_value_type(self):
-        self._static_value_type = self._static_value_type or ForwardObject(self.parent)
+        if self._static_value_type is None:
+            self._static_value_type = ForwardObject(self.parent)
+
         if isinstance(self.type, ForwardObject) and self._static_value_type.resolved_type is None:
             self._static_value_type.resolved_type = self.type
         return self._static_value_type
@@ -93,6 +95,11 @@ class Variable(BoundObject, Type):
             yield
 
         self.value = old_value
+
+    def extractValue(self):
+        if self._static_value_type is not None:
+            return self.static_value_type
+        return self
 
     def __copy__(self):
         return Variable(self.name, copy(self.type), self.tokens)
