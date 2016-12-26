@@ -4,6 +4,7 @@ from contextlib import contextmanager, ExitStack
 from ..errors import *
 
 from .state import State
+from .stats import Stats
 from .util import checkCompatibility
 from .core import Context, Object, BoundObject, Type
 from .links import Link, Attribute
@@ -31,6 +32,11 @@ class Variable(BoundObject, Type):
 
         if not isinstance(self.type.resolveValue(), Type):
             raise TypeError(object=self.type).add(message="cannot be used as a type for").add(object=self)
+
+        assert self.parent is not None
+        self._stats = Stats(self.parent)
+        if self.type.stats.forward or self._static_value_type is not None:
+            self.stats.forward = True
 
     def resolveType(self):
         return self.type

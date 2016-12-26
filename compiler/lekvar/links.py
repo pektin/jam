@@ -32,14 +32,6 @@ class Link(Type):
     def instance_context(self):
         return self.value.instance_context
 
-    @property
-    def static(self):
-        return self.value.static
-
-    @property
-    def static_scope(self):
-        return self.value.static_scope
-
     def resolveCall(self, call):
         return self.value.resolveCall(call)
 
@@ -60,6 +52,10 @@ class Link(Type):
 
     def resolveCompatibility(self, other:Type):
         return self.value.resolveCompatibility(other)
+
+    @property
+    def stats(self):
+        return self.value.stats
 
     def __copy__(self):
         return Link(self)

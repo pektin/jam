@@ -5,6 +5,7 @@ from ..errors import *
 
 from .state import State
 from .core import Context, Object, BoundObject, Scope, Type
+from .stats import Stats
 from .util import inScope
 from .links import Link
 
@@ -34,8 +35,6 @@ def target(objects:[(ForwardObject, Object)], checkTypes = True):
 # This is similar to templating, but much more powerful and less context
 # forward.
 class ForwardObject(Type, BoundObject):
-    forward = True
-
     # The target object which which to replace the forward object
     target = None
     # The scope in which the forward object is mutable
@@ -199,14 +198,14 @@ class ForwardObject(Type, BoundObject):
         return self.resolved_instance_calls.setdefault(call, ForwardObject(self.scope))
 
     @property
-    def static(self):
-        if self.target is None: return True
-        return self.target.static
+    def stats(self):
+        if self.target is None:
+            if self._stats is None:
+                self._stats = Stats(self.scope)
+                self._stats.forward = True
+            return self._stats
 
-    @property
-    def static_scope(self):
-        if self.target is None: return True
-        return self.target.static_scope
+        return self.target.stats
 
     # Hack!
     @property
@@ -285,8 +284,6 @@ class ForwardTarget(Link):
 # The forward context compliments the forward object with the creation
 # of dependencies for contexts.
 class ForwardContext(Context):
-    forward = True
-
     def __init__(self, scope:BoundObject):
         Context.__init__(self, scope, [])
 

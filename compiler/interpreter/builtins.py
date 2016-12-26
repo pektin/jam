@@ -96,7 +96,9 @@ class PyType(lekvar.Type, lekvar.BoundObject):
         self.py_type = py_type
 
     def verify(self):
-        pass
+        self._stats = lekvar.stats.ScopeStats(self.parent)
+        self.stats.static = True
+        self.stats.forward = False
 
     def resolveType(self):
         raise InternalError("PyTypes are typeless")

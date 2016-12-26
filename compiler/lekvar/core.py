@@ -3,6 +3,7 @@ from abc import abstractmethod as abstract, ABC, abstractproperty
 from ..errors import *
 
 from .state import State
+from .stats import Stats, SoftScopeStats, ScopeStats
 
 # Python predefines
 Object = None
@@ -65,6 +66,7 @@ class Context:
 class Object(ABC):
     source = None
     tokens = None
+    _stats = None
 
     def __init__(self, tokens = None):
         self.source = State.source
@@ -101,15 +103,16 @@ class Object(ABC):
     def resolveCall(self, call:FunctionType) -> Function:
         return self.resolveType().resolveInstanceCall(call)
 
-    @property
-    def static(self):
-        return True
-
     # Provides a context of attributes using this object's type.
     # May be overridden for more specific behaviour
     @property
     def context(self) -> Context:
         return self.resolveType().instance_context
+
+    @property
+    def stats(self):
+        assert self._stats is not None
+        return self._stats
 
     # Create a copy, assuming the copy exists in the same context
     def __copy__(self):
@@ -122,16 +125,11 @@ class Object(ABC):
 # other objects bound to it through a context must also be a bound object.
 class BoundObject(Object):
     name = None
-    forward = False
     bound_context = None
 
     def __init__(self, name, tokens = None):
         Object.__init__(self, tokens)
         self.name = name
-
-    @property
-    def static(self):
-        return self.parent.static_scope if self.parent is not None else True
 
     @property
     def parent(self):
@@ -149,11 +147,6 @@ class BoundObject(Object):
 
 # A generic object that has a local context of children
 class SoftScope(Object):
-    def _get_static(self):
-        return self.parent.static_scope
-    static = property(_get_static)
-    static_scope = property(_get_static)
-
     # The local context provides the context accessible objects bound to a
     # context whose scope is this object.
     @abstractproperty

@@ -124,7 +124,9 @@ class LLVMType(lekvar.Type, lekvar.BoundObject):
         lekvar.BoundObject.__init__(self, name)
 
     def verify(self):
-        pass
+        self._stats = lekvar.stats.ScopeStats(self.parent)
+        self.stats.static = True
+        self.stats.forward = False
 
     def resolveType(self):
         raise InternalError("LLVMTypes are typeless")

@@ -3,6 +3,7 @@ from contextlib import contextmanager
 from ..errors import *
 
 from .state import State
+from .stats import SoftScopeStats
 from .core import Context, Object, BoundObject, SoftScope, Type
 from .function import Function
 from .module import Module
@@ -25,12 +26,14 @@ class Loop(SoftScope):
     def verify(self):
         self.function = State.scope
 
-        with State.scoped(self, soft = True, analys = True) as state:
+        self._stats = SoftScopeStats(self.function)
+
+        with State.scoped(self, soft = True):
             for instruction in self.instructions:
                 instruction.verify()
 
         # Update scope state
-        State.soft_scope_state.merge(state)
+        State.soft_scope.stats.merge(self.stats)
 
     def resolveType(self):
         raise InternalError("Loop objects do not have a type")
@@ -80,19 +83,21 @@ class Branch(SoftScope):
     def verify(self):
         self.function = State.scope
 
+        self._stats = SoftScopeStats(self.function)
+
         if self.condition is not None:
             self.condition.verify()
 
-        with State.scoped(self, soft = True, analys = True) as state:
+        with State.scoped(self, soft = True):
             for instruction in self.instructions:
                 instruction.verify()
 
         if self.next_branch is not None:
-            state.merge(self.next_branch.verify())
+            self.next_branch.verify()
+            self.stats.merge(self.next_branch.stats)
 
         if self.previous_branch is None:
-            State.soft_scope_state.update(state)
-        return state
+            State.soft_scope.stats.update(self.stats)
 
     def resolveType(self):
         raise InternalError("Branch objects do not have a type")

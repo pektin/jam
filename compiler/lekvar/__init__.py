@@ -20,6 +20,7 @@ from .class_ import Class, Constructor
 from .forward import ForwardObject, ForwardTarget
 from .literal import Literal
 from .branches import Loop, Break, Branch
+from . import stats
 from . import util
 from . import forward
 

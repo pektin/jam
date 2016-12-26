@@ -1,14 +1,13 @@
 from ..errors import *
 
 from .state import State
+from .stats import ScopeStats
 from .core import Context, Object, BoundObject, Scope, Type
 from .function import Function
 
 class Module(Type, Scope):
     verified = False
     context = None
-    static = True
-    static_scope = True
     type = None
 
     def __init__(self, name:str, children:[BoundObject], main:[Object] = [], tokens = None):
@@ -21,7 +20,11 @@ class Module(Type, Scope):
         if self.verified: return
         self.verified = True
 
-        with State.scoped(self, analys = True):
+        self._stats = ScopeStats(self.parent)
+        if self.parent is None:
+            self.stats.static = True
+
+        with State.scoped(self):
             for instruction in self.main:
                 instruction.verify()
 

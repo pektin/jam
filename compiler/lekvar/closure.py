@@ -18,7 +18,8 @@ class Closure(Scope):
         for index, match in enumerate(found):
             if match is self: continue
 
-            if not match.static:
+            match.verify()
+            if not match.stats.static:
                 if match.name in self.closed_context:
                     found[index] = self.closed_context[match.name]
                 else:

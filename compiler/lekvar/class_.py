@@ -1,6 +1,7 @@
 from ..errors import *
 
 from .state import State
+from .stats import ScopeStats
 from .core import Context, Object, BoundObject, Scope, Type
 from .closure import Closure
 from .function import Function, FunctionType, Return
@@ -13,8 +14,6 @@ class Class(Type, Closure):
     type = None
 
     verified = False
-    static = True
-    static_scope = True
 
     def __init__(self, name:str, constructor:Method, attributes:[BoundObject], tokens = None):
         Closure.__init__(self, name, tokens)
@@ -40,6 +39,10 @@ class Class(Type, Closure):
     def verify(self):
         if self.verified: return
         self.verified = True
+
+        self._stats = ScopeStats(self.parent)
+        self.stats.static = True
+        self.stats.static_transitive = True
 
         with State.scoped(self):
             if self.constructor is not None:
@@ -97,7 +100,7 @@ class Constructor(Function):
 
     def verifySelf(self):
         # Constructors may not return
-        if State.soft_scope_state.maybe_returns:
+        if self.stats.might_return:
             #TODO: Find returns
             raise SyntaxError(object=self).add(message="within a constructor is invalid")
 
@@ -121,7 +124,3 @@ class MetaClass(Class):
 
     def __hash__(self):
         return hash(self.class_instance)
-
-    @property
-    def static(self):
-        return self.class_instance.static

@@ -6,8 +6,7 @@ from .. import errors
 from .. import lekvar
 
 class Import(lekvar.Link, lekvar.BoundObject):
-    static = True
-    static_scope = True
+    verified = False
     path = None
 
     def __init__(self, path:[str], name:str = None, tokens = None):
@@ -23,7 +22,8 @@ class Import(lekvar.Link, lekvar.BoundObject):
         return self.value.local_context
 
     def verify(self):
-        if self.value is not None: return
+        if self.verified: return
+        self.verified = True
 
         index = 0 # in path
 

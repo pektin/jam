@@ -35,45 +35,31 @@ class State:
         cls.sources = None
 
     @classproperty
-    def scope_state(cls):
-        # Get the first element from the back that isn't soft
-        for scope_state in reversed(cls.scope_stack):
-            if not scope_state.soft:
-                return scope_state
-    @classproperty
     def scope(cls):
-        state = cls.scope_state
-        return state.scope if state else None
+        for scope, soft in reversed(cls.scope_stack):
+            if not soft:
+                return scope
 
-    @classproperty
-    def soft_scope_state(cls):
-        return cls.scope_stack[-1]
     @classproperty
     def soft_scope(cls):
-        state = cls.soft_scope_state
-        return state.scope if state else None
+        scope, soft = cls.scope_stack[-1]
+        return scope
 
     @classmethod
-    def getSoftScopeState(cls, condition):
-        for scope_state in reversed(cls.scope_stack):
-            if scope_state.soft:
-                if condition(scope_state.scope):
-                    return scope_state
+    def getSoftScope(cls, condition):
+        for scope, soft in reversed(cls.scope_stack):
+            if soft:
+                if condition(scope):
+                    return scope
             else:
                 break
-    @classmethod
-    def getSoftScope(cls, condition):
-        state = cls.getSoftScopeState(condition)
-        return state.scope if state is not None else None
 
     @classmethod
     @contextmanager
-    def scoped(cls, scope:BoundObject, soft = False, analys = False):
-        scope_state = AnalysScopeState(scope) if analys else ScopeState(scope)
-        scope_state.soft = soft
-
-        cls.scope_stack.append(scope_state)
-        yield scope_state
+    def scoped(cls, scope:BoundObject, soft = False):
+        state = (scope, soft)
+        cls.scope_stack.append(state)
+        yield
         cls.scope_stack.pop()
 
     @classmethod
@@ -92,29 +78,3 @@ class State:
         cls.source = source
         yield source
         cls.source = previous_source
-
-class ScopeState:
-    soft = False
-
-    def __init__(self, scope:BoundObject):
-        self.scope = scope
-
-    def merge(self, other):
-        raise InternalError("Cannot merge default scope states")
-
-    def update(self, other):
-        raise InternalError("Cannot merge default scope states")
-
-class AnalysScopeState(ScopeState):
-    def __init__(self, scope:BoundObject):
-        ScopeState.__init__(self, scope)
-        self.definately_returns = False
-        self.maybe_returns = False
-
-    def merge(self, other):
-        self.definately_returns = self.definately_returns and other.definately_returns
-        self.maybe_returns = self.definately_returns or other.definately_returns
-
-    def update(self, other):
-        self.definately_returns = self.definately_returns or other.definately_returns
-        self.maybe_returns = self.definately_returns or other.definately_returns

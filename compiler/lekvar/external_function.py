@@ -1,6 +1,7 @@
 from ..errors import *
 
 from .state import State
+from .stats import ScopeStats
 from .core import Context, Object, BoundObject, Type
 from .function import Function, FunctionType
 
@@ -8,7 +9,6 @@ class ExternalFunction(BoundObject):
     external_name = None
     type = None
 
-    forward = False
     verified = False
 
     def __init__(self, name:str, external_name:str, arguments:[Type], return_type:Type, tokens = None):
@@ -19,6 +19,10 @@ class ExternalFunction(BoundObject):
     def verify(self):
         if self.verified: return
         self.verified = True
+
+        self._stats = ScopeStats(self.parent)
+        self.stats.static = True
+        self.stats.forward = False
 
         self.type.verify()
 

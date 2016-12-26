@@ -1,7 +1,8 @@
 from ..errors import *
 
 from .state import State
-from .core import Context, Object, BoundObject, SoftScope, Type
+from .stats import Stats, ScopeStats
+from .core import Context, Object, BoundObject, SoftScope, Scope, Type
 from .util import checkCompatibility
 from .function import Function, FunctionType
 from .forward import ForwardObject, ForwardTarget
@@ -37,6 +38,11 @@ class Method(BoundObject, SoftScope):
             self.addOverload(overload)
 
     def verify(self):
+        if self.verified: return
+        self.verified = True
+
+        self._stats = ScopeStats(self.parent)
+
         with State.scoped(self):
             self.overload_context.verify()
             self.forward_overload_context.verify()

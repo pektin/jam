@@ -2,6 +2,7 @@ from ..errors import *
 
 from .util import *
 from .state import State
+from .stats import Stats, ScopeStats
 from .core import Context, Object, BoundObject, SoftScope, Scope, Type
 from .util import checkCompatibility
 from .links import BoundLink
@@ -22,7 +23,6 @@ class Function(Closure):
 
     type = None
     verified = False
-    static_scope = False
 
     forward_target_cache = None
 
@@ -37,7 +37,6 @@ class Function(Closure):
         for arg in self.arguments:
             if arg.resolveType() is None:
                 arg.type = ForwardObject(self)
-                self.forward = True
 
         self.type = FunctionType([arg.resolveType() for arg in arguments], return_type)
 
@@ -47,14 +46,21 @@ class Function(Closure):
         if self.verified: return
         self.verified = True
 
+        self._stats = ScopeStats(self.parent)
+        self.stats.static_transitive = False
+
         self.unscopedVerify()
-        with State.scoped(self, analys = True):
+        with State.scoped(self):
             self.scopedVerify()
 
     def unscopedVerify(self):
         # Arguments are considered to be already assigned
         for variable in self.arguments:
+            variable.verify()
             variable.verifyAssignment(None)
+
+            if variable.stats.forward:
+                self.stats.forward = True
 
     def scopedVerify(self):
         self.type.verify()
@@ -69,7 +75,7 @@ class Function(Closure):
     # Guaranteed to run within the scope of the function
     def verifySelf(self):
         # If we have a return type, we must return on all code paths
-        if self.type.return_type is not None and not State.soft_scope_state.definately_returns:
+        if self.type.return_type is not None and not self.stats.definitely_returns:
             raise SemanticError(message="All code paths must return for").add(object=self)
 
     def resolveType(self):
@@ -97,14 +103,12 @@ class Function(Closure):
 class FunctionType(Type):
     arguments = None
     return_type = None
-    forward = False
 
     verified = False
 
     def __init__(self, arguments:[Type], return_type:Type = None, tokens = None):
         Type.__init__(self, tokens)
         self.arguments = arguments
-        self.forward = any(isinstance(arg, ForwardObject) for arg in arguments)
         self.return_type = return_type
 
     def __eq__(self, other):
@@ -117,8 +121,14 @@ class FunctionType(Type):
         if self.verified: return
         self.verified = True
 
+        self._stats = Stats(None)
+        self._stats.static = True
+
         for arg in self.arguments:
             arg.verify()
+
+            if arg.stats.forward:
+                self.stats.forward = True
 
             if not isinstance(arg.resolveValue(), Type):
                 raise TypeError(object=arg).add(message="cannot be used as a type for").add(object=self)
@@ -193,8 +203,6 @@ class Return(Object):
         self.value = value
 
     def verify(self):
-        scope = State.soft_scope_state.scope
-
         if not isinstance(State.scope, Function):
             raise SyntaxError(message="Cannot").add(object=self).add(message="outside of a function")
         self.function = State.scope
@@ -216,8 +224,8 @@ class Return(Object):
             raise TypeError(object=self).add(message="must return a").add(object=self.function.type.return_type)
 
         # Update scope state
-        State.soft_scope_state.definately_returns = True
-        State.soft_scope_state.maybe_returns = True
+        State.soft_scope.stats.definitely_returns = True
+        State.soft_scope.stats.maybe_returns = True
 
     def resolveType(self):
         raise InternalError("Return objects do not have a type")
