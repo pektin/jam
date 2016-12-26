@@ -70,13 +70,7 @@ class Variable(BoundObject, Type):
         if self.value is not None:
             return self.value.checkCompatibility(other, check_cache)
 
-        if self._static_value_type is None:
-            if self.value is None: raise TypeError()
-
-            return self.value.checkCompatibility(other, check_cache)
-
-        else:
-            return self.static_value_type.checkCompatibility(other.resolveValue(), check_cache)
+        return self.static_value_type.checkCompatibility(other.resolveValue(), check_cache)
 
     @property
     def static_value_type(self):
