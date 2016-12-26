@@ -679,7 +679,8 @@ def Constructor_emitContext(self):
 
 @patch
 def FunctionType_gatherEmissionResets(self):
-    yield self.return_type
+    if self.return_type is not None:
+        yield self.return_type
 
     for type in self.arguments:
         yield type
