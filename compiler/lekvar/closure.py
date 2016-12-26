@@ -62,7 +62,8 @@ class ClosedTarget(Link):
             return self.retarget(self.value.resolveIdentifier(name))
 
     def resolveCall(self, call):
-        return self.retarget(self.value.resolveCall(call))
+        with self.target():
+            return self.retarget(self.value.resolveCall(call))
 
     @property
     def context(self):
@@ -88,7 +89,7 @@ class ClosedTarget(Link):
             return self.value.revCheckCompatibility(other, check_cache)
 
     def __repr__(self):
-        return "CT({})".format(self.value)
+        return "CT({}, {})".format(self.value, self.targets)
 
     def resolveValue(self):
         return self
