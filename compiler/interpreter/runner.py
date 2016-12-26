@@ -190,6 +190,7 @@ def Method_evalContext(self):
 @patch
 def Method_evalCall(self, values):
     call = lekvar.FunctionType([value.resolveType() for value in values])
+    call.verify()
     function = self.resolveCall(call)
 
     return function.evalCall(values)
