@@ -1,4 +1,4 @@
-#?#2\n3.2\n5\n
+##2\n2\n3.2\n5\n
 
 pragma def foo(T)
   class Foo
@@ -21,6 +21,7 @@ pragma def foo(T)
 end
 
 a = (pragma foo(Int))(2)
+a.print()
 puts(a.value)
 b = (pragma foo(Real))(3.2)
 b.print()

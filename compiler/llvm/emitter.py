@@ -407,18 +407,21 @@ def ForwardTarget_emit(self):
 
 @patch
 def ForwardTarget_emitValue(self, type):
+    if len(self.dependencies) == 0:
+        return self.value.emitValue(type)
+
     if self.value.emitted_cache is None:
         self.value.emitted_cache = {}
     cache = self.value.emitted_cache
 
     with self.target():
+        #TODO: Make this generic, currently specific for Function
+        # Maybe turn the entire emitter into a sequenced collection of generators,
+        # like forward object targeting, which would also allow for multithreading
+        assert isinstance(self.value, lekvar.Function)
+
         if type not in cache:
             assert not self.emitted
-
-            #TODO: Make this generic, currently specific for Function
-            # Maybe turn the entire emitter into a sequenced collection of generators,
-            # like forward object targeting, which would also allow for multithreading
-            assert isinstance(self.value, lekvar.Function)
 
             with self.value.resetEmission():
                 self.value.emitStatic()
