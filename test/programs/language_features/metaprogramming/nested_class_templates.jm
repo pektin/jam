@@ -2,9 +2,9 @@
 
 pragma def Foo(T)
   class foo
-    value:pragma Bar(T)
+    value:Bar(T)
 
-    new(v:pragma Bar(T))
+    new(v:Bar(T))
       value = v
     end
 
@@ -32,6 +32,6 @@ pragma def Bar(T)
   return bar
 end
 
-b = Bar(Int)(2)
-f = Foo(Int)(b)
+b = (pragma Bar(Int))(2)
+f = (pragma Foo(Int))(b)
 f.print()
