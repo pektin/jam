@@ -513,7 +513,6 @@ lekvar.Function.emitted_cache = None
 
 @patch
 def Function_gatherEmissionResets(self):
-    yield self.type
     yield self.closed_context
 
     for child in self.local_context:
