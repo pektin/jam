@@ -54,7 +54,8 @@ class Class(Type, Closure):
     def resolveType(self):
         if self.type is None:
             self.type = MetaClass(self)
-        return MetaClass(self)
+            self.type.verify()
+        return self.type
 
     def verifyNonRecursive(self):
         # Traverse tree of class attributes, looking for self
