@@ -6,7 +6,7 @@ from ..errors import *
 from .state import State
 from .core import Context, Object, BoundObject, Scope, Type
 from .stats import Stats
-from .util import inScope
+from .util import inScope, checkCompatibility
 from .links import Link
 
 # Python Predefines
@@ -109,50 +109,54 @@ class ForwardObject(Type, BoundObject):
         if isinstance(target, ForwardObject):
             target = target.resolveValue()
 
-        with ExitStack() as stack:
-            #TODO: Handle errors
+        #TODO: Handle errors
 
-            # Escape recursion
-            if self.target is not None:
-                if self.target is target:
-                    yield []
-                    return
+        # Escape recursion
+        if self.target is not None:
+            if self.target is target:
+                yield []
+                return
 
-                #TODO: There should be a safer way to handle this
+            #TODO: There should be a safer way to handle this
 
-            # Local checks
-            if checkTypes and not self.checkLockedCompatibility(target):
-                raise TypeError(message="TODO: Write this")
+        # Escape more recursion
+        if target is self:
+            yield []
+            return
 
-            # Pass on dependency checks
-            def target_generator():
-                if self._context is not None:
-                    yield self.context, target.context
+        # Local checks
+        if checkTypes and not self.checkLockedCompatibility(target):
+            raise TypeError(message="TODO: Write this")
 
-                if self._instance_context is not None:
-                    yield self.instance_context, target.instance_context
+        # Pass on dependency checks
+        def target_generator():
+            if self._context is not None:
+                yield self.context, target.context
 
-                if self.resolved_type is not None:
-                    yield self.resolved_type, target.resolveType()
+            if self._instance_context is not None:
+                yield self.instance_context, target.instance_context
 
-                calls = self._targetCall(target, self.resolved_calls, lambda c: c.resolveCall)
-                inst_calls = self._targetCall(target, self.resolved_instance_calls, lambda o: o.resolveInstanceCall)
-                for o in chain(calls, inst_calls):
-                    yield o
+            if self.resolved_type is not None:
+                yield self.resolved_type, target.resolveType()
 
-                for switch in self.switches:
-                    yield switch.resolveTarget()
+            calls = self._targetCall(target, self.resolved_calls, lambda c: c.resolveCall)
+            inst_calls = self._targetCall(target, self.resolved_instance_calls, lambda o: o.resolveInstanceCall)
+            for o in chain(calls, inst_calls):
+                yield o
 
-                if self._return_type is not None:
-                    # Should fail compatibility checks if not true
-                    assert hasattr(target, "return_type")
+            for switch in self.switches:
+                yield switch.resolveTarget()
 
-                    yield self._return_type, target.return_type
+            if self._return_type is not None:
+                # Should fail compatibility checks if not true
+                assert hasattr(target, "return_type")
 
-            previous_target = self.target
-            self.target = target
-            yield target_generator()
-            self.target = previous_target
+                yield self._return_type, target.return_type
+
+        previous_target = self.target
+        self.target = target
+        yield target_generator()
+        self.target = previous_target
 
     def _targetCall(self, target, calls, resolution_function):
         for call, obj in calls.items():
@@ -202,6 +206,7 @@ class ForwardObject(Type, BoundObject):
     def stats(self):
         if self.target is None:
             if self._stats is None:
+                self.scope.verify()
                 self._stats = Stats(self.scope)
                 self._stats.forward = True
             return self._stats
@@ -267,10 +272,7 @@ class ForwardObject(Type, BoundObject):
         self.compatible_type_switch = None
 
     def __repr__(self):
-        if self.target is None:
-            return "{}{{{}}}".format(self.__class__.__name__, self.name or id(self))
-        return "{} as {}".format(self.__class__.__name__, self.target)
-
+        return "{}{{{}}}".format(self.__class__.__name__, self.name or id(self))
 
 class ForwardTarget(Link):
     dependencies = None
