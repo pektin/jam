@@ -1,10 +1,10 @@
-#?#2\n
+##2\n
 
-pragma def Foo(T)
+pragma def Foo(F)
   class foo
-    value:Bar(T)
+    value:pragma Bar(F)
 
-    new(v:Bar(T))
+    new(v:pragma Bar(F))
       value = v
     end
 
