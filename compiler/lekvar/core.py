@@ -185,4 +185,4 @@ class Type(Object):
         pass
 
     def revCheckCompatibility(self, other:Type, check_cache:{Type: {Type} } = None) -> bool:
-        return self.checkCompatibility(other)
+        return self.checkCompatibility(other, check_cache)
