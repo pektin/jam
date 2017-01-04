@@ -478,24 +478,23 @@ lekvar.ClosedTarget.llvm_type = None
 @patch
 def ClosedTarget_emitValue(self, type):
     if self.llvm_value is None:
-
-        with self.origin.resetEmission():
-            with self.target():
+        with self.target():
+            with self.origin.resetEmission():
                 self.llvm_value = self.value.emitValue(type)
 
     return self.llvm_value
 
 @patch
 def ClosedTarget_emitContext(self):
-    with self.origin.resetEmission():
-        with self.target():
+    with self.target():
+        with self.origin.resetEmission():
             return self.value.emitContext()
 
 @patch
 def ClosedTarget_emitType(self):
     if self.llvm_type is None:
-        with self.origin.resetEmission():
-            with self.target():
+        with self.target():
+            with self.origin.resetEmission():
                 self.llvm_type = self.value.emitType()
 
     return self.llvm_type
