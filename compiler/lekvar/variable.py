@@ -64,18 +64,30 @@ class Variable(BoundObject, Type):
         return self.static_value_type.instance_context
 
     def checkCompatibility(self, other:Type, check_cache = None):
-        if other.resolveValue() is self:
+        other = other.resolveValue()
+        if other is self:
             return True
 
         if self.value is not None:
             return self.value.checkCompatibility(other, check_cache)
 
-        return self.static_value_type.checkCompatibility(other.resolveValue(), check_cache)
+        return self.static_value_type.checkCompatibility(other, check_cache)
+
+    def revCheckCompatibility(self, other:Type, check_cache = None):
+        other = other.resolveValue()
+        if other is self:
+            return True
+
+        if self.value is not None:
+            return self.value.revCheckCompatibility(other, check_cache)
+
+        return self.static_value_type.checkCompatibility(other, check_cache)
 
     @property
     def static_value_type(self):
         if self._static_value_type is None:
-            self._static_value_type = ForwardObject(self.parent)
+            self._static_value_type = ForwardObject(self.parent, self.name)
+            # self._static_value_type.resolveType().compatible_types.add((self.type,))
 
         if isinstance(self.type, ForwardObject) and self._static_value_type.resolved_type is None:
             self._static_value_type.resolved_type = self.type
