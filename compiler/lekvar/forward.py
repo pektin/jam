@@ -172,10 +172,11 @@ class ForwardObject(Type, BoundObject):
     # Same as targetAt but for switches
     def resolveTarget(self):
         # It should already be verified that only one switch matches
-        for possibility in self.target_switch:
-            if self.target_switch_determiner(possibility):
-                target = possibility
-                break
+        with State.scoped(None):
+            for possibility in self.target_switch:
+                if self.target_switch_determiner(possibility):
+                    target = possibility
+                    break
 
         return self, target
 
