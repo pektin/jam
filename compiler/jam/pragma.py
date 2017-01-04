@@ -1,4 +1,4 @@
-from contextlib import ExitStack
+from contextlib import contextmanager, ExitStack
 
 from .. import errors
 from .. import lekvar
@@ -8,11 +8,16 @@ class Pragma(lekvar.BoundLink):
     has_run = False
 
     def verify(self):
-        self.value.verify()
-
         if self.has_run: return
         self.has_run = True
+
+        self.value.verify()
         self._run()
+
+    def resolveValue(self):
+        if self.value is None:
+            return None
+        return self.value.resolveValue()
 
     def _run(self):
         interpreter.State.stdout = None
@@ -23,6 +28,11 @@ class Pragma(lekvar.BoundLink):
                 print(interpreter.State.stdout, end="")
 
     def eval(self):
-        return self.value
+        if self.value is not None:
+            return self.value
+        return None
+
+    def __repr__(self):
+        return "pragma({})".format(self.value)
 
 lekvar.Pragma = Pragma
