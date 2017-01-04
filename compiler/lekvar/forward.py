@@ -242,17 +242,22 @@ class ForwardObject(Type, BoundObject):
         if check_cache is None: check_cache = {}
         cache = check_cache.setdefault(self, set())
 
+        if self is other:
+            cache.add(other)
+            return True
+
         for types in self.compatible_types:
             matches = []
-            for type in types:
-                if type in cache:
-                    matches.append(type)
-                else:
-                    cache.add(type)
-                    if type.checkCompatibility(other, check_cache):
+            with State.type_switch():
+                for type in types:
+                    if type in cache:
                         matches.append(type)
+                    else:
+                        cache.add(type)
+                        if checkCompatibility(type, other, check_cache):
+                            matches.append(type)
 
-            if len(matches) != 1:
+            if not other.stats.forward and len(matches) != 1:
                 return False
         return True
 
