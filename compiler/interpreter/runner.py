@@ -150,8 +150,9 @@ def Variable_eval(self):
             return State.self
         return State.self.data[self.name]
 
-    assert self.value is not None
-    return self.value
+    if self.value is not None:
+        return self.value
+    return self
 
 @patch
 def Variable_evalContext(self):
@@ -339,6 +340,7 @@ def ForwardTarget_evalAssign(self, value):
 
 @patch
 def ForwardObject_eval(self):
+    assert self.target is not None
     value = self.target.eval()
     if value is self.target:
         return self
