@@ -23,6 +23,8 @@ class Call(Object):
     def verify(self):
         self.called.verify()
 
+        self._stats = self.called.stats
+
         # Verify arguments and create the function type of the call
         arg_types = []
         for value in self.values:
