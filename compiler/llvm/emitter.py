@@ -368,11 +368,15 @@ def Context_emitType(self):
 
 @patch
 def ForwardObject_gatherEmissionResets(self):
+    if self.target is None:
+        return []
     assert self.target is not None
     return self.target.gatherEmissionResets()
 
 @patch
 def ForwardObject_resetLocalEmission(self):
+    if self.target is None:
+        return
     assert self.target is not None
     return self.target.resetLocalEmission()
 
