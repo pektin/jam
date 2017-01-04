@@ -81,7 +81,13 @@ class ClosedTarget(Link):
         return self.retarget(self.value.resolveType())
 
     def checkCompatibility(self, other, check_cache = None):
-        with self.target():
+        stack = ExitStack()
+        stack.enter_context(self.target())
+        if isinstance(other, ClosedTarget):
+            stack.enter_context(other.target())
+            other = other.value
+
+        with stack:
             return self.value.checkCompatibility(other, check_cache)
 
     def revCheckCompatibility(self, other, check_cache = None):
