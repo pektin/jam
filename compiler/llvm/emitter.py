@@ -886,11 +886,16 @@ def Class_emit(self):
 
 @patch
 def Class_emitValue(self, type):
+
     if type is None:
-        type = self.resolveType()
+        type = class_type = self.resolveType()
     else:
+        if isinstance(type.extractValue(), lekvar.VoidType):
+            return llvm.Value.null(type.emitType())
+
+        class_type = type.extractValue()
+        assert isinstance(class_type, lekvar.Class)
         type = type.resolveValue()
-        assert isinstance(type, lekvar.Class)
 
     attributes = []
 
@@ -900,6 +905,10 @@ def Class_emitValue(self, type):
         attributes.append(value)
 
     return llvm.Value.constStruct(type.emitType(), attributes)
+
+@patch
+def Class_emitAssignment(self, type):
+    return State.pointer(self.emitValue(type))
 
 @patch
 def Class_emitType(self):
