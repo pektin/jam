@@ -213,6 +213,9 @@ class FunctionValue(Value):
 class PassManager(Wrappable, c_void_p):
     pass
 
+class TargetData(Wrappable, c_void_p):
+    pass
+
 __all__ = """Context Module Builder Type Pointer Int Float Function Block Value
 FunctionValue""".split()
 
@@ -366,6 +369,8 @@ Builder.wrapInstanceFunc("inBoundsGEP", "LLVMBuildInBoundsGEP", [Value, [Value],
 Builder.wrapInstanceFunc("structGEP", "LLVMBuildStructGEP", [Value, c_uint, c_char_p], Value)
 
 Builder.wrapInstanceFunc("globalString", "LLVMBuildGlobalStringPtr", [c_char_p, c_char_p], Value)
+
+Builder.wrapInstanceFunc("ptrToInt", "LLVMBuildPtrToInt", [Value, Type, c_char_p], Value)
 
 #
 # Type
@@ -619,6 +624,16 @@ def PassManager_setOptSizeLevel(self, level:int):
     _lib.LLVMPassManagerBuilderPopulateModulePassManager(builder, self)
     _lib.LLVMPassManagerBuilderDispose(builder)
 PassManager.setOptSizeLevel = PassManager_setOptSizeLevel
+
+#
+# Target Data
+#
+
+TargetData.wrapConstructor("new", "LLVMCreateTargetData", [c_char_p])
+
+TargetData.wrapInstanceFunc("bitSizeOf", "LLVMSizeOfTypeInBits", [Type], c_ulonglong)
+TargetData.wrapInstanceFunc("storeSizeOf", "LLVMStoreSizeOfType", [Type], c_ulonglong)
+TargetData.wrapInstanceFunc("abiSizeOf", "LLVMABISizeOfType", [Type], c_ulonglong)
 
 #
 # Globals
