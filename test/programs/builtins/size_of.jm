@@ -1,0 +1,13 @@
+##8\n8\n8\n1\n16\n
+
+puts(sizeOf(Int))
+puts(sizeOf(Real))
+puts(sizeOf(String))
+puts(sizeOf(Bool))
+
+class Foo
+  a:Int
+  b:Int
+end
+
+puts(sizeOf(Foo))

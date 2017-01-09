@@ -46,6 +46,9 @@ def builtins(logger = logging.getLogger()):
             ], [])
         ir.context.addChild(or_)
 
+        sizeof = lekvar.SizeOf("sizeOf", lekvar.VoidType(), lekvar.Identifier("Int"))
+        ir.context.addChild(sizeof)
+
     global builtin_cache
     builtin_cache = pickle.dumps(ir)
 

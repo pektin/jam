@@ -1,3 +1,5 @@
+import sys
+import math
 import logging
 from functools import partial
 
@@ -88,6 +90,23 @@ PRINT_MAP = {
     "Float64": "%lg",
 }
 
+PTR_SIZE = math.ceil(math.log(sys.maxsize, 2) / 8) # Hack for
+SIZE_MAP = {
+    "String": PTR_SIZE,
+
+    "Bool": 1,
+
+    "Int8": 1,
+    "Int16": 2,
+    "Int32": 4,
+    "Int64": 8,
+    "Int128": 16,
+
+    "Float16": 2,
+    "Float32": 4,
+    "Float64": 8,
+}
+
 class PyType(lekvar.Type, lekvar.BoundObject):
     py_type = None
 
@@ -117,6 +136,9 @@ class PyType(lekvar.Type, lekvar.BoundObject):
 
     def eval(self):
         return None
+
+    def evalSize(self):
+        return SIZE_MAP[self.name]
 
     def __repr__(self):
         return "{}<{}>".format(self.__class__.__name__, self.name)

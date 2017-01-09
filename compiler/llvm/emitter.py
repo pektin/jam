@@ -264,6 +264,11 @@ def Module_emitValue(self):
 
 @patch
 def Call_emitValue(self, type):
+    # Ugly hack for handling the sizeof function
+    # Avoids a function call completely
+    if isinstance(self.function.extractValue(), lekvar.SizeOf):
+        return self.emitSizeOf(self.values[0])
+
     with State.selfScope(self.called.emitAssignment(type)):
         called = self.function.emitValue(self.function_type)
 
@@ -287,6 +292,14 @@ def Call_emitValue(self, type):
 
     # Get the llvm function type
     return State.builder.call(called, arguments, "")
+
+@patch
+def Call_emitSizeOf(self, type):
+    type = type.resolveValue().emitType()
+
+    size = State.target_data.storeSizeOf(type)
+    literal = lekvar.Literal(size, self.resolveType())
+    return literal.emitValue(None)
 
 @patch
 def Call_emitAssignment(self, type):

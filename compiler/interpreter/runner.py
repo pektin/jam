@@ -6,6 +6,7 @@ from ..errors import InternalError
 
 from .util import *
 from .state import State
+from . import builtins
 
 #
 # class Object
@@ -46,6 +47,10 @@ def Link_evalCall(self, values):
 @patch
 def Link_evalAssign(self, value):
     self.value.evalAssign(value)
+
+@patch
+def Link_evalSize(self):
+    return self.value.evalSize()
 
 #
 # class Attribute
@@ -117,6 +122,10 @@ def Reference_evalCall(self, values):
 @patch
 def Reference_evalAssign(self, value):
     self.value.evalAssign(value)
+
+@patch
+def Reference_evalSize(self):
+    return builtins.PTR_SIZE
 
 #
 # class Module
@@ -275,6 +284,10 @@ def FunctionInstance_evalCall(self, values):
 def ExternalFunction_eval(self):
     return self
 
+@patch
+def ExternalFunction_evalContext(self):
+    return None
+
 #
 # class Class
 #
@@ -294,6 +307,14 @@ def Class_evalCall(self, values):
 @patch
 def Class_evalContext(self):
     return None
+
+@patch
+def Class_evalSize(self):
+    variables = [value for value in self.instance_context if isinstance(value, lekvar.Variable)]
+    print(self, variables)
+    sizes = [value.resolveType().evalSize() for value in variables]
+
+    return sum(sizes)
 
 #
 # class Constructor
@@ -357,6 +378,10 @@ def ForwardObject_evalCall(self, values):
 @patch
 def ForwardObject_evalAssign(self, value):
     self.target.evalAssign(value)
+
+@patch
+def ForwardObject_evalSize(self):
+    return self.target.evalSize()
 
 #
 # class Literal
@@ -447,3 +472,14 @@ def Loop_eval(self):
 @patch
 def Break_eval(self):
     self.loop.breaking = True
+
+#
+# class SizeOf
+#
+
+@patch
+def SizeOf_evalCall(self, values):
+    assert len(values) == 1
+    value = values[0]
+
+    return lekvar.Literal(value.evalSize(), self.type.return_type)

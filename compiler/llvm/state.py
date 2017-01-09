@@ -19,6 +19,7 @@ class State:
         cls.self = None
         cls.builder = llvm.Builder.new()
         cls.module = llvm.Module.fromName("")
+        cls.target_data = llvm.TargetData.new("")
 
         main_type = llvm.Function.new(llvm.Int.new(32), [], False)
         cls.main = cls.module.addFunction("main", main_type)
