@@ -32,4 +32,4 @@ class ExternalFunction(BoundObject):
     resolveCall = Function.resolveCall
 
     def __repr__(self):
-        return "def {}=>{} -> {}".format(self.name, self.external_name, self.type)
+        return "def {}=>{} : {}".format(self.name, self.external_name, self.type)
