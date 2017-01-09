@@ -1,4 +1,4 @@
-##2\n
+##2\n0\n
 
 pragma def Foo(F)
   class foo
@@ -10,6 +10,10 @@ pragma def Foo(F)
 
     def print()
       value.print()
+    end
+
+    def create()
+      return F()
     end
   end
 
@@ -35,3 +39,4 @@ end
 b = (pragma Bar(Int))(2)
 f = (pragma Foo(Int))(b)
 f.print()
+puts(f.create())
