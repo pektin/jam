@@ -163,6 +163,7 @@ class ForwardObject(Type, BoundObject):
             target_call = resolution_function(target)(call)
 
             yield obj, target_call
+
             # The call itself may also be forward, so we have to target that
             if not all(arg.resolved for arg in call.arguments if isinstance(arg, ForwardObject)):
                 for arg, target_arg in zip(call.arguments, target_call.arguments):
@@ -172,11 +173,15 @@ class ForwardObject(Type, BoundObject):
     # Same as targetAt but for switches
     def resolveTarget(self):
         # It should already be verified that only one switch matches
+        target = None
         with State.scoped(None):
             for possibility in self.target_switch:
                 if self.target_switch_determiner(possibility):
                     target = possibility
                     break
+
+        if target is None:
+            raise InternalError("Something went wrong")
 
         return self, target
 
