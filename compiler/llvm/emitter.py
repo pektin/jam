@@ -894,8 +894,9 @@ def Class_emitValue(self, type):
 
     attributes = []
 
-    if self.constructor is not None:
-        value = self.constructor.emitValue(type.instance_context[""].resolveType())
+    # TODO: Expand to include other 'static' properties of classes
+    if self.constructor is not None and "" in class_type.instance_context:
+        value = self.constructor.emitValue(class_type.instance_context[""].resolveType())
         attributes.append(value)
 
     return llvm.Value.constStruct(type.emitType(), attributes)
