@@ -933,6 +933,9 @@ def Class_emitContext(self):
 
 @patch
 def Reference_emitValue(self, type):
+    assert isinstance(type, lekvar.Reference)
+    type = type.value
+
     value_type = self.value.resolveType()
     malloced = State.builder.malloc(referenceType(value_type.emitType()), "")
     value = State.builder.structGEP(malloced, 1, "")
