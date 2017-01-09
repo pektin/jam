@@ -1048,3 +1048,12 @@ def Branch_emit(self, block = None):
 
     State.builder.positionAtEnd(after_block)
     return after_block
+
+#
+# class SizeOf
+#
+
+@patch
+def SizeOf_emit(self):
+    # Don't bother
+    return
