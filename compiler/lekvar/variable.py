@@ -95,6 +95,7 @@ class Variable(BoundObject, Type):
 
     @contextmanager
     def targetValue(self, value):
+        value = value.resolveValue()
         old_value = self.value
         self.value = value
 
