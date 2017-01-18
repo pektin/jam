@@ -286,6 +286,7 @@ def Call_emitValue(self, type):
     if isinstance(self.function, lekvar.ForwardTarget):
         scope = self.function.target()
 
+    # TODO: Emit arguments before function
     with scope:
         argument_types = self.function.resolveType().extractValue().arguments
         arguments += [emitValue(value, type) for value, type in zip(self.values, argument_types)]
@@ -494,12 +495,13 @@ lekvar.ClosedTarget.llvm_type = None
 
 @patch
 def ClosedTarget_emitValue(self, type):
-    if self.llvm_value is None:
-        with self.target():
-            with self.origin.resetEmission():
-                self.llvm_value = self.value.emitValue(type)
+    # if self.llvm_value is None:
+    with self.target():
+        with self.origin.resetEmission():
+            # self.llvm_value = self.value.emitValue(type)
+            return self.value.emitValue(type)
 
-    return self.llvm_value
+    # return self.llvm_value
 
 @patch
 def ClosedTarget_emitContext(self):
@@ -509,12 +511,13 @@ def ClosedTarget_emitContext(self):
 
 @patch
 def ClosedTarget_emitType(self):
-    if self.llvm_type is None:
-        with self.target():
-            with self.origin.resetEmission():
-                self.llvm_type = self.value.emitType()
+    # if self.llvm_type is None:
+    with self.target():
+        with self.origin.resetEmission():
+            # self.llvm_type = self.value.emitType()
+            return self.value.emitType()
 
-    return self.llvm_type
+    # return self.llvm_type
 #
 # class Function
 #
@@ -527,6 +530,9 @@ lekvar.Function.emitted_cache = None
 @patch
 def Function_gatherEmissionResets(self):
     yield self.closed_context
+
+    if "self" in self.closed_context:
+        yield self.closed_context["self"].resolveType()
 
     for child in self.local_context:
         yield child
