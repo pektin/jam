@@ -1057,3 +1057,31 @@ def Branch_emit(self, block = None):
 def SizeOf_emit(self):
     # Don't bother
     return
+
+#
+# class VoidType
+#
+
+@patch
+def VoidType_emit(self):
+    return
+
+@patch
+def VoidType_emitType(self):
+    return llvm.Type.void_p()
+
+@patch
+def VoidType_emitInstanceValue(self, value, type):
+    value = value.emitValue(type)
+    if isinstance(type.resolveValue(), lekvar.VoidType):
+        return value
+    value = State.builder.cast(value, llvm.Pointer.new(type.emitType(), 0), "")
+    return State.builder.load(value, "")
+
+@patch
+def VoidType_emitInstanceAssignment(self, value, type):
+    value = value.emitAssignment(type)
+    if isinstance(type.resolveValue(), lekvar.VoidType):
+        return value
+    value = State.builder.load(value, "")
+    return State.builder.cast(value, llvm.Pointer.new(type.emitType(), 0), "")

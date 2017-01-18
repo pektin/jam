@@ -11,6 +11,7 @@ def builtins(logger = logging.getLogger()):
     printf = None
 
     string = LLVMType("String")
+    size = LLVMType("Int64")
     ints = [
         LLVMType("Int8"),
         LLVMType("Int16"),
@@ -24,8 +25,9 @@ def builtins(logger = logging.getLogger()):
         LLVMType("Float64"),
     ]
     bool = LLVMType("Bool")
+    void = lekvar.VoidType("Void")
 
-    builtin_objects = [string, bool] + ints + floats
+    builtin_objects = [string, bool, void] + ints + floats
 
     # (the types the method applies to, the name, the instruction, additional arguments)
     methods = [
@@ -70,6 +72,11 @@ def builtins(logger = logging.getLogger()):
         ),
     )
 
+    builtin_objects.append(lekvar.ExternalFunction("alloc", "calloc", [size], void))
+    builtin_objects.append(lekvar.ExternalFunction("free", "free", [void], None))
+    builtin_objects.append(lekvar.ExternalFunction("realloc", "realloc", [void, size], void))
+    builtin_objects.append(LLVMFunction("ptrOffset", [void, size], void, llvmOffsetWrapper))
+
     module = lekvar.Module("_builtins", builtin_objects)
     module.verify()
     return module
@@ -83,6 +90,15 @@ def llvmInstructionWrapper(instruction, self, additional_arguments = []):
         arguments = [State.builder] + additional_arguments + [lhs, rhs, ""]
         return_value = instruction(*arguments)
         State.builder.ret(return_value)
+
+def llvmOffsetWrapper(self):
+    entry = self.llvm_value.appendBlock("")
+
+    with State.blockScope(entry):
+        ptr = self.llvm_value.getParam(0)
+        offset = self.llvm_value.getParam(1)
+        result = State.builder.inBoundsGEP(ptr, [offset], "")
+        State.builder.ret(result)
 
 PRINTF_MAP = {
     "String": "s",
