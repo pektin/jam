@@ -157,3 +157,111 @@ def puts(value:Bool)
     puts("false")
   end
 end
+
+module math
+  def max(a, b)
+    if a > b
+      return a
+    else
+      return b
+    end
+  end
+end
+
+module memory
+  pragma def Ptr(T)
+    class ptr
+      pointer:_builtins.Void
+
+      new()
+        pointer = _builtins.alloc(sizeOf(T).value)
+      end
+
+      new(size:Int)
+        size = size * sizeOf(T)
+        pointer = _builtins.alloc(size.value)
+      end
+
+      # private
+      new(value:_builtins.Void, _:Int) # Extra argument to get around Void matching every type
+        pointer = value
+      end
+
+      def get() -> T
+        return pointer
+      end
+
+      def set(e:T)
+        pointer = e
+      end
+
+      def alloc(size:Int)
+        size = size * sizeOf(T)
+        pointer = _builtins.alloc(size.value)
+      end
+
+      def realloc(size:Int)
+        size = size * sizeOf(T)
+        return ptr(_builtins.realloc(pointer, size.value), 0)
+      end
+
+      def self + other:Int
+        offset = other * sizeOf(T)
+        return ptr(_builtins.ptrOffset(pointer, offset.value), 0)
+      end
+    end
+
+    return ptr
+  end
+end
+
+pragma def Array(Element)
+  class array
+    length:Int
+    capacity:Int
+    pointer:pragma memory.Ptr(Element)
+
+    new()
+      length = 0
+      capacity = 4
+      pointer.alloc(capacity)
+    end
+
+    new(len:Int)
+      length = len
+      capacity = math.max(len, 4)
+      pointer.alloc(capacity) # TODO: Replace with initialization
+    end
+
+    new(ptr, len)
+      capacity = len
+      length = len
+      pointer = ptr
+    end
+
+    def get(index:Int) -> Element
+      return (pointer + index).get()
+    end
+
+    def set(index:Int, element:Element)
+      (pointer + index).set(element)
+    end
+
+    def add(element:Element)
+      index = length
+      lengthChange(length + 1)
+      set(index, element)
+    end
+
+    def lengthChange(newLength:Int)
+      length = newLength
+
+      if length > capacity
+        capacity = capacity * 2
+        pointer = pointer.realloc(capacity)
+      end
+    end
+  end
+
+  return array
+end
