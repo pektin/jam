@@ -69,11 +69,12 @@ def useFrontend(frontend, logger = logging.getLogger()):
     builtins = frontend.builtins(logger)
     # Hack backend into frontend builtins
     builtins.context.addChild(ForwardObject(builtins, "_builtins"))
-    verify(builtins)
 
     try:
         old_builtins = State.builtins
         State.builtins = builtins
+        verify(builtins)
+
         yield
     finally:
         State.builtins = old_builtins
