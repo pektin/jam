@@ -8,10 +8,8 @@ def referenceType(type):
 
 # Emit a value targeting a specific type
 def emitValue(value, type):
-    return value.resolveType().emitInstanceValue(value, type)
+    return value.resolveType().resolveValue().emitInstanceValue(value, type)
 
 # Emit an assigneable value targeting a specific type
 def emitAssignment(value, type):
-    return value.resolveType().emitInstanceAssignment(value, type)
-
-
+    return value.resolveType().resolveValue().emitInstanceAssignment(value, type)
