@@ -500,8 +500,11 @@ def Call_evalContext(self):
 def Return_eval(self):
     if self.value is not None:
         return_type = self.function.resolveType().return_type
-        self.function.eval_returning = evalValue(self.value, return_type)
-
+        if return_type is None:
+            value = self.value.eval()
+        else:
+            value = evalValue(self.value, return_type)
+        self.function.eval_returning = value
     self.function.eval_returned = True
     return None
 
