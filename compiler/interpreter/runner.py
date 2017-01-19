@@ -224,7 +224,7 @@ def Method_eval(self):
 
 @patch
 def Method_evalContext(self):
-    return None
+    return State.self
 
 @patch
 def Method_evalCall(self, values):
