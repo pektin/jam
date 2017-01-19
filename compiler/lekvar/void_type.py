@@ -1,3 +1,5 @@
+from ..errors import *
+
 from .core import BoundObject, Type
 from .stats import ScopeStats
 
