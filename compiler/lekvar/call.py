@@ -47,6 +47,9 @@ class Call(Object):
                 raise
 
     def resolveType(self):
+        if self.return_type is not None:
+            return self.return_type
+
         # Hack for forward types
         context = self.function.target() if isinstance(self.function, ForwardTarget) else ExitStack()
         with context:
