@@ -29,6 +29,18 @@ def Object_evalAssign(self, value):
     raise InternalError("Not Implemented")
 
 #
+# class Type
+#
+
+@patch
+def Type_evalSize(self):
+    raise InternalError("Not Implemented")
+
+@patch
+def Type_evalNewValue(self):
+    raise InternalError("Not Implemented")
+
+#
 # class Link
 #
 
@@ -51,6 +63,10 @@ def Link_evalAssign(self, value):
 @patch
 def Link_evalSize(self):
     return self.value.evalSize()
+
+@patch
+def Link_evalNewValue(self):
+    return self.value.evalNewValue()
 
 #
 # class Attribute
@@ -102,6 +118,11 @@ def ClosedTarget_evalCall(self, values):
 def ClosedTarget_evalAssign(self, value):
     with self.target():
         self.value.evalAssign(value)
+
+@patch
+def ClosedTarget_evalNewValue(self):
+    with self.target():
+        return self.value.evalNewValue()
 
 #
 # class Reference
@@ -177,6 +198,14 @@ def Variable_evalAssign(self, value):
     else:
         self.value = value
 
+@patch
+def Variable_evalSize(self):
+    return self.value.evalSize()
+
+@patch
+def Variable_evalNewValue(self):
+    return self.value.evalNewValue()
+
 #
 # class Assignment
 #
@@ -204,6 +233,14 @@ def Method_evalCall(self, values):
     function = self.resolveCall(call)
 
     return function.evalCall(values)
+
+#
+# class MethodType
+#
+
+@patch
+def MethodType_evalNewValue(self):
+    return lekvar.Literal({}, self)
 
 #
 # class MethodInstance
@@ -316,13 +353,25 @@ def Class_evalSize(self):
 
     return sum(sizes)
 
+@patch
+def Class_evalNewValue(self):
+    values = {}
+
+    for value in self.instance_context:
+        if not isinstance(value, lekvar.Variable):
+            continue
+
+        values[value.name] = value.resolveType().evalNewValue()
+
+    return lekvar.Literal(values, self)
+
 #
 # class Constructor
 #
 
 @patch
 def Constructor_evalCall(self, values):
-    self_value = lekvar.Literal({}, self.constructing)
+    self_value = self.constructing.evalNewValue()
 
     with State.selfScope(self_value):
         lekvar.Function.evalCall(self, values)
@@ -355,6 +404,11 @@ def ForwardTarget_evalCall(self, values):
 def ForwardTarget_evalAssign(self, value):
     raise InternalError("Not Implemented")
 
+@patch
+def ForwardTarget_evalNewValue(self):
+    with self.target():
+        return self.value.evalNewValue()
+
 #
 # class ForwardObject
 #
@@ -382,6 +436,10 @@ def ForwardObject_evalAssign(self, value):
 @patch
 def ForwardObject_evalSize(self):
     return self.target.evalSize()
+
+@patch
+def ForwardObject_evalNewValue(self):
+    return self.target.evalNewValue()
 
 #
 # class Literal
@@ -483,3 +541,15 @@ def SizeOf_evalCall(self, values):
     value = values[0]
 
     return lekvar.Literal(value.evalSize(), self.type.return_type)
+
+#
+# class VoidType
+#
+
+@patch
+def VoidType_eval(self):
+    return
+
+@patch
+def VoidType_evalNewValue(self):
+    return lekvar.Literal(0, self)
