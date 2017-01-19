@@ -396,7 +396,8 @@ def ForwardObject_resetLocalEmission(self):
 
 @patch
 def ForwardObject_emit(self):
-    raise InternalError("Not Implemented")
+    assert self.target is not None
+    self.target.emit()
 
 @patch
 def ForwardObject_emitValue(self, type):
