@@ -65,9 +65,9 @@ defend+_- end"""
 def test_builtin_lib(verbosity):
     logging.basicConfig(level=logging.WARNING - verbosity*10, stream=sys.stdout)
 
-    ir = jam.builtins()
-    ir.context.addChild(llvm.builtins())
+    with lekvar.use(jam, llvm):
+        ir = lekvar.State.builtins
 
-    lekvar.verify(ir)
+        lekvar.verify(ir)
 
-    module = llvm.emit(ir)
+        module = llvm.emit(ir)
