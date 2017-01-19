@@ -6,18 +6,18 @@ class State:
 
     @classmethod
     @contextmanager
-    def print(self, value):
-        if self.stdout is None:
-            self.stdout = ""
+    def print(cls, value):
+        if cls.stdout is None:
+            cls.stdout = ""
 
-        self.stdout += str(value) + "\n"
+        cls.stdout += str(value) + "\n"
 
     @classmethod
     @contextmanager
-    def selfScope(self, value):
-        previous_self = self.self
-        self.self = value
+    def selfScope(cls, self):
+        previous_self = cls.self
+        cls.self = self
 
         yield
 
-        self.self = previous_self
+        cls.self = previous_self
