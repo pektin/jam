@@ -348,7 +348,6 @@ def Class_evalContext(self):
 @patch
 def Class_evalSize(self):
     variables = [value for value in self.instance_context if isinstance(value, lekvar.Variable)]
-    print(self, variables)
     sizes = [value.resolveType().evalSize() for value in variables]
 
     return sum(sizes)
