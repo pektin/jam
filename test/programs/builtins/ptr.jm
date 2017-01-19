@@ -1,0 +1,9 @@
+##12\n4\n
+
+ptr = (pragma memory.Ptr(Int))(5)
+ptr.set(12)
+(ptr + 3).set(4)
+
+foo = ptr
+puts(foo.get())
+puts((foo + 3).get())
