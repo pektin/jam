@@ -12,6 +12,7 @@ def builtins(logger = logging.getLogger()):
     printf = None
 
     string = PyType("String", str)
+    size = PyType("Int64", int)
     ints = [
         PyType("Int8",   int),
         PyType("Int16",  int),
@@ -25,8 +26,9 @@ def builtins(logger = logging.getLogger()):
         PyType("Float64", float),
     ]
     bool_ = PyType("Bool", bool)
+    void = lekvar.VoidType("Void")
 
-    builtin_objects = [string, bool_] + ints + floats
+    builtin_objects = [string, bool_, void] + ints + floats
 
     # (the types the method applies to, the name, the instruction, additional arguments)
     methods = [
@@ -71,6 +73,11 @@ def builtins(logger = logging.getLogger()):
 
     puts = lekvar.Method("puts", overloads)
     builtin_objects.append(puts)
+
+    builtin_objects.append(PyFunction("alloc", [size], void, lambda s: 0))
+    builtin_objects.append(PyFunction("free", [void], None, lambda ptr: None))
+    builtin_objects.append(PyFunction("realloc", [void, size], void, lambda ptr, s: 0))
+    builtin_objects.append(PyFunction("ptrOffset", [void, size], void, lambda ptr, s: 0))
 
     module = lekvar.Module("_builtins", builtin_objects)
     module.verify()
@@ -139,6 +146,9 @@ class PyType(lekvar.Type, lekvar.BoundObject):
 
     def evalSize(self):
         return SIZE_MAP[self.name]
+
+    def evalNewValue(self):
+        return lekvar.Literal(self.py_type(), self)
 
     def __repr__(self):
         return "{}<{}>".format(self.__class__.__name__, self.name)
