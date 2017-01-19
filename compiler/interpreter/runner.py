@@ -7,6 +7,7 @@ from ..errors import InternalError
 from .util import *
 from .state import State
 from . import builtins
+from .builtins import PyPointer
 
 #
 # class Object
@@ -40,6 +41,14 @@ def Type_evalSize(self):
 def Type_evalNewValue(self):
     raise InternalError("Not Implemented")
 
+@patch
+def Type_evalInstanceValue(self, instance, type):
+    return instance.eval()
+
+@patch
+def Type_evalInstanceAssign(self, instance, value):
+    instance.evalAssign(value)
+
 #
 # class Link
 #
@@ -67,6 +76,14 @@ def Link_evalSize(self):
 @patch
 def Link_evalNewValue(self):
     return self.value.evalNewValue()
+
+@patch
+def Link_evalInstanceValue(self, instance, type):
+    return self.value.evalInstanceValue(instance, type)
+
+@patch
+def Link_evalInstanceAssign(self, instance, value):
+    self.value.evalInstanceAssign(instance, value)
 
 #
 # class Attribute
@@ -212,7 +229,8 @@ def Variable_evalNewValue(self):
 
 @patch
 def Assignment_eval(self):
-    self.assigned.evalAssign(self.value.eval())
+    value = evalValue(self.value, self.assigned.resolveType())
+    self.assigned.resolveType().resolveValue().evalInstanceAssign(self.assigned, value)
 
 #
 # class Method
@@ -463,7 +481,8 @@ def Call_eval(self):
         scope = self.function.target()
 
     with scope:
-        values = [value.eval() for value in self.values]
+        argument_types = self.function.resolveType().extractValue().arguments
+        values = [evalValue(value, type) for value, type in zip(self.values, argument_types)]
 
         context = self.called.evalContext()
         with State.selfScope(context):
@@ -480,7 +499,8 @@ def Call_evalContext(self):
 @patch
 def Return_eval(self):
     if self.value is not None:
-        self.function.eval_returning = self.value.eval()
+        return_type = self.function.resolveType().return_type
+        self.function.eval_returning = evalValue(self.value, return_type)
 
     self.function.eval_returned = True
     return None
@@ -492,7 +512,7 @@ def Return_eval(self):
 @patch
 def Branch_eval(self):
     if self.condition is not None:
-        value = self.condition.eval()
+        value = evalValue(self.condition, None)
         assert isinstance(value, lekvar.Literal)
 
         bool_value = value.data
@@ -551,4 +571,25 @@ def VoidType_eval(self):
 
 @patch
 def VoidType_evalNewValue(self):
-    return lekvar.Literal(0, self)
+    return lekvar.Literal(PyPointer(), self)
+
+@patch
+def VoidType_evalInstanceValue(self, instance, type):
+    type = type.resolveValue()
+
+    if type is self:
+        return instance.eval()
+
+    ptr = instance.eval().data
+    return lekvar.Literal(ptr.get(), type)
+
+@patch
+def VoidType_evalInstanceAssign(self, instance, value):
+    type = value.resolveType().resolveValue()
+
+    if type is self:
+        instance.evalAssign(value)
+        return
+
+    ptr = instance.resolveValue().eval().data
+    ptr.set(value.data)

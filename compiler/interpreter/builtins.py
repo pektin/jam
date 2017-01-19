@@ -74,14 +74,39 @@ def builtins(logger = logging.getLogger()):
     puts = lekvar.Method("puts", overloads)
     builtin_objects.append(puts)
 
-    builtin_objects.append(PyFunction("alloc", [size], void, lambda s: 0))
+    builtin_objects.append(PyFunction("alloc", [size], void, lambda s: PyPointer(s)))
     builtin_objects.append(PyFunction("free", [void], None, lambda ptr: None))
-    builtin_objects.append(PyFunction("realloc", [void, size], void, lambda ptr, s: 0))
-    builtin_objects.append(PyFunction("ptrOffset", [void, size], void, lambda ptr, s: 0))
+    builtin_objects.append(PyFunction("realloc", [void, size], void, lambda ptr, s: ptr.resize(s)))
+    builtin_objects.append(PyFunction("ptrOffset", [void, size], void, lambda ptr, s: ptr.offset(s)))
 
     module = lekvar.Module("_builtins", builtin_objects)
     module.verify()
     return module
+
+class PyPointer:
+    def __init__(self, size = 0):
+        self.hand = 0
+        self.value = [None] * size
+
+    def get(self):
+        return self.value[self.hand]
+
+    def set(self, value):
+        self.value[self.hand] = value
+
+    def offset(self, amount):
+        ptr = PyPointer()
+        ptr.hand = self.hand + amount
+        ptr.value = self.value
+        return ptr
+
+    def resize(self, new_size):
+        self.value += [None] * (new_size - len(self.value))
+
+    def __repr__(self):
+        if len(self.value) == 0:
+            return "PyPtr(None)"
+        return "PyPtr({}, {})".format(self.get(), self.value)
 
 PRINT_MAP = {
     "String": "%s",
