@@ -613,7 +613,7 @@ class Parser:
         instructions = []
 
         while True:
-            token = self.lookAhead()
+            token = self.strip()
 
             if token is None:
                 raise SyntaxError(message="Expected `end` before EOF").add(tokens=tokens, source=self.source)
@@ -634,7 +634,7 @@ class Parser:
         instructions = []
 
         while True:
-            token = self.lookAhead()
+            token = self.strip()
 
             if token is None:
                 raise SyntaxError(message="Expected `end` before EOF").add(tokens=tokens, source=self.source)
