@@ -1,0 +1,18 @@
+##0\n3\n2\n0\nHello\nWorld\n
+
+a = (pragma Array(Int))()
+puts(a.length)
+a.add(1)
+a.add(3)
+puts(a.get(1))
+puts(a.length)
+
+b = (pragma Array(String))()
+puts(b.length)
+b.add("Hello")
+b.add("World")
+i = 0
+while i < b.length
+  puts(b.get(i))
+  i = i + 1
+end
