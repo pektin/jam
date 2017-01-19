@@ -135,6 +135,14 @@ class Bool
     end
     return true
   end
+
+  def self as String
+    if Bool(value)
+      return "true"
+    else
+      return "false"
+    end
+  end
 end
 
 #TODO: Implement properly once casting is in place
@@ -151,11 +159,7 @@ def puts(value:Real)
 end
 
 def puts(value:Bool)
-  if value
-    puts("true")
-  else
-    puts("false")
-  end
+  puts(value as String)
 end
 
 module math
