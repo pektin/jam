@@ -11,6 +11,7 @@ Milestones
 ==========
 
 * Metaprogramming ✓
+* Closures
 * Preliminary Standard Library
 * FFI API
 * GC/ARC
