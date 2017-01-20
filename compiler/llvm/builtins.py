@@ -69,9 +69,16 @@ def builtins(logger = logging.getLogger()):
     for int_t in ints:
         for float_t in floats:
             name = int_t.name + "To" + float_t.name
-            function = LLVMFunction(name, [int_t], float_t,
-                                    partial(llvmInstructionWrapper, llvm.Builder.iToF,
-                                            args_after=[float_t.emitType()]))
+            wrap = partial(llvmInstructionWrapper, llvm.Builder.iToF, args_after=[float_t.emitType()])
+            function = LLVMFunction(name, [int_t], float_t, wrap)
+            builtin_objects.append(function)
+
+    # float -> int conversions
+    for float_t in floats:
+        for int_t in ints:
+            name = float_t.name + "To" + int_t.name
+            wrap = partial(llvmInstructionWrapper, llvm.Builder.fToI, args_after=[int_t.emitType()])
+            function = LLVMFunction(name, [float_t], int_t, wrap)
             builtin_objects.append(function)
 
     builtin_objects.append(

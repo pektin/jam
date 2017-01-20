@@ -105,6 +105,10 @@ class Real
   def self % other:Real
     return Real(_builtins.floatRem(value, other.value))
   end
+
+  def self as Int
+    return Int(_builtins.Float64ToInt64(value))
+  end
 end
 
 #TODO: Implement using byte arrays

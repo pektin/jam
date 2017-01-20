@@ -70,6 +70,13 @@ def builtins(logger = logging.getLogger()):
             function = PyFunction(name, [int_t], float_t, lambda i: float(i))
             builtin_objects.append(function)
 
+    # float -> int conversions
+    for float_t in floats:
+        for int_t in ints:
+            name = float_t.name + "To" + int_t.name
+            function = PyFunction(name, [float_t], int_t, lambda f: int(f))
+            builtin_objects.append(function)
+
     overloads = []
     for type in ints + floats + [string]:
         def py_func(v, type=type):
