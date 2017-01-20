@@ -58,7 +58,7 @@ def builtins(logger = logging.getLogger()):
             functions.append(
                 LLVMFunction("", [type, type], return_type,
                     partial(llvmInstructionWrapper, instruction,
-                            additional_arguments=arguments)
+                            args_before=arguments)
                 )
             )
         builtin_objects.append(
@@ -81,13 +81,12 @@ def builtins(logger = logging.getLogger()):
     module.verify()
     return module
 
-def llvmInstructionWrapper(instruction, self, additional_arguments = []):
+def llvmInstructionWrapper(instruction, self, args_before = [], args_after = []):
     entry = self.llvm_value.appendBlock("")
 
     with State.blockScope(entry):
-        lhs = self.llvm_value.getParam(0)
-        rhs = self.llvm_value.getParam(1)
-        arguments = [State.builder] + additional_arguments + [lhs, rhs, ""]
+        args = [self.llvm_value.getParam(i) for i in range(len(self.type.arguments))]
+        arguments = [State.builder] + args_before + args + args_after + [""]
         return_value = instruction(*arguments)
         State.builder.ret(return_value)
 
