@@ -15,6 +15,9 @@ Milestones
 * FFI API
 * GC/ARC
 * Version 0.1 Release (Initial Release)
+* Dependent Types
+* Binary Lekvar Format
+* Shared/Static Library Building
 * Package Manager
 * Lekvar Binary Format
 * Stable Syntax and Semantics
