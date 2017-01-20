@@ -47,6 +47,10 @@ def builtins(logger = logging.getLogger()):
         (floats, "floatMul", llvm.Builder.fMul, []),
         (floats, "floatDiv", llvm.Builder.fDiv, []),
         (floats, "floatRem", llvm.Builder.fRem, []),
+        (floats, "floatGreaterThan", llvm.Builder.fCmp, [llvm.RealPredicate.ordered_greater_than]),
+        (floats, "floatGreaterOrEqualTo", llvm.Builder.fCmp, [llvm.RealPredicate.ordered_greater_or_equal_to]),
+        (floats, "floatSmallerThan", llvm.Builder.fCmp, [llvm.RealPredicate.ordered_less_than]),
+        (floats, "floatSmallerOrEqualTo", llvm.Builder.fCmp, [llvm.RealPredicate.ordered_less_or_equal_to]),
     ]
 
     for types, name, instruction, arguments in methods:

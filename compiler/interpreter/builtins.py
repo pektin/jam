@@ -48,6 +48,11 @@ def builtins(logger = logging.getLogger()):
         (floats, "floatMul", float.__mul__, None),
         (floats, "floatDiv", float.__truediv__, None),
         (floats, "floatRem", float.__mod__, None),
+        (floats, "floatGreaterThan", (lambda a, b: a > b), bool_),
+        (floats, "floatGreaterOrEqualTo", (lambda a, b: a >= b), bool_),
+        (floats, "floatSmallerThan", (lambda a, b: a < b), bool_),
+        (floats, "floatSmallerOrEqualTo", (lambda a, b: a <= b), bool_),
+
     ]
 
     for types, name, function, return_type in methods:

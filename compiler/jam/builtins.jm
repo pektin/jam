@@ -106,6 +106,22 @@ class Real
     return Real(_builtins.floatRem(value, other.value))
   end
 
+  def self > other:Real
+    return Bool(_builtins.floatGreaterThan(value, other.value))
+  end
+
+  def self >= other:Real
+    return Bool(_builtins.floatGreaterOrEqualTo(value, other.value))
+  end
+
+  def self < other:Real
+    return Bool(_builtins.floatSmallerThan(value, other.value))
+  end
+
+  def self <= other:Real
+    return Bool(_builtins.floatSmallerOrEqualTo(value, other.value))
+  end
+
   def self as Int
     return Int(_builtins.Float64ToInt64(value))
   end
