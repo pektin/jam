@@ -31,7 +31,7 @@ class Closure(Scope):
 class ClosedLink(BoundLink):
     bound_context = None
 
-    def __str__(self):
+    def __repr__(self):
         return "C({})".format(str(self.value))
 
 class ClosedTarget(Link):
