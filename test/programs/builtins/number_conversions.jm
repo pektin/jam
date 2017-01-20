@@ -1,0 +1,8 @@
+##3.2\n-6.5\n5\n2\n854\n
+
+puts(2 as Real + 1.2)
+puts(0 as Real - 6.5)
+
+puts(5.2 as Int)
+puts(2.0 as Int)
+puts(854.3 as Int)
