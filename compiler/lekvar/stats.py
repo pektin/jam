@@ -13,12 +13,11 @@ class Stats:
             if parent.stats.forward_transitive:
                 self.forward = parent.stats.forward
 
-    def __iter__(self):
-        for attr in self.__attrs__:
-            yield attr, getattr(self, attr)
-
     def __repr__(self):
-        return repr(dict(self))
+        results = []
+        for attr in self.__attrs__:
+            results.append("{}: {}".format(attr, getattr(self, attr)))
+        return "{{}}".format(", ".join(results))
 
 class SoftScopeStats(Stats):
     __attrs__ = Stats.__attrs__ + ['definitely_returns', 'might_return']
