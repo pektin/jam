@@ -1,0 +1,6 @@
+##2\n2\n0\n-1\n
+
+puts(math.max(1, 2))
+puts(math.max(1.0, 2.0))
+puts(math.max(-1, 0))
+puts(math.max(-1, -2))
