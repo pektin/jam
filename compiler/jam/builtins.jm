@@ -63,6 +63,10 @@ class Int
   def self <= other:Int
     return Bool(_builtins.intSmallerOrEqualTo(value, other.value))
   end
+
+  def self as Real
+    return Real(_builtins.Int64ToFloat64(value))
+  end
 end
 
 #TODO: Allow for arbitrary sizes

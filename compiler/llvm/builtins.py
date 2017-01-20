@@ -65,6 +65,15 @@ def builtins(logger = logging.getLogger()):
             lekvar.Method(name, functions)
         )
 
+    # int -> float conversions
+    for int_t in ints:
+        for float_t in floats:
+            name = int_t.name + "To" + float_t.name
+            function = LLVMFunction(name, [int_t], float_t,
+                                    partial(llvmInstructionWrapper, llvm.Builder.iToF,
+                                            args_after=[float_t.emitType()]))
+            builtin_objects.append(function)
+
     builtin_objects.append(
         lekvar.Method("puts",
             [LLVMFunction("", [type], None, partial(llvmPrintfWrapper, type))

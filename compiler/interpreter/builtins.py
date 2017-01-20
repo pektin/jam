@@ -63,6 +63,13 @@ def builtins(logger = logging.getLogger()):
             lekvar.Method(name, functions)
         )
 
+    # int -> float conversions
+    for int_t in ints:
+        for float_t in floats:
+            name = int_t.name + "To" + float_t.name
+            function = PyFunction(name, [int_t], float_t, lambda i: float(i))
+            builtin_objects.append(function)
+
     overloads = []
     for type in ints + floats + [string]:
         def py_func(v, type=type):
