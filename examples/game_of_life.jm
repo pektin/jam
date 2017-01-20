@@ -1,0 +1,116 @@
+
+class Grid
+  width:Int
+  height:Int
+  data:(pragma Array(Bool))
+
+  new(w:Int, h:Int)
+    width = w
+    height = h
+    data = (pragma Array(Bool))(width * height)
+  end
+
+  new(w:Int, h:Int, d)
+    width = w
+    height = h
+    data = d
+  end
+
+  def get(x:Int, y:Int) -> Bool
+    if x < 0 || x >= width || y < 0 || y >= height
+      return false
+    end
+
+    return data.get(y * width + x)
+  end
+
+  def set(x:Int, y:Int, value:Bool)
+    data.set(y * width + x, value)
+  end
+
+  def output()
+    y = 0
+    while y < height
+      x = 0
+      while x < width
+        if get(x, y)
+          print("X")
+        else
+          print(".")
+        end
+        x = x + 1
+      end
+      print("\n")
+      y = y + 1
+    end
+  end
+
+  def dup()
+    return Grid(width, height, data.dup())
+  end
+
+  def step()
+    old = dup()
+
+    y = 0
+    while y < height
+      x = 0
+      while x < width
+        step(x, y, old)
+        x = x + 1
+      end
+      y = y + 1
+    end
+  end
+
+  def step(center_x:Int, center_y:Int, old)
+    count = 0
+
+    x = center_x - 1
+    while x <= center_x + 1
+      y = center_y - 1
+      while y <= center_y + 1
+        if old.get(x, y)
+          count = count + 1
+        end
+        y = y + 1
+      end
+      x = x + 1
+    end
+
+    if old.get(center_x, center_y)
+      if count < 3 || count > 4
+        set(center_x, center_y, false)
+      end
+    else
+      if count == 3
+        set(center_x, center_y, true)
+      end
+    end
+  end
+end
+
+def main()
+  const WIDTH = 100
+  const HEIGHT = 100
+
+  grid = Grid(WIDTH, HEIGHT)
+  center_x = WIDTH // 2
+  center_y = HEIGHT // 2
+  grid.set(center_x, center_y, true)
+  grid.set(center_x - 1, center_y, true)
+  grid.set(center_x, center_y + 1, true)
+  grid.set(center_x, center_y + 2, true)
+  grid.set(center_x + 1, center_y + 1, true)
+  grid.output()
+
+  i = 0
+  while i < 1000
+    grid.step()
+    grid.output()
+    puts("=============================================")
+    i = i + 1
+  end
+end
+
+main()
