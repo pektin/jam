@@ -361,7 +361,7 @@ class RealPredicate:
     # always_false = 0
     ordered_equal = 1
     ordered_greater_than = 2
-    ordered_greter_or_equal_to = 3
+    ordered_greater_or_equal_to = 3
     ordered_less_than = 4
     ordered_less_or_equal_to = 5
     ordered_unequal = 6
