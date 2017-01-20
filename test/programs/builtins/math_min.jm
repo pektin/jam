@@ -1,0 +1,6 @@
+##1\n1\n-1\n-2\n
+
+puts(math.min(1, 2))
+puts(math.min(1.0, 2.0))
+puts(math.min(-1, 0))
+puts(math.min(-1, -2))

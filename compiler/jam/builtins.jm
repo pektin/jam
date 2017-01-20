@@ -213,6 +213,14 @@ module math
       return b
     end
   end
+
+  def min(a, b)
+    if a < b
+      return a
+    else
+      return b
+    end
+  end
 end
 
 module memory
