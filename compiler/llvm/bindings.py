@@ -317,6 +317,16 @@ Builder.wrapInstanceFunc("call", "LLVMBuildCall", [Value, [Value], c_char_p], Va
 
 Builder.wrapInstanceFunc("cast", "LLVMBuildBitCast", [Value, Type, c_char_p], Value)
 
+Builder.wrapInstanceFunc("iTrunc",      "LLVMBuildTrunc",   [Value, Type, c_char_p], Value)
+Builder.wrapInstanceFunc("iZeroExtend", "LLVMBuildZExt",    [Value, Type, c_char_p], Value)
+Builder.wrapInstanceFunc("iSignExtend", "LLVMBuildSExt",    [Value, Type, c_char_p], Value)
+Builder.wrapInstanceFunc("fToUI",       "LLVMBuildFPToUI",  [Value, Type, c_char_p], Value)
+Builder.wrapInstanceFunc("fToI",        "LLVMBuildFPToSI",  [Value, Type, c_char_p], Value)
+Builder.wrapInstanceFunc("uiToF",       "LLVMBuildUIToFP",  [Value, Type, c_char_p], Value)
+Builder.wrapInstanceFunc("iToF",        "LLVMBuildSIToFP",  [Value, Type, c_char_p], Value)
+Builder.wrapInstanceFunc("fTrunc",      "LLVMBuildFPTrunc", [Value, Type, c_char_p], Value)
+Builder.wrapInstanceFunc("fExt",        "LLVMBuildFPExt",   [Value, Type, c_char_p], Value)
+
 Builder.wrapInstanceFunc("iAdd", "LLVMBuildAdd", [Value, Value, c_char_p], Value)
 Builder.wrapInstanceFunc("iSub", "LLVMBuildSub", [Value, Value, c_char_p], Value)
 Builder.wrapInstanceFunc("iMul", "LLVMBuildMul", [Value, Value, c_char_p], Value)
