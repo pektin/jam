@@ -292,6 +292,18 @@ pragma def Array(Element)
         pointer = pointer.realloc(capacity)
       end
     end
+
+    def dup() -> array
+      out = array(length)
+
+      i = 0
+      while i < length
+        out.set(i, get(i))
+        i = i + 1
+      end
+
+      return out
+    end
   end
 
   return array
