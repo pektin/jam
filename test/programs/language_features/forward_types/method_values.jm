@@ -1,14 +1,14 @@
 ##12\nfloat\nfoo\n
 
-def print(value:Real)
+def func(value:Real)
   puts("float")
 end
 
-def print(value)
+def func(value)
   puts(value)
 end
 
-p = print
-p(12)
-p(5.4)
-p("foo")
+f = func
+f(12)
+f(5.4)
+f("foo")

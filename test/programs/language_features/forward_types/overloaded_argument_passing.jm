@@ -1,8 +1,8 @@
 ##foo\n12\n
 
-def print(o)
+def func(o)
   puts(o)
 end
 
-print("foo")
-print(12)
+func("foo")
+func(12)

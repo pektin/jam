@@ -82,7 +82,7 @@ def builtins(logger = logging.getLogger()):
             builtin_objects.append(function)
 
     builtin_objects.append(
-        lekvar.Method("puts",
+        lekvar.Method("print",
             [LLVMFunction("", [type], None, partial(llvmPrintfWrapper, type))
             for type in (ints + floats + [string])],
         ),
@@ -138,7 +138,7 @@ def llvmPrintfWrapper(type, self):
     entry = self.llvm_value.appendBlock("")
 
     with State.blockScope(entry):
-        fmt_str_data = "%{}\n".format(PRINTF_MAP[type.name])
+        fmt_str_data = "%{}".format(PRINTF_MAP[type.name])
         fmt_string = State.builder.globalString(fmt_str_data, "")
 
         value = self.llvm_value.getParam(0)

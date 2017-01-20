@@ -85,8 +85,8 @@ def builtins(logger = logging.getLogger()):
         function = PyFunction("", [type], None, py_func)
         overloads.append(function)
 
-    puts = lekvar.Method("puts", overloads)
-    builtin_objects.append(puts)
+    print_ = lekvar.Method("print", overloads)
+    builtin_objects.append(print_)
 
     builtin_objects.append(PyFunction("alloc", [size], void, lambda s: PyPointer(s)))
     builtin_objects.append(PyFunction("free", [void], None, lambda ptr: None))

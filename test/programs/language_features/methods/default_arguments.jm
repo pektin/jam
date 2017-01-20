@@ -1,9 +1,9 @@
 ##Hello\nfoo\nHi\nbar\n
 
-def print(name:String, message:String = "Hello")
+def func(name:String, message:String = "Hello")
   puts(message)
   puts(name)
 end
 
-print("foo")
-print("bar", "Hi")
+func("foo")
+func("bar", "Hi")

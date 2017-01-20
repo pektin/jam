@@ -10,7 +10,7 @@ class State:
         if cls.stdout is None:
             cls.stdout = ""
 
-        cls.stdout += str(value) + "\n"
+        cls.stdout += str(value)
 
     @classmethod
     @contextmanager

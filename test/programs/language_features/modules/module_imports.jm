@@ -2,30 +2,30 @@
 
 module foo
   module bar
-    def print()
+    def func()
       puts("bar")
     end
   end
 
-  def print()
+  def func()
     puts("foo")
   end
 end
 
 def main1()
-  import foo.bar.print
-  print()
+  import foo.bar.func
+  func()
 end
 
 def main2()
-  import foo.print
-  print()
+  import foo.func
+  func()
 end
 
 def main3()
   import foo as boo
-  boo.print()
-  boo.bar.print()
+  boo.func()
+  boo.bar.func()
 end
 
 main1()

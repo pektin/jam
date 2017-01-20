@@ -154,20 +154,39 @@ class Bool
 end
 
 #TODO: Implement properly once casting is in place
-def puts(value:Int)
-  _builtins.puts(value.value)
+def print(value:Int)
+  _builtins.print(value.value)
 end
 
-def puts(value:String)
-  _builtins.puts(value.value)
+def print(value:Real)
+  _builtins.print(value.value)
+end
+
+def print(value:Bool)
+  print(value as String)
+end
+
+def print(value:String)
+  _builtins.print(value.value)
+end
+
+def puts(value:Int)
+  print(value)
+  print("\n")
 end
 
 def puts(value:Real)
-  _builtins.puts(value.value)
+  print(value)
+  print("\n")
 end
 
 def puts(value:Bool)
   puts(value as String)
+end
+
+def puts(value:String)
+  print(value)
+  print("\n")
 end
 
 module math
