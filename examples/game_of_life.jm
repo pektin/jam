@@ -90,6 +90,15 @@ class Grid
   end
 end
 
+def print_separator(separator, count)
+  i = 0
+  while i < count
+    print(separator)
+    i = i + 1
+  end
+  print("\n")
+end
+
 def main()
   const WIDTH = 100
   const HEIGHT = 100
@@ -108,7 +117,7 @@ def main()
   while i < 1000
     grid.step()
     grid.output()
-    puts("=============================================")
+    print_separator("=", WIDTH)
     i = i + 1
   end
 end
