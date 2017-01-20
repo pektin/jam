@@ -10,7 +10,7 @@ After version 1.0, Jam will follow semantic versioning.
 Milestones
 ==========
 
-* Metaprogramming
+* Metaprogramming ✓
 * Preliminary Standard Library
 * FFI API
 * GC/ARC
