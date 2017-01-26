@@ -394,6 +394,12 @@ def Type_void_p(space = 0):
     return Pointer.new(Int.new(8), space)
 Type.void_p = Type_void_p
 
+setTypes("LLVMPrintTypeToString", [Type], c_char_p)
+@logged("toString", "LLVMPrintTypeToString", False)
+def Type_toString(self):
+    return _lib.LLVMPrintTypeToString(self).decode("UTF-8")
+Type.toString = Type_toString
+
 Type.wrapInstanceProp("context", "LLVMGetTypeContext", None, Context)
 Type.wrapInstanceProp("isSized", "LLVMTypeIsSized", None, c_bool)
 Type.wrapInstanceProp("kind", "LLVMGetTypeKind", None, c_uint)
@@ -415,9 +421,6 @@ class TypeKind:
     VectorTypeKind = 13
     MetadataTypeKind = 14
     X86_MMXTypeKind = 15
-
-Type.wrapInstanceFunc("dump", "LLVMDumpType")
-Type.wrapInstanceFunc("toString", "LLVMPrintTypeToString", [], c_char_p)
 
 #
 # Pointer Types
@@ -488,7 +491,12 @@ Value.wrapConstructor("undef", "LLVMGetUndef", [Type])
 Value.wrapConstructor("constUnnamedStruct", "LLVMConstStruct", [[Value], c_bool])
 Value.wrapConstructor("constStruct", "LLVMConstNamedStruct", [Struct, [Value]])
 
-Value.wrapInstanceFunc("dump", "LLVMDumpValue")
+setTypes("LLVMPrintValueToString", [Value], c_char_p)
+@logged("toString", "LLVMPrintValueToString", False)
+def Value_toString(self):
+    return _lib.LLVMPrintValueToString(self).decode("UTF-8")
+Value.toString = Value_toString
+
 Value.wrapInstanceProp("initializer", "LLVMGetInitializer", "LLVMSetInitializer", Value)
 Value.wrapInstanceProp("opcode", "LLVMGetInstructionOpcode", None, c_uint)
 
