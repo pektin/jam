@@ -16,7 +16,7 @@ from .identifier import Identifier
 from .modifiers import Constant, Reference
 from .variable import Variable
 from .assignment import Assignment
-from .class_ import Class, Constructor
+from .class_ import Class, Constructor, MetaClass
 from .forward import ForwardObject, ForwardTarget
 from .literal import Literal
 from .branches import Loop, Break, Branch
