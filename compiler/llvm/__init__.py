@@ -20,7 +20,8 @@ def emit(module:lekvar.Module, logger = logging.getLogger(), opt_level = 1):
         module.emit()
 
     State.module.verify()
-    _optimise(State.module, opt_level, opt_level)
+    if opt_level != 0:
+        _optimise(State.module, opt_level, opt_level)
     return State.module.toString()
 
 def run(module:lekvar.Module, logger = logging.getLogger(), opt_level = 1):
