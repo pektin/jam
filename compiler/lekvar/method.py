@@ -4,7 +4,7 @@ from .state import State
 from .stats import Stats, ScopeStats
 from .core import Context, Object, BoundObject, SoftScope, Scope, Type
 from .util import checkCompatibility
-from .function import Function, FunctionType
+from .function import Function, FunctionType, FunctionInstance
 from .forward import ForwardObject, ForwardTarget
 
 # Python Predefines
@@ -173,16 +173,16 @@ class MethodType(Type):
         return [type for type, used in self.used_overloads.items() if used]
 
 class MethodInstance(Object):
-    def __init__(self, type:MethodType, target:FunctionType):
+    def __init__(self, type:MethodType, target_type:FunctionType):
         Object.__init__(self)
         self.type = type
-        self.target = target
+        self.target = FunctionInstance(target_type)
 
     def verify(self):
         self.type.verify()
 
     def resolveType(self):
-        return self.target
+        return self.target.type
 
     def resolveCall(self, call:FunctionType):
         return self
