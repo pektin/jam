@@ -462,6 +462,9 @@ def ForwardTarget_emitValue(self, type):
     cache = self.value.emitted_cache
 
     with self.target():
+        #TODO: Enable caching again
+        with self.value.resetEmission():
+            return self.value.emitValue(type)
         #TODO: Make this generic, currently specific for Function
         # Maybe turn the entire emitter into a sequenced collection of generators,
         # like forward object targeting, which would also allow for multithreading
