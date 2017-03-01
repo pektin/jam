@@ -1,0 +1,15 @@
+#?#bar\n12\n
+
+def foo(x)
+  def bar()
+    puts(x)
+  end
+
+  return bar
+end
+
+b = foo(12)
+
+foo("bar")()
+
+b()
