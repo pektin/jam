@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from .. import lekvar
 
 from . import bindings as llvm
+from .util import *
 
 # Global state for the llvm emitter
 # Wraps a single llvm module
@@ -40,7 +41,7 @@ class State:
     def addMainInstructions(cls, instructions:[lekvar.Object]):
         last_block = cls.main.getLastBlock().getPrevious()
         with cls.blockScope(last_block):
-            cls.emitInstructions(instructions)
+            emitInstructions(instructions)
 
     @classmethod
     @contextmanager
@@ -61,7 +62,7 @@ class State:
     # Emmit an allocation as an instruction
     # Enforces allocation to happen early
     @classmethod
-    def alloca(cls, type:llvm.Type, name:str):
+    def alloca(cls, type:llvm.Type, name:str = ""):
         # Find first block
         entry = cls.builder.position.function.getFirstBlock()
 
@@ -77,14 +78,3 @@ class State:
         variable = State.alloca(value.type, "")
         State.builder.store(value, variable)
         return variable
-
-    # Emits a set of instructions and returns whether or not the set has a br instruction
-    # Eliminates dead code
-    @classmethod
-    def emitInstructions(cls, instructions):
-        for instruction in instructions:
-            value = instruction.emitValue(None)
-
-            if value is not None and value.opcode == llvm.Opcode.Br:
-                return True
-        return False

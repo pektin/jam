@@ -661,7 +661,7 @@ def Function_emitInstructions(self):
 
         self.emitPostContext()
 
-        return State.emitInstructions(self.instructions)
+        return emitInstructions(self.instructions)
 
 @patch
 def Function_emitEntry(self):
@@ -1118,7 +1118,7 @@ def Loop_emitValue(self, type):
     State.builder.positionAtEnd(loop_block)
 
     # Only loop if we don't return
-    if not State.emitInstructions(self.instructions):
+    if not emitInstructions(self.instructions):
         # Loop
         # Rely on break to end the loop
         State.builder.br(loop_block)
@@ -1164,7 +1164,7 @@ def Branch_emit(self, block = None):
         after_block = next_block
 
     State.builder.positionAtEnd(block)
-    if not State.emitInstructions(self.instructions):
+    if not emitInstructions(self.instructions):
         # Only br to after if we don't return
         State.builder.br(after_block)
 
