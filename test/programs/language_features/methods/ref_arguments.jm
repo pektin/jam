@@ -1,4 +1,4 @@
-#?#2\n3\n2\n
+##2\n3\n2\n
 
 def assign_2(f:ref Int)
   f = 2
