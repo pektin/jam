@@ -665,8 +665,9 @@ def Function_emitInstructions(self):
         # Allocate Arguments
         for index, arg in enumerate(self.arguments):
             val = self.llvm_value.getParam(index + 1)
-            arg.llvm_value = State.builder.alloca(arg.resolveType().emitType(), resolveName(arg))
-            State.builder.store(val, arg.llvm_value)
+            var = arg.extractValue()
+            var.llvm_value = State.builder.alloca(arg.resolveType().emitType(), resolveName(arg))
+            State.builder.store(val, var.llvm_value)
 
         self.emitPostContext()
 
