@@ -279,6 +279,8 @@ def Module_emitValue(self):
 # class Call
 #
 
+lekvar.Call.llvm_value = None
+
 @patch
 def Call_emitValue(self, type):
     # Ugly hack for handling the sizeof function
@@ -309,7 +311,8 @@ def Call_emitValue(self, type):
         arguments += [emitValue(value, type) for value, type in zip(self.values, argument_types)]
 
     # Get the llvm function type
-    return State.builder.call(called, arguments, "")
+    self.llvm_value = State.builder.call(called, arguments, "")
+    return self.llvm_value
 
 @patch
 def Call_emitSizeOf(self, type):
@@ -325,7 +328,10 @@ def Call_emitAssignment(self, type):
 
 @patch
 def Call_emitContext(self):
-    return self.called.emitContext()
+    type = self.llvm_value.type
+    value = State.alloca(type)
+    State.builder.store(self.llvm_value, value)
+    return value
 
 #
 # class Return
