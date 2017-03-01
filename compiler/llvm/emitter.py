@@ -30,6 +30,11 @@ def Object_emitValue(self, type:lekvar.Type) -> llvm.Value:
 
 @patch
 #@abstract
+def Object_emitCallable(self, type:lekvar.Type) -> llvm.Value:
+    raise InternalError("Not Implemented")
+
+@patch
+#@abstract
 def Object_emitAssignment(self, type:lekvar.Type) -> llvm.Value:
     return None
 
@@ -41,6 +46,10 @@ def Type_emitType(self) -> llvm.Type:
 @patch
 def Type_emitInstanceValue(self, value:lekvar.Object, type:lekvar.Type) -> llvm.Value:
     return value.emitValue(type)
+
+@patch
+def Type_emitInstanceCallable(self, value:lekvar.Object, type:lekvar.Type) -> llvm.Value:
+    return value.emitCallable(type)
 
 @patch
 def Type_emitInstanceAssignment(self, value:lekvar.Object, type:lekvar.Type) -> llvm.Value:
@@ -92,12 +101,16 @@ def Link_emitValue(self, type):
     return self.value.emitValue(type)
 
 @patch
-def Link_emitType(self):
-    return self.value.emitType()
+def Link_emitCallable(self, type):
+    return self.value.emitCallable(type)
 
 @patch
 def Link_emitAssignment(self, type):
     return self.value.emitAssignment(type)
+
+@patch
+def Link_emitType(self):
+    return self.value.emitType()
 
 @patch
 def Link_emitContext(self):
@@ -106,6 +119,10 @@ def Link_emitContext(self):
 @patch
 def Link_emitInstanceValue(self, value, type):
     return self.value.emitInstanceValue(value, type)
+
+@patch
+def Link_emitInstanceCallable(self, value, type):
+    return self.value.emitInstanceCallable(value, type)
 
 @patch
 def Link_emitInstanceAssignment(self, value, type):
@@ -270,7 +287,7 @@ def Call_emitValue(self, type):
         return self.emitSizeOf(self.values[0])
 
     with State.selfScope(self.called.emitAssignment(type)):
-        called = self.function.emitValue(self.function_type)
+        called = self.called.resolveType().resolveValue().emitInstanceCallable(self.function, self.function_type)
 
     bound_value = self.called.emitContext()
     with State.selfScope(bound_value):
@@ -405,6 +422,11 @@ def ForwardObject_emitValue(self, type):
     return self.target.emitValue(type)
 
 @patch
+def ForwardObject_emitCallable(self, type):
+    assert self.target is not None
+    return self.target.emitCallable(type)
+
+@patch
 def ForwardObject_emitType(self):
     assert self.target is not None
     return self.target.emitType()
@@ -437,6 +459,27 @@ def ForwardTarget_emitValue(self, type):
         #TODO: Make this generic, currently specific for Function
         # Maybe turn the entire emitter into a sequenced collection of generators,
         # like forward object targeting, which would also allow for multithreading
+        assert isinstance(self.value, lekvar.Function)
+
+        if type not in cache:
+            assert not self.emitted
+
+            with self.value.resetEmission():
+                self.value.emitStatic()
+                cache[type] = self.value.llvm_value
+                self.value.emitBody()
+        return cache[type]
+
+@patch
+def ForwardTarget_emitCallable(self, type):
+    if len(self.dependencies) == 0:
+        return self.value.emitCallable(type)
+
+    if self.value.emitted_cache is None:
+        self.value.emitted_cache = {}
+    cache = self.value.emitted_cache
+
+    with self.target():
         assert isinstance(self.value, lekvar.Function)
 
         if type not in cache:
@@ -503,6 +546,12 @@ def ClosedTarget_emitValue(self, type):
             return self.value.emitValue(type)
 
     # return self.llvm_value
+
+@patch
+def ClosedTarget_emitCallable(self, type):
+    with self.target():
+        with self.origin.resetEmission():
+            return self.value.emitCallable(type)
 
 @patch
 def ClosedTarget_emitContext(self):
@@ -637,18 +686,34 @@ def Function_emitReturn(self):
 @patch
 def Function_emitValue(self, type):
     self.emit()
+
+    struct_type = self.type.emitType()
+    context = self.emitContext(malloc = True)
+    context = State.builder.cast(context, llvm.Pointer.void_p(), "")
+
+    delegate = llvm.Value.constStruct(struct_type, [self.llvm_value, llvm.Value.undef(llvm.Type.void_p())])
+
+    return State.builder.insertValue(delegate, context, 1, "")
+
+@patch
+def Function_emitCallable(self, type):
+    self.emit()
+
     return self.llvm_value
 
 @patch
-def Function_emitContext(self):
+def Function_emitContext(self, malloc = False, store_self = True):
     closure_type = self.llvm_closure_type or self.closed_context.emitType()
     assert closure_type is not None
 
     if len(self.closed_context) > 0:
-        context = State.alloca(closure_type, "")
+        if malloc:
+            context = State.builder.malloc(closure_type, "context")
+        else:
+            context = State.alloca(closure_type, "")
 
         #TODO: Remove this special case
-        if "self" in self.closed_context and State.self != 0:
+        if "self" in self.closed_context and store_self:
             assert State.self is not None
             assert self.closed_context["self"].llvm_context_index >= 0
             index = self.closed_context["self"].llvm_context_index
@@ -693,10 +758,9 @@ def Constructor_emitReturn(self):
     State.builder.ret(value)
 
 @patch
-def Constructor_emitContext(self):
+def Constructor_emitContext(self, malloc = False):
     # TODO: Add inits here
-    with State.selfScope(0):
-        return lekvar.Function.emitContext(self)
+    return lekvar.Function.emitContext(self, malloc = malloc, store_self = False)
 
 #
 # class FunctionType
@@ -716,7 +780,10 @@ def FunctionType_resetLocalEmission(self):
 
 @patch
 def FunctionType_emitType(self):
-    return llvm.Pointer.new(self.emitFunctionType(), 0)
+    func = llvm.Pointer.new(self.emitFunctionType(), 0)
+    context = llvm.Type.void_p()
+
+    return llvm.Struct.newAnonym([func, context], False)
 
 @patch
 def FunctionType_emitFunctionType(self, has_context = True):
@@ -743,12 +810,20 @@ def FunctionInstance_emitValue(self, type):
     return State.builder.load(self.emitAssignment(), "")
 
 @patch
+def FunctionInstance_emitCallable(self, type):
+    delegate = self.emitAssignment()
+    func = State.builder.structGEP(delegate, 0, "")
+    return State.builder.load(func, "")
+
+@patch
 def FunctionInstance_emitAssignment(self):
     return State.self
 
 @patch
 def FunctionInstance_emitContext(self):
-    return llvm.Value.null(llvm.Type.void_p())
+    delegate = self.emitAssignment()
+    context = State.builder.structGEP(delegate, 1, "")
+    return State.builder.load(context, "")
 
 #
 # class ExternalFunction
@@ -764,6 +839,11 @@ def ExternalFunction_emit(self):
 
 @patch
 def ExternalFunction_emitValue(self, type):
+    self.emit()
+    return self.llvm_value
+
+@patch
+def ExternalFunction_emitCallable(self, type):
     self.emit()
     return self.llvm_value
 
@@ -803,7 +883,8 @@ def Method_emitValue(self, type):
 @patch
 def Method_emitValueForMethodType(self, type):
     values = []
-    for overload_type in type.used_overload_types:
+
+    for index, overload_type in enumerate(type.used_overload_types):
         normal_matches = []
         forward_matches = []
 
@@ -817,14 +898,16 @@ def Method_emitValueForMethodType(self, type):
         if len(normal_matches) > 0:
             assert len(normal_matches) == 1
             overload = normal_matches[0]
-            values.append(overload.emitValue(overload_type))
+            value = emitValue(overload, overload_type)
         else:
             assert len(forward_matches) == 1
             overload = forward_matches[0]
             fn = overload.forwardTarget(overload_type)
-            values.append(fn.emitValue(overload_type))
+            value = emitValue(fn, overload_type)
 
-    return llvm.Value.constStruct(type.emitType(), values)
+        values.append(value)
+
+    return newStruct(State.builder, type.emitType(), values)
 
 @patch
 def Method_emitContext(self):
@@ -861,19 +944,35 @@ def MethodInstance_emit(self):
     pass
 
 @patch
+@contextmanager
+def MethodInstance_targetEmitScope(self):
+    value = State.self
+    assert value is not None
+    index = self.type.used_overload_types.index(self.target.type)
+    delegate = State.builder.structGEP(value, index, "")
+
+    with State.selfScope(delegate):
+        yield
+
+@patch
 def MethodInstance_emitValue(self, type):
-    return State.builder.load(self.emitAssignment(), "")
+    with self.targetEmitScope():
+        return self.target.emitValue(type)
+
+@patch
+def MethodInstance_emitCallable(self, type):
+    with self.targetEmitScope():
+        return self.target.emitCallable(type)
 
 @patch
 def MethodInstance_emitAssignment(self):
-    value = State.self
-    index = self.type.used_overload_types.index(self.target)
-
-    return State.builder.structGEP(value, index, "")
+    with self.targetEmitScope():
+        return self.target.emitAssignment()
 
 @patch
 def MethodInstance_emitContext(self):
-    return llvm.Value.null(llvm.Type.void_p())
+    with self.targetEmitScope():
+        return self.target.emitContext()
 
 #
 # class Class
@@ -924,7 +1023,7 @@ def Class_emitValue(self, type):
         value = self.constructor.emitValue(class_type.instance_context[""].resolveType())
         attributes.append(value)
 
-    return llvm.Value.constStruct(type.emitType(), attributes)
+    return newStruct(State.builder, type.emitType(), attributes)
 
 @patch
 def Class_emitAssignment(self, type):
@@ -946,6 +1045,22 @@ def Class_emitType(self):
 @patch
 def Class_emitContext(self):
     return None
+
+#
+# class MetaClass
+#
+
+@patch
+def MetaClass_emitInstanceCallable(self, instance, type):
+    # No need to do anything if we're calling a constructor directly
+    if isinstance(instance.extractValue(), lekvar.Constructor):
+        return instance.emitCallable(type)
+
+    value = State.self
+    constructor = State.builder.structGEP(value, 0, "")
+
+    with State.selfScope(constructor):
+        return instance.emitCallable(type)
 
 #
 # class Reference
