@@ -127,6 +127,19 @@ class PyPointer:
             return "PyPtr(None)"
         return "PyPtr({}, {})".format(self.get(), self.value)
 
+class PyReference:
+    def __init__(self, value = None):
+        self.value = value
+
+    def deref(self):
+        return self.value
+
+    def assign(self, value):
+        self.value = value
+
+    def __repr__(self):
+        return "*({})".format(self.value)
+
 PRINT_MAP = {
     "String": "%s",
 

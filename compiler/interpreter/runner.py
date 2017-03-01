@@ -7,7 +7,7 @@ from ..errors import InternalError
 from .util import *
 from .state import State
 from . import builtins
-from .builtins import PyPointer
+from .builtins import PyPointer, PyReference
 
 #
 # class Object
@@ -91,12 +91,12 @@ def Link_evalInstanceAssign(self, instance, value):
 
 @patch
 def Attribute_eval(self):
-    with State.selfScope(self.object.eval()):
+    with State.selfScope(evalValue(self.object.eval(), None)):
         return self.value.eval()
 
 @patch
 def Attribute_evalContext(self):
-    return self.object.eval()
+    return evalValue(self.object.eval(), None)
 
 @patch
 def Attribute_evalCall(self, values):
@@ -105,7 +105,7 @@ def Attribute_evalCall(self, values):
 
 @patch
 def Attribute_evalAssign(self, value):
-    with State.selfScope(self.object.eval()):
+    with State.selfScope(evalValue(self.object.eval(), None)):
         self.value.evalAssign(value)
 
 #
@@ -147,7 +147,8 @@ def ClosedTarget_evalNewValue(self):
 
 @patch
 def Reference_eval(self):
-    return self.value.eval()
+    value = evalValue(self.value, self.value.resolveType())
+    return lekvar.Literal(PyReference(value), self.resolveType())
 
 @patch
 def Reference_evalContext(self):
@@ -164,6 +165,29 @@ def Reference_evalAssign(self, value):
 @patch
 def Reference_evalSize(self):
     return builtins.PTR_SIZE
+
+@patch
+def Reference_evalInstanceValue(self, instance, type):
+    value = instance.eval()
+
+    if type is None or not isinstance(type, lekvar.Reference):
+        assert isinstance(value, lekvar.Literal)
+
+        reference = value.data
+        value = evalValue(reference.deref(), type)
+
+    return value
+
+@patch
+def Reference_evalInstanceAssign(self, instance, value):
+    type = value.resolveType().resolveValue()
+
+    if not isinstance(type, lekvar.Reference):
+        assert isinstance(value, lekvar.Literal)
+        assigned = instance.eval().data
+        assigned.assign(value)
+    else:
+        instance.evalAssign(value)
 
 #
 # class Module
@@ -300,7 +324,7 @@ def Function_evalCall(self, values):
     self.eval_returned = False
     self.eval_returning = None
 
-    previous_values = [arg.resolveValue().value for arg in self.arguments]
+    previous_arg_values = [arg.resolveValue().value for arg in self.arguments]
     for arg, val in zip(self.arguments, values):
         arg.evalAssign(val)
 
@@ -310,7 +334,7 @@ def Function_evalCall(self, values):
         if self.eval_returned:
             break
 
-    for arg, val in zip(self.arguments, previous_values):
+    for arg, val in zip(self.arguments, previous_arg_values):
         arg.evalAssign(val)
 
     returning = self.eval_returning
