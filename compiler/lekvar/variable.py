@@ -110,6 +110,8 @@ class Variable(BoundObject, Type):
         self.value = old_value
 
     def extractValue(self):
+        if self.value is not None:
+            return self.value
         if self._static_value_type is not None:
             return self.static_value_type
         return self

@@ -233,7 +233,7 @@ disposeError = _lib.LLVMDisposeMessage
 # Constructors
 Context.wrapConstructor("new", "LLVMContextCreate")
 Context.wrapConstructor("getGlobal", "LLVMGetGlobalContext")
-Context.wrapDestructor("LLVMContextDispose")
+# Context.wrapDestructor("LLVMContextDispose")
 
 #
 # Module

@@ -148,6 +148,17 @@ def Attribute_emitAssignment(self, type):
         return self.value.emitAssignment(type)
 
 #
+# class Closure
+#
+
+@patch
+def Closure_getClosedStaticValues(self):
+    return frozenset({
+        var: var.extractValue()
+            for var in self.closed_context
+    }.items())
+
+#
 # class Literal
 #
 
@@ -988,7 +999,7 @@ def MethodInstance_emitContext(self):
 # class Class
 #
 
-lekvar.Class.llvm_type = None
+lekvar.Class.llvm_types = None
 
 @patch
 def Class_gatherEmissionResets(self):
@@ -998,12 +1009,8 @@ def Class_gatherEmissionResets(self):
         yield child
 
 @patch
-@contextmanager
 def Class_resetLocalEmission(self):
-    old_type = self.llvm_type
-    self.llvm_type = None
-    yield
-    self.llvm_type
+    return None
 
 @patch
 def Class_emit(self):
@@ -1041,7 +1048,16 @@ def Class_emitAssignment(self, type):
 
 @patch
 def Class_emitType(self):
-    if self.llvm_type is None:
+    print(self, self.closed_context, self.llvm_types)
+    if self.llvm_types is None:
+        self.llvm_types = {}
+
+    static_closed_values = self.getClosedStaticValues()
+
+    if static_closed_values not in self.llvm_types:
+        name = resolveName(self)
+        llvm_type = llvm.Struct.new(State.context, name)
+
         var_types = []
 
         for child in self.instance_context:
@@ -1049,8 +1065,10 @@ def Class_emitType(self):
                 child.llvm_self_index = len(var_types)
                 var_types.append(child.type.emitType())
 
-        self.llvm_type = llvm.Struct.newAnonym(var_types, False)
-    return self.llvm_type
+        llvm_type.setBody(var_types, False)
+        self.llvm_types[static_closed_values] = llvm_type
+
+    return self.llvm_types[static_closed_values]
 
 @patch
 def Class_emitContext(self):
