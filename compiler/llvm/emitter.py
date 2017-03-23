@@ -1057,6 +1057,7 @@ def Class_emitType(self):
     if static_closed_values not in self.llvm_types:
         name = resolveName(self)
         llvm_type = llvm.Struct.new(State.context, name)
+        self.llvm_types[static_closed_values] = llvm_type
 
         var_types = []
 
@@ -1066,7 +1067,6 @@ def Class_emitType(self):
                 var_types.append(child.type.emitType())
 
         llvm_type.setBody(var_types, False)
-        self.llvm_types[static_closed_values] = llvm_type
 
     return self.llvm_types[static_closed_values]
 
