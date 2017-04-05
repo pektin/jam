@@ -160,6 +160,9 @@ class Wrappable:
             return obj
         setattr(cls, cls_name, make)
 
+    def __eq__(self, other):
+        return cast(self, c_void_p).value == cast(other, c_void_p).value
+
     # Debugging
     constructor_name = None
     constructor_args = tuple()
