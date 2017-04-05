@@ -7,9 +7,6 @@ from .. import lekvar
 from . import bindings as llvm
 
 def builtins(logger = logging.getLogger()):
-    global printf
-    printf = None
-
     string = LLVMType("String")
     size = LLVMType("Int64")
     ints = [
@@ -73,7 +70,7 @@ def builtins(logger = logging.getLogger()):
     for int_t in ints:
         for float_t in floats:
             name = int_t.name + "To" + float_t.name
-            wrap = partial(llvmInstructionWrapper, llvm.Builder.iToF, args_after=[float_t.emitType()])
+            wrap = partial(llvmInstructionWrapper, llvm.Builder.iToF, args_after=[float_t])
             function = LLVMFunction(name, [int_t], float_t, wrap)
             builtin_objects.append(function)
 
@@ -81,7 +78,7 @@ def builtins(logger = logging.getLogger()):
     for float_t in floats:
         for int_t in ints:
             name = float_t.name + "To" + int_t.name
-            wrap = partial(llvmInstructionWrapper, llvm.Builder.fToI, args_after=[int_t.emitType()])
+            wrap = partial(llvmInstructionWrapper, llvm.Builder.fToI, args_after=[int_t])
             function = LLVMFunction(name, [float_t], int_t, wrap)
             builtin_objects.append(function)
 
@@ -102,16 +99,19 @@ def builtins(logger = logging.getLogger()):
     return module
 
 def llvmInstructionWrapper(instruction, self, args_before = [], args_after = []):
-    entry = self.llvm_value.appendBlock("")
+    entry = State.context.appendBlock(self.llvm_value, "")
 
     with State.blockScope(entry):
         args = [self.llvm_value.getParam(i) for i in range(len(self.type.arguments))]
+        # args_before = [arg.emitType() for arg in args_before]
+        args_after = [arg.emitType() for arg in args_after]
+
         arguments = [State.builder] + args_before + args + args_after + [""]
         return_value = instruction(*arguments)
         State.builder.ret(return_value)
 
 def llvmOffsetWrapper(self):
-    entry = self.llvm_value.appendBlock("")
+    entry = State.context.appendBlock(self.llvm_value, "")
 
     with State.blockScope(entry):
         ptr = self.llvm_value.getParam(0)
@@ -134,12 +134,12 @@ PRINTF_MAP = {
 }
 
 def llvmPrintfWrapper(type, self):
-    global printf
+    if "builtins-printf" not in State.data:
+        func_type = llvm.Function.new(State.int(32), [llvm.Pointer.new(State.int(8), 0)], True)
+        State.data["builtins-printf"] = State.module.addFunction("printf", func_type)
 
-    if printf is None:
-        func_type = llvm.Function.new(LLVMType("Int32").emitType(), [LLVMType("String").emitType()], True)
-        printf = State.module.addFunction("printf", func_type)
-    entry = self.llvm_value.appendBlock("")
+    printf = State.data["builtins-printf"]
+    entry = State.context.appendBlock(self.llvm_value, "")
 
     with State.blockScope(entry):
         fmt_str_data = "%{}".format(PRINTF_MAP[type.name])
@@ -183,8 +183,6 @@ class LLVMType(lekvar.Type, lekvar.BoundObject):
 
     # Emission
 
-    LLVM_MAP = None
-
     def resetLocalEmission(self):
         return None
 
@@ -192,20 +190,20 @@ class LLVMType(lekvar.Type, lekvar.BoundObject):
         pass
 
     def emitType(self):
-        if LLVMType.LLVM_MAP is None:
-            LLVMType.LLVM_MAP = {
-                "String": llvm.Pointer.new(llvm.Int.new(8), 0),
-                "Bool": llvm.Int.new(1),
-                "Int8": llvm.Int.new(8),
-                "Int16": llvm.Int.new(16),
-                "Int32": llvm.Int.new(32),
-                "Int64": llvm.Int.new(64),
-                "Int128": llvm.Int.new(128),
-                "Float16": llvm.Float.half(),
-                "Float32": llvm.Float.float(),
-                "Float64": llvm.Float.double(),
+        if "llvm-type-map" not in State.data:
+            State.data["llvm-type-map"] = {
+                "String": llvm.Pointer.new(State.int(8), 0),
+                "Bool": State.int(1),
+                "Int8": State.int(8),
+                "Int16": State.int(16),
+                "Int32": State.int(32),
+                "Int64": State.int(64),
+                "Int128": State.int(128),
+                "Float16": State.half(),
+                "Float32": State.float(),
+                "Float64": State.double(),
             }
-        return LLVMType.LLVM_MAP[self.name]
+        return State.data["llvm-type-map"][self.name]
 
 class LLVMFunction(lekvar.ExternalFunction):
     generator = None

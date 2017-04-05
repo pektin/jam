@@ -178,11 +178,11 @@ def emitConstant(value):
     if isinstance(value, str):
         return State.builder.globalString(value, "")
     elif isinstance(value, bool):
-        return llvm.Value.constInt(llvm.Int.new(1), value, False)
+        return llvm.Value.constInt(State.int(1), value, False)
     elif isinstance(value, int):
-        return llvm.Value.constInt(llvm.Int.new(64), value, False)
+        return llvm.Value.constInt(State.int(64), value, False)
     elif isinstance(value, float):
-        return llvm.Value.constFloat(llvm.Float.double(), value)
+        return llvm.Value.constFloat(State.double(), value)
     elif isinstance(value, dict) and len(value) == 1 and "value" in value:
         return emitConstant(value["value"].data)
     else:
@@ -307,7 +307,7 @@ def Call_emitValue(self, type):
         context = self.function.emitContext()
 
     if context is not None:
-        arguments = [State.builder.cast(context, llvm.Type.void_p(), "")]
+        arguments = [State.builder.cast(context, State.void_p(), "")]
     else:
         arguments = []
 
@@ -404,9 +404,9 @@ def Context_emitType(self):
         types.append(child.resolveType().emitType())
 
     if len(types) == 0:
-        types = [llvm.Pointer.void_p()]
+        types = [State.void_p()]
 
-    self.llvm_type = llvm.Struct.newAnonym(types, False)
+    self.llvm_type = State.struct(types)
 
     return self.llvm_type
 
@@ -638,8 +638,8 @@ def Function_emitStatic(self):
 
 @patch
 def Function_emitBody(self):
-    entry = self.llvm_value.appendBlock("entry")
-    exit = self.llvm_value.appendBlock("exit")
+    entry = State.context.appendBlock(self.llvm_value, "entry")
+    exit = State.context.appendBlock(self.llvm_value, "exit")
 
     with State.blockScope(entry):
         # Only emit br if it hasn't already
@@ -710,9 +710,9 @@ def Function_emitValue(self, type):
 
     struct_type = self.type.emitType()
     context = self.emitContext(malloc = True)
-    context = State.builder.cast(context, llvm.Pointer.void_p(), "")
+    context = State.builder.cast(context, State.void_p(), "")
 
-    delegate = llvm.Value.constStruct(struct_type, [self.llvm_value, llvm.Value.undef(llvm.Type.void_p())])
+    delegate = llvm.Value.constStruct(struct_type, [self.llvm_value, llvm.Value.undef(State.void_p())])
 
     return State.builder.insertValue(delegate, context, 1, "")
 
@@ -802,14 +802,14 @@ def FunctionType_resetLocalEmission(self):
 @patch
 def FunctionType_emitType(self):
     func = llvm.Pointer.new(self.emitFunctionType(), 0)
-    context = llvm.Type.void_p()
+    context = State.void_p()
 
-    return llvm.Struct.newAnonym([func, context], False)
+    return State.struct([func, context])
 
 @patch
 def FunctionType_emitFunctionType(self, has_context = True):
     if has_context:
-        arguments = [llvm.Type.void_p()]
+        arguments = [State.void_p()]
     else:
         arguments = []
 
@@ -818,7 +818,7 @@ def FunctionType_emitFunctionType(self, has_context = True):
     if self.return_type is not None:
         return_type = self.return_type.emitType()
     else:
-        return_type = llvm.Type.void()
+        return_type = State.void()
 
     return llvm.Function.new(return_type, arguments, False)
 
@@ -953,7 +953,7 @@ def MethodType_resetLocalEmission(self):
 def MethodType_emitType(self):
     if self.llvm_type is None:
         fn_types = [type.emitType() for type in self.used_overload_types]
-        self.llvm_type = llvm.Struct.newAnonym(fn_types, False)
+        self.llvm_type = State.struct(fn_types)
     return self.llvm_type
 
 #
@@ -1100,14 +1100,14 @@ def Reference_emitValue(self, type):
     type = type.value
 
     value_type = self.value.resolveType()
-    malloced = State.builder.malloc(referenceType(value_type.emitType()), "")
+    malloced = State.builder.malloc(State.referenceType(value_type.emitType()), "")
     value = State.builder.structGEP(malloced, 1, "")
     State.builder.store(emitValue(self.value, type), value)
     return malloced
 
 @patch
 def Reference_emitType(self):
-    return llvm.Pointer.new(referenceType(self.value.emitType()), 0)
+    return llvm.Pointer.new(State.referenceType(self.value.emitType()), 0)
 
 @patch
 def Reference_emitInstanceValue(self, value, type):
@@ -1138,8 +1138,8 @@ def Loop_emitValue(self, type):
     # Grab the last block
     last_block = self.function.llvm_value.getLastBlock()
     # Create blocks
-    loop_block = last_block.insertBlock("loop")
-    self.after = last_block.insertBlock("after")
+    loop_block = State.context.insertBlock(last_block, "loop")
+    self.after = State.context.insertBlock(last_block, "after")
 
     # Reposition builder
     State.builder.br(loop_block)
@@ -1176,10 +1176,10 @@ def Branch_emit(self, block = None):
     # Grab the last block
     last_block = self.function.llvm_value.getLastBlock()
     # Create blocks
-    next_block = last_block.insertBlock("next")
+    next_block = State.context.insertBlock(last_block, "next")
 
     if self.condition is not None:
-        block = next_block.insertBlock("branch")
+        block = State.context.insertBlock(next_block, "branch")
 
         condition_value = self.condition.emitValue(None) # bool
         condition = State.builder.extractValue(condition_value, 0, "")
@@ -1218,7 +1218,7 @@ def VoidType_emit(self):
 
 @patch
 def VoidType_emitType(self):
-    return llvm.Type.void_p()
+    return State.void_p()
 
 @patch
 def VoidType_emitInstanceValue(self, value, type):
