@@ -87,6 +87,7 @@ def test_llc_failure():
         llvm.compile(INVALID_SOURCE)
 
 def test_builtin_lib():
+    lekvar.State.init(logging.Logger("llvm"))
     source = llvm.emit(llvm.builtins())
 
     with open(BUILD_PATH + "/builtins.ll", "wb") as f:
