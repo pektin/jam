@@ -235,6 +235,10 @@ Context.wrapConstructor("new", "LLVMContextCreate")
 Context.wrapConstructor("getGlobal", "LLVMGetGlobalContext")
 # Context.wrapDestructor("LLVMContextDispose")
 
+# These weirdly don't follow the argument convention
+Context.wrapInstanceFunc("insertBlock", "LLVMInsertBasicBlockInContext", [Block, c_char_p], Block)
+Context.wrapInstanceFunc("appendBlock", "LLVMAppendBasicBlockInContext", [FunctionValue, c_char_p], Block)
+
 #
 # Module
 #
@@ -387,12 +391,9 @@ Builder.wrapInstanceFunc("ptrToInt", "LLVMBuildPtrToInt", [Value, Type, c_char_p
 #
 
 Type.wrapConstructor("void", "LLVMVoidType")
+Type.wrapConstructor("voidFromContext", "LLVMVoidTypeInContext", [Context])
 Type.wrapConstructor("label", "LLVMLabelType")
-
-@staticmethod
-def Type_void_p(space = 0):
-    return Pointer.new(Int.new(8), space)
-Type.void_p = Type_void_p
+Type.wrapConstructor("labelFromContext", "LLVMLabelTypeInContext", [Context])
 
 setTypes("LLVMPrintTypeToString", [Type], c_char_p)
 @logged("toString", "LLVMPrintTypeToString", False)
@@ -436,6 +437,7 @@ Pointer.wrapInstanceProp("element_type", "LLVMGetElementType", None, Type)
 #
 
 Int.wrapConstructor("new", "LLVMIntType", [c_uint])
+Int.wrapConstructor("fromContext", "LLVMIntTypeInContext", [Context, c_uint])
 Int.wrapInstanceProp("size", "LLVMGetIntTypeWidth", None, c_uint)
 
 #
@@ -445,6 +447,9 @@ Int.wrapInstanceProp("size", "LLVMGetIntTypeWidth", None, c_uint)
 Float.wrapConstructor("half", "LLVMHalfType")
 Float.wrapConstructor("float", "LLVMFloatType")
 Float.wrapConstructor("double", "LLVMDoubleType")
+Float.wrapConstructor("halfInContext", "LLVMHalfTypeInContext", [Context])
+Float.wrapConstructor("floatInContext", "LLVMFloatTypeInContext", [Context])
+Float.wrapConstructor("doubleInContext", "LLVMDoubleTypeInContext", [Context])
 
 #
 # Function Types
@@ -460,6 +465,7 @@ Function.wrapInstanceProp("return_type", "LLVMGetReturnType", None, Type)
 
 Struct.wrapConstructor("new", "LLVMStructCreateNamed", [Context, c_char_p])
 Struct.wrapConstructor("newAnonym", "LLVMStructType", [[Type], c_bool])
+Struct.wrapConstructor("newAnonymInContext", "LLVMStructTypeInContext", [Context, [Type], c_bool])
 
 Struct.wrapInstanceFunc("setBody", "LLVMStructSetBody", [[Type], c_bool])
 
