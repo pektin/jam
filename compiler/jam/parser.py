@@ -485,9 +485,9 @@ class Parser:
         name = ""
         arguments, default_values = self.parseMethodArguments()
 
-        return self.parseMethodBody(name, arguments, default_values, None, tokens)
+        return self.parseMethodBody(name, arguments, default_values, None, tokens, fn_type=lekvar.Constructor)
 
-    def parseMethodBody(self, name, arguments, default_values, return_type, tokens):
+    def parseMethodBody(self, name, arguments, default_values, return_type, tokens, fn_type = lekvar.Function):
         # Parse instructions
         instructions = []
         children = {}
@@ -504,7 +504,7 @@ class Parser:
             self.parseInstructionOrChild(instructions, children)
 
         # Create method with default arguments
-        overloads = [lekvar.Function("", arguments, instructions, list(children.values()), return_type, tokens)]
+        overloads = [fn_type("", arguments, instructions, list(children.values()), return_type, tokens)]
 
         in_defaults = True
         for index, value in enumerate(reversed(default_values)):
@@ -518,7 +518,7 @@ class Parser:
 
                     # Add an overload calling the previous overload with the default argument
                     overloads.append(
-                        lekvar.Function("", args, [
+                        fn_type("", args, [
                             lekvar.Call(
                                 overloads[-1],
                                 # Add non-default arguments with the default value

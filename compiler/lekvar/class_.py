@@ -25,10 +25,9 @@ class Class(Type, Closure):
         if constructor is not None:
             self.constructor = constructor
             for overload in self.constructor.overload_context:
-                name = overload.name
-                self.constructor.overload_context[name] = Constructor(overload, self)
-                self.constructor.overload_context[name].bound_context = self.constructor.overload_context
-                self.constructor.overload_context[name].closed_context.addChild(Variable("self", self))
+                overload.constructing = self
+                overload.type.return_type = self
+                overload.closed_context.addChild(Variable("self", self))
             self.instance_context.fakeChild(self.constructor)
 
         for child in self.instance_context:
@@ -95,9 +94,8 @@ class Class(Type, Closure):
 class Constructor(Function):
     constructing = None
 
-    def __init__(self, function:Function, constructing:Type, tokens = None):
-        Function.__init__(self, function.name, function.arguments, function.instructions, [], constructing, tokens)
-        self.local_context = function.local_context
+    def __init__(self, name:str, arguments:[Variable], instructions:[Object], children:[BoundObject] = [], constructing:Type = None, tokens = None):
+        Function.__init__(self, name, arguments, instructions, children, constructing, tokens)
         self.constructing = constructing
 
     def verifySelf(self):
@@ -105,6 +103,10 @@ class Constructor(Function):
         if self.stats.might_return:
             #TODO: Find returns
             raise SyntaxError(object=self).add(message="within a constructor is invalid")
+
+    def __repr__(self):
+        return "new ({}) -> {}".format(
+            (", ".join(str(arg) for arg in self.arguments)), self.type.return_type)
 
 class MetaClass(Class):
     class_instance = None
