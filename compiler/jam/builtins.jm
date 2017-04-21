@@ -379,3 +379,54 @@ pragma def Array(Element)
 
   return array
 end
+
+pragma def Range(T)
+  class range
+    start:T
+    stop:T
+    step:T
+
+    new(stop_:T)
+      start = 0
+      stop = stop_
+      step = 1
+    end
+
+    new(start_:T, stop_:T)
+      start = start_
+      stop = stop_
+      step = 1
+    end
+
+    new(start_:T, stop_:T, step_:T)
+      start = start_
+      stop = stop_
+      step = step_
+    end
+
+    def each(fn)
+      x = start
+      while x < stop
+        fn(x)
+        x = x + step
+      end
+    end
+
+    # def each(fn)
+    #   each(i => fn())
+    # end
+
+    def self as (pragma Array(T))
+      out = ref (pragma Array(T))()
+
+      def result(x:T)
+        out.add(x)
+      end
+      each(result)
+
+      return out
+    end
+  end
+
+  return range
+end
