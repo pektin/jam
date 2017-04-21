@@ -69,6 +69,10 @@ class Int
   end
 end
 
+class Int8
+  value:_builtins.Int8
+end
+
 #TODO: Allow for arbitrary sizes
 class Real
   value:_builtins.Float64
@@ -229,16 +233,9 @@ module memory
       pointer:_builtins.Void
 
       new()
-        pointer = _builtins.alloc(sizeOf(T).value)
       end
 
-      new(size:Int)
-        size = size * sizeOf(T)
-        pointer = _builtins.alloc(size.value)
-      end
-
-      # private
-      new(value:_builtins.Void, _:Int) # Extra argument to get around Void matching every type
+      new(value:_builtins.Void)
         pointer = value
       end
 
@@ -257,12 +254,12 @@ module memory
 
       def realloc(size:Int)
         size = size * sizeOf(T)
-        return ptr(_builtins.realloc(pointer, size.value), 0)
+        return ptr(_builtins.realloc(pointer, size.value))
       end
 
       def self + other:Int
         offset = other * sizeOf(T)
-        return ptr(_builtins.ptrOffset(pointer, offset.value), 0)
+        return ptr(_builtins.ptrOffset(pointer, offset.value))
       end
     end
 
@@ -271,59 +268,109 @@ module memory
 end
 
 pragma def Array(Element)
-  class array
+  class Header
     length:Int
     capacity:Int
-    pointer:pragma memory.Ptr(Element)
+
+    new(l, c)
+      length = l
+      capacity = c
+    end
+  end
+
+  class array
+    pointer:pragma memory.Ptr(Int8)
 
     new()
-      length = 0
-      capacity = 4
-      pointer.alloc(capacity)
+      pointer.alloc(sizeOf(Header) + 4 * sizeOf(Element))
+      setHeader(Header(0, 4))
     end
 
     new(len:Int)
-      length = len
-      capacity = math.max(len, 4)
-      pointer.alloc(capacity) # TODO: Replace with initialization
-    end
-
-    new(ptr, len)
-      capacity = len
-      length = len
-      pointer = ptr
+      head = Header(len, math.max(len, 4))
+      pointer.alloc(sizeOf(Header) + head.capacity * sizeOf(Element))
+      setHeader(head)
     end
 
     def get(index:Int) -> Element
-      return (pointer + index).get()
+      return (dataPtr() + index).get()
     end
 
     def set(index:Int, element:Element)
-      (pointer + index).set(element)
+      (dataPtr() + index).set(element)
     end
 
     def add(element:Element)
-      index = length
-      lengthChange(length + 1)
+      index = length()
+      lengthChange(length() + 1)
       set(index, element)
     end
 
-    def lengthChange(newLength:Int)
-      length = newLength
+    def length()
+      return header().length
+    end
 
-      if length > capacity
-        capacity = capacity * 2
-        pointer = pointer.realloc(capacity)
+    # private
+    def lengthChange(newLength:Int)
+      head = header()
+      head.length = newLength
+
+      if head.length > head.capacity
+        head.capacity = head.capacity * 2
+        pointer = pointer.realloc(sizeOf(Header) + head.capacity * sizeOf(Element))
       end
+
+      setHeader(head)
+    end
+
+    # private
+    def header() -> Header
+      return headPtr().get()
+    end
+
+    # private
+    def setHeader(head:Header)
+      headPtr().set(head)
+    end
+
+    # private
+    def dataPtr() -> pragma memory.Ptr(Element)
+      offset = pointer + sizeOf(Header)
+      return (pragma memory.Ptr(Element))(offset.pointer)
+    end
+
+    # private
+    def headPtr()
+      return (pragma memory.Ptr(Header))(pointer.pointer)
     end
 
     def dup() -> array
-      out = array(length)
+      out = array(length())
 
       i = 0
-      while i < length
+      while i < length()
         out.set(i, get(i))
         i = i + 1
+      end
+
+      return out
+    end
+
+    def self + other:array
+      out = array(length() + other.length())
+
+      si = 0
+      oi = 0
+      index = 0
+      while si < length()
+        out.set(index, get(si))
+        si = si + 1
+        index = index + 1
+      end
+      while oi < other.length()
+        out.set(index, other.get(oi))
+        oi = oi + 1
+        index = index + 1
       end
 
       return out

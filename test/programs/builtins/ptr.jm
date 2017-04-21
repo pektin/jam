@@ -1,6 +1,7 @@
 ##12\n4\n
 
-ptr = (pragma memory.Ptr(Int))(5)
+ptr = (pragma memory.Ptr(Int))()
+ptr.alloc(5)
 ptr.set(12)
 (ptr + 3).set(4)
 

@@ -1,18 +1,33 @@
-##0\n3\n2\n0\nHello\nWorld\n
+##0\n3\n2\n0\nHello\nWorld\nHello\nWorld\n!\n?\n3\n4\n
 
 a = (pragma Array(Int))()
-puts(a.length)
+puts(a.length())
 a.add(1)
 a.add(3)
 puts(a.get(1))
-puts(a.length)
+puts(a.length())
 
 b = (pragma Array(String))()
-puts(b.length)
+puts(b.length())
 b.add("Hello")
 b.add("World")
 i = 0
-while i < b.length
+while i < b.length()
   puts(b.get(i))
   i = i + 1
 end
+
+c = (pragma Array(String))()
+c.add("!")
+c.add("?")
+c = b + c
+i = 0
+while i < c.length()
+  puts(c.get(i))
+  i = i + 1
+end
+
+d = a
+d.add(4)
+puts(a.length())
+puts(a.get(2))
