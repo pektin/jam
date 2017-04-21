@@ -313,8 +313,16 @@ def Call_emitValue(self, type):
 
     # Hack, for now
     scope = ExitStack()
-    if isinstance(self.function, lekvar.ForwardTarget):
-        scope = self.function.target()
+    value = self.function
+    while True:
+        if isinstance(value, lekvar.ForwardTarget):
+            scope.enter_context(value.target())
+            value = value.value
+        elif isinstance(value, lekvar.ClosedTarget):
+            scope.enter_context(value.target())
+            value = value.value
+        else:
+            break
 
     # TODO: Emit arguments before function
     with scope:
@@ -762,7 +770,7 @@ def Constructor_emitEntry(self):
     self.llvm_context = State.builder.alloca(self.llvm_closure_type, "")
 
     self_var = State.builder.structGEP(self.llvm_context, 0, "")
-    self_type = self.parent.parent.emitType()
+    self_type = self.constructing.emitType()
     self_val = State.builder.alloca(self_type, "self")
 
     State.builder.store(self_val, self_var)
@@ -902,7 +910,9 @@ def Method_emitValue(self, type):
     elif isinstance(type, lekvar.FunctionType):
         return self.resolveCall(type).emitValue(type)
     else:
-        raise InternalError("Invalid value type for method")
+        return self.emitValueForMethodType(self.resolveType())
+    # else:
+    #     raise InternalError("Invalid value type for method")
 
 @patch
 def Method_emitValueForMethodType(self, type):
@@ -1051,7 +1061,6 @@ def Class_emitAssignment(self, type):
 
 @patch
 def Class_emitType(self):
-    print(self, self.closed_context, self.llvm_types)
     if self.llvm_types is None:
         self.llvm_types = {}
 
@@ -1214,6 +1223,10 @@ def SizeOf_emit(self):
 #
 # class VoidType
 #
+
+@patch
+def VoidType_resetLocalEmission(self):
+    return None
 
 @patch
 def VoidType_emit(self):

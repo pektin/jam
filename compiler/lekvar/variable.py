@@ -111,7 +111,7 @@ class Variable(BoundObject, Type):
 
     def extractValue(self):
         if self.value is not None:
-            return self.value
+            return self.value.extractValue()
         if self._static_value_type is not None:
             return self.static_value_type
         return self
