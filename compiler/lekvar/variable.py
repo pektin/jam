@@ -94,7 +94,7 @@ class Variable(BoundObject, Type):
         return self._static_value_type
 
     @contextmanager
-    def targetValue(self, value):
+    def targetValue(self, value, check_cache = None):
         value = value.resolveValue()
         old_value = self.value
         self.value = value
@@ -102,7 +102,7 @@ class Variable(BoundObject, Type):
         stack = ExitStack()
         if self._static_value_type is not None:
             targets = [(self._static_value_type, value)]
-            stack.enter_context(forward.target(targets))
+            stack.enter_context(forward.target(targets, check_types=False, check_cache=check_cache))
 
         with stack:
             yield

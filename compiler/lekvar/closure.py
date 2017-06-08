@@ -45,11 +45,11 @@ class ClosedTarget(Link):
         self.origin = origin or value
 
     @contextmanager
-    def target(self):
+    def target(self, check_cache=None):
         stack = ExitStack()
 
         for target, value in self.targets:
-            stack.enter_context(target.resolveValue().targetValue(value))
+            stack.enter_context(target.resolveValue().targetValue(value, check_cache=check_cache))
 
         with stack:
             yield
@@ -82,9 +82,9 @@ class ClosedTarget(Link):
 
     def checkCompatibility(self, other, check_cache = None):
         stack = ExitStack()
-        stack.enter_context(self.target())
+        stack.enter_context(self.target(check_cache=check_cache))
         if isinstance(other, ClosedTarget):
-            stack.enter_context(other.target())
+            stack.enter_context(other.target(check_cache=check_cache))
             other = other.value
 
         with stack:

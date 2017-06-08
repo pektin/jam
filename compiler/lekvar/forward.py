@@ -14,7 +14,7 @@ ForwardObject = None
 
 # Apply targeting to a set of forward objects and their dependencies
 @contextmanager
-def target(objects:[(ForwardObject, Object)], checkTypes = True):
+def target(objects:[(ForwardObject, Object)], check_types = True, check_cache=None):
     with ExitStack() as stack:
         dependencies = iter(objects)
         while True:
@@ -23,7 +23,7 @@ def target(objects:[(ForwardObject, Object)], checkTypes = True):
             if dep is None: continue
 
             object, target = dep
-            next_dependencies = object.targetAt(target, checkTypes)
+            next_dependencies = object.targetAt(target, check_types, check_cache=check_cache)
             dependencies = chain(dependencies, stack.enter_context(next_dependencies))
 
         yield
@@ -105,7 +105,7 @@ class ForwardObject(Type, BoundObject):
 
     # Targets this forward object
     @contextmanager
-    def targetAt(self, target, checkTypes = True):
+    def targetAt(self, target, check_types = True, check_cache=None):
         if isinstance(target, ForwardObject):
             target = target.resolveValue()
 
@@ -125,7 +125,7 @@ class ForwardObject(Type, BoundObject):
             return
 
         # Local checks
-        if checkTypes and not self.checkLockedCompatibility(target):
+        if check_types and not self.checkLockedCompatibility(target, check_cache):
             raise TypeError(message="TODO: Write this")
 
         # Pass on dependency checks
@@ -265,7 +265,10 @@ class ForwardObject(Type, BoundObject):
                         matches.append(type)
                     else:
                         cache.add(type)
-                        if checkCompatibility(type, other, check_cache):
+                        if isinstance(type, ForwardObject):
+                            if type.checkLockedCompatibility(other, check_cache):
+                                matches.append(type)
+                        elif checkCompatibility(type, other, check_cache):
                             matches.append(type)
 
             if not other.stats.forward and len(matches) != 1:
@@ -280,6 +283,13 @@ class ForwardObject(Type, BoundObject):
     def __repr__(self):
         return "{}{{{}}}".format(self.__class__.__name__, self.name or id(self))
 
+    def __dbg__(self):
+        out = "{}({})\n".format(self, self.scope)
+        out += "  :{}\n".format(self.compatible_types)
+        out += "  () :{}\n".format(self.resolved_calls)
+        out += "  #new.() :{}\n".format(self.resolved_instance_calls)
+        return out
+
 class ForwardTarget(Link):
     dependencies = None
 
@@ -288,8 +298,8 @@ class ForwardTarget(Link):
         self.dependencies = dependencies
 
     @contextmanager
-    def target(self):
-        with target(self.dependencies):
+    def target(self, check_cache=None):
+        with target(self.dependencies, check_cache=check_cache):
             yield
 
     def __repr__(self):
@@ -318,7 +328,7 @@ class ForwardContext(Context):
         return self.scope.locked
 
     @contextmanager
-    def targetAt(self, target, checkTypes = True):
+    def targetAt(self, target, check_types = True, check_cache=None):
         def target_generator():
             if isinstance(target, ForwardContext) and self.scope.scope is target.scope.scope:
                 target.scope._instance_context = self
