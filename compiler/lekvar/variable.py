@@ -121,5 +121,5 @@ class Variable(BoundObject, Type):
 
     def __repr__(self):
         if self.value is not None:
-            return "{}:= {}".format(self.name, self.value)
-        return "{}:{}".format(self.name, self.type)
+            return "{}:= {}".format(self.full_qualified_name, self.value)
+        return "{}:{}".format(self.full_qualified_name, self.type)

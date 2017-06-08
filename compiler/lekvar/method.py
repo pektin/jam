@@ -79,6 +79,7 @@ class Method(Scope):
                                          .add(object=call).addNote(message="Possible overloads:"))
             for overload in self.overload_context:
                 err.addNote(object=overload, message="")
+
             raise err
         elif len(normal_matches) > 1:
             err = (TypeError(message="Ambiguous call").add(object=call).add(message="to")
@@ -94,7 +95,7 @@ class Method(Scope):
         return None
 
     def __repr__(self):
-        return "method {}".format(self.name)
+        return "method {}".format(self.full_qualified_name)
 
 class MethodType(Type):
     overloads = None

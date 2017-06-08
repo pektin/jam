@@ -142,6 +142,16 @@ class BoundObject(Object):
             return self.parent.resolveIdentifier(name, exclude)
         return []
 
+    @property
+    def full_qualified_name(self):
+        name = self.name
+
+        parent = self.parent
+        while parent:
+            name = parent.name + "." + name
+            parent = parent.parent
+        return name
+
     def __repr__(self):
         return "{}({})".format(self.__class__.__name__, self.name)
 
